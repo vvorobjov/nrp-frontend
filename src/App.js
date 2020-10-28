@@ -1,16 +1,27 @@
-import './App.css';
+import "./App.css";
 
 function App() {
   return (
     <div className="App">
       <header className="App-header">
-        <div>MY EXPERIMENTS</div>
+        <div>HOME</div>
+        <div>EXPERIMENTS</div>
+        <div>
+          <a href="https://neurorobotics.net/" target="_blank">
+            NEUROROBOTICS.AI
+          </a>
+        </div>
       </header>
-      <div className="app-body">
+
+      <div className="app-banner">
         <h1>
-          NEUROROBOTICS PLATFORM
+          NEUROROBOTICS <br /> PLATFORM
         </h1>
       </div>
+
+      <div className="app-content-left"></div>
+      <div className="app-content"></div>
+      <div className="app-content-right"></div>
     </div>
   );
 }
