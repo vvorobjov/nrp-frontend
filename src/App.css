@@ -1,5 +1,11 @@
 .App {
   text-align: center;
+  background-color: black;
+  background-image: url('./assets/images/Artificial_Intelligence_2.jpg');
+  background-size: 100%;
+  background-repeat: no-repeat;
+  color: white;
+  height: 100vh;
 }
 
 .App-logo {
@@ -14,14 +20,20 @@
 }
 
 .App-header {
-  background-color: #282c34;
-  min-height: 100vh;
+  min-height: 10hv;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   font-size: calc(10px + 2vmin);
-  color: white;
+}
+
+.app-body {
+  min-height: 90hv;
+}
+
+h1 {
+  font-family: 'Open Sans', sans-serif, Arial, Helvetica;
 }
 
 .App-link {
