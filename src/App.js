@@ -19,9 +19,17 @@ function App() {
         </h1>
       </div>
 
-      <div className="app-content-left"></div>
-      <div className="app-content"></div>
-      <div className="app-content-right"></div>
+      <div className="app-sidebar-left"></div>
+      <div className="app-experiments-left">
+        <p>image placeholder</p>
+        <p>see full list of experiments</p>
+      </div>
+      <div className="app-experiments-right">
+        <p>Most recent</p>
+        <p>Experiment 1 Placeholder</p>
+        <p>Experiment 2 Placeholder</p>
+      </div>
+      <div className="app-sidebar-right"></div>
     </div>
   );
 }

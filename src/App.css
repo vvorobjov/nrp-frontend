@@ -5,14 +5,14 @@
   height: 100vh;
   display: grid;
   grid-template-rows: 50px 300px auto;
-  grid-template-columns: auto minmax(500px, 1000px) auto;
+  grid-template-columns: auto minmax(250px, 500px) minmax(250px, 500px) auto;
   grid-template-areas:
-    ". app-header ."
-    ". app-banner ."
-    "app-content-left app-content app-content-right";
+    ". app-header app-header ."
+    ". app-banner app-banner ."
+    "app-sidebar-left app-experiments-left app-experiments-right app-sidebar-right";
 
   background-image: url("./assets/images/Artificial_Intelligence_2.jpg");
-  background-size: 100vw;
+  background-size: 800px;
   background-position-x: center;
   background-repeat: no-repeat;
 }
@@ -41,17 +41,26 @@
   font-weight: normal;
 }
 
-.app-content {
-  grid-area: app-content;
+.app-experiments-left {
+  grid-area: app-experiments-left;
+  color: black;
+  background-color: white;
+  text-align: left;
+}
+
+.app-experiments-right {
+  grid-area: app-experiments-right;
+  color: black;
+  background-color: white;
+  text-align: left;
+}
+
+.app-sidebar-left {
+  grid-area: app-sidebar-left;
   background-color: white;
 }
 
-.app-content-left {
-  grid-area: app-content-left;
-  background-color: white;
-}
-
-.app-content-right {
-  grid-area: app-content-right;
+.app-sidebar-right {
+  grid-area: app-sidebar-right;
   background-color: white;
 }
