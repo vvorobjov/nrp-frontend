@@ -1,4 +1,4 @@
-.App {
+.entry-page {
   text-align: center;
   color: white;
   background-color: black;
@@ -7,18 +7,18 @@
   grid-template-rows: 50px 300px auto;
   grid-template-columns: auto minmax(250px, 500px) minmax(250px, 500px) auto;
   grid-template-areas:
-    ". app-header app-header ."
-    ". app-banner app-banner ."
-    "app-sidebar-left app-experiments-left app-experiments-right app-sidebar-right";
+    ". header header ."
+    ". banner banner ."
+    "sidebar-left experiments-left experiments-right sidebar-right";
 
-  background-image: url("./assets/images/Artificial_Intelligence_2.jpg");
+  background-image: url("../../assets/images/Artificial_Intelligence_2.jpg");
   background-size: 800px;
   background-position-x: center;
   background-repeat: no-repeat;
 }
 
-.App-header {
-  grid-area: app-header;
+.entry-page-header {
+  grid-area: header;
   min-height: 10hv;
   padding: 30px;
   display: flex;
@@ -28,12 +28,12 @@
   font-size: 15px;
 }
 
-.app-banner {
-  grid-area: app-banner;
+.entry-page-banner {
+  grid-area: banner;
   max-width: 1000px;
 }
 
-.app-banner h1 {
+.entry-page-banner h1 {
   margin: 0px;
   padding: 50px;
   text-align: left;
@@ -41,26 +41,26 @@
   font-weight: normal;
 }
 
-.app-experiments-left {
-  grid-area: app-experiments-left;
+.experiments-left {
+  grid-area: experiments-left;
   color: black;
   background-color: white;
   text-align: left;
 }
 
-.app-experiments-right {
-  grid-area: app-experiments-right;
+.experiments-right {
+  grid-area: experiments-right;
   color: black;
   background-color: white;
   text-align: left;
 }
 
-.app-sidebar-left {
-  grid-area: app-sidebar-left;
+.sidebar-left {
+  grid-area: sidebar-left;
   background-color: white;
 }
 
-.app-sidebar-right {
-  grid-area: app-sidebar-right;
+.sidebar-right {
+  grid-area: sidebar-right;
   background-color: white;
 }
