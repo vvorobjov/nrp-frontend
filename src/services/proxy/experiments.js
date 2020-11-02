@@ -1,15 +1,23 @@
 import { options } from '../httpRequestOptions.js'
 import endpoints from './data/endpoints.json'
 
-const getExperiments = async token => {
-    const proxyEndpoint = endpoints.proxy;
-    const experimentsUrl = `${proxyEndpoint.url}${proxyEndpoint.experiments.url}`;
 
-    // Add authorization header
-    options.headers.Authorization = `Bearer ${token}`;
+class ExperimentsService {
+    getExperiments = async token => {
+        if (this.experiments) {
+            return this.experiments;
+        }
+        const proxyEndpoint = endpoints.proxy;
+        const experimentsUrl = `${proxyEndpoint.url}${proxyEndpoint.experiments.url}`;
 
-    const response = await fetch(experimentsUrl, options);
-    return await response.json();
+        // Add authorization header
+        options.headers.Authorization = `Bearer ${token}`;
+
+        const response = await fetch(experimentsUrl, options);
+        this.experiments = await response.json();
+        return this.experiments;
+    }
 }
 
-export { getExperiments };
+
+export default new ExperimentsService();

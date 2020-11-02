@@ -1,13 +1,13 @@
 import logo from './logo.svg';
 import './App.css';
 import React from 'react';
-import { getExperiments } from './services/proxy/experiments.js';
+import experimentsService from './services/proxy/experiments.js';
 
 class App extends React.Component {
   async componentDidMount() {
     // replace the token here with a token found in your database in ~/.opt/nrpStorage/FS_db/users for testing
     try {
-      const experiments = await getExperiments('2e8ccce4-65d5-4047-82df-3763f5cbbc3f');
+      const experiments = await experimentsService.getExperiments('2e8ccce4-65d5-4047-82df-3763f5cbbc3f');
       console.log(experiments);
     }
     catch (error) {
