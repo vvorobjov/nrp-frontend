@@ -28,6 +28,16 @@
   font-size: 15px;
 }
 
+.header-link {
+  color: white;
+  text-decoration: none;
+}
+
+.header-link:hover {
+  opacity: 0.5;
+  transition: 200ms linear;
+}
+
 .entry-page-banner {
   grid-area: banner;
   max-width: 1000px;
@@ -46,6 +56,9 @@
   color: black;
   background-color: white;
   text-align: left;
+  padding: 20px;
+  display: flex;
+  flex-direction: row;
 }
 
 .experiments-right {
@@ -53,6 +66,13 @@
   color: black;
   background-color: white;
   text-align: left;
+  padding: 20px;
+}
+
+.img-experiment-list {
+  width: 100px;
+  height: 100px;
+  padding: 10px;
 }
 
 .sidebar-left {
