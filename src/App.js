@@ -1,13 +1,14 @@
-import logo from './logo.svg';
-import './App.css';
 import React from 'react';
+
 import experimentsService from './services/proxy/experiments.js';
+
+import EntryPage from "./components/entry-page/entry-page.js";
 
 class App extends React.Component {
   async componentDidMount() {
     // replace the token here with a token found in your database in ~/.opt/nrpStorage/FS_db/users for testing
     try {
-      const experiments = await experimentsService.getExperiments('2e8ccce4-65d5-4047-82df-3763f5cbbc3f');
+      const experiments = await experimentsService.getExperiments('42bbb566-01a0-41f0-938e-c15c5722fab7');
       console.log(experiments);
     }
     catch (error) {
@@ -15,24 +16,7 @@ class App extends React.Component {
     }
   };
 
-  render() {
-    return <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-      </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-      </a>
-      </header>
-    </div>
-  }
+  render() {return <EntryPage />;}
 }
 
 export default App;
