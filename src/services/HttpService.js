@@ -3,7 +3,7 @@
 * If children need other options they can override the options or the 
 * http verb (GET, POST, PUT etc) functions.
 */
-export class httpRequest {
+export class HttpService {
     /**
     * Create a simple http request object with default options, default method is GET
     */
@@ -39,7 +39,7 @@ export class httpRequest {
     * Perform a GET http request to a url
     * @param url - the url to perform the request
     */
-    get = (url, token) => {
+    httpRequestGET = (url, token) => {
         // copy to avoid messing up the options object in case we need to reuse it
         const { ...getOptions } = this.options;
         return this.performRequest(url, getOptions, token);
@@ -49,7 +49,7 @@ export class httpRequest {
     * Perform a POST http request to a url
     * @param url - the url to perform the request
     */
-    post = (url, token) => {
+   httpRequestPOST = (url, token) => {
         // copy to avoid messing up the options object in case we need to reuse it
         const { ...postOptions } = this.options;
         postOptions.method = 'POST';
@@ -61,7 +61,7 @@ export class httpRequest {
     * Perform a PUT http request to a url
     * @param url - the url to perform the request
     */
-    put = async (url, token) => {
+   httpRequestPUT = async (url, token) => {
         // copy to avoid messing up the options object in case we need to reuse it
         const { ...putOptions } = this.options;
         putOptions.method = 'PUT';
