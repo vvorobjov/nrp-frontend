@@ -1,7 +1,12 @@
 {
     "proxy": {
         "experiments": {
-            "url": "/experiments"
+            "url": "/storage/experiments"
+        },
+        "identity": {
+            "me": {
+                "url": "/identity/me"
+            }
         }
     }
 }
