@@ -1,7 +1,9 @@
-import React from "react";
+import React from 'react';
 
-import "./entry-page.css";
-import PlaceholderImage from "../../assets/images/Artificial_Intelligence_2.jpg";
+import UserMenu from '../user-menu/user-menu.js';
+
+import './entry-page.css';
+import PlaceholderImage from '../../assets/images/Artificial_Intelligence_2.jpg';
 
 export default class EntryPage extends React.Component {
   render() {
@@ -18,6 +20,7 @@ export default class EntryPage extends React.Component {
           >
             NEUROROBOTICS.AI
           </a>
+          <UserMenu user={this.user} />
         </header>
 
         <div className="entry-page-banner">

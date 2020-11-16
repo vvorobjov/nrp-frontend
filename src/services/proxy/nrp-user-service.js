@@ -12,7 +12,7 @@ class NrpUserService extends HttpService {
 
         this.PROXY_URL = config.api.proxy.url;
         this.IDENTITY_ME_URL = `${this.PROXY_URL}${endpoints.proxy.identity.me.url}`;
-        console.info('NrpUserService IDENTITY_ME_URL: ' + this.IDENTITY_ME_URL);
+        this.IDENTITY_ME_GROUPS_URL = `${this.PROXY_URL}${endpoints.proxy.identity.me.groups.url}`;
     }
 
     /**
@@ -27,6 +27,46 @@ class NrpUserService extends HttpService {
 
         return this.currentUser;
     }
+
+    /**
+     * Gives you the currently defined user groups (not the groups the current user belongs to)
+     * 
+     * @return currentUserGroups - the user groups currently defined
+     */
+    getCurrentUserGroups() {
+        if (!this.currentUserGroups) {
+            this.currentUserGroups = this.httpRequestGET(this.IDENTITY_ME_GROUPS_URL);
+        }
+
+        return this.currentUserGroups;
+    } 
+
+    getReservation() {
+        window.sessionStorage.getItem('clusterReservation');
+    }
+
+
+    isGroupMember(group) {
+        this.getCurrentUserGroups().then(groups =>
+            groups.some(g => g.name === group)
+        );
+    }
+
+
+    getOwnerName(userId) {
+        /*storageServer
+            .getUser(userId)
+        .then(({ displayName }) => displayName)
+        .catch(() => 'Unkwown');*/
+    }
+
+
+    getCurrentUserInfo() {
+        /*$q.all([this.getCurrentUser()]).then(([{ id }]) => ({
+            userID: id
+        }));*/
+    }
+
 }
 
 

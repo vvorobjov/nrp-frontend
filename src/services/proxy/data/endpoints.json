@@ -5,7 +5,10 @@
         },
         "identity": {
             "me": {
-                "url": "/identity/me"
+                "url": "/identity/me",
+                "groups": {
+                    "url": "/identity/me/groups"
+                }
             }
         }
     }
