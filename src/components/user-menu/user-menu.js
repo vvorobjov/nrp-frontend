@@ -35,7 +35,6 @@ export default class UserMenu extends React.Component {
   }
 
   onClickLogout() {
-    console.info('onClickLogout');
     AuthenticationService.clearStoredToken();
     window.location.reload();
   }

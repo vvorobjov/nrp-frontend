@@ -3,6 +3,9 @@ import endpoints from './data/endpoints.json';
 
 import { HttpService } from '../http-service.js';
 
+const USERGROUP_NAME_ADMINS = 'hbp-sp10-administrators';
+const USERGROUP_NAME_CLUSTER_RESERVATION = 'hbp-sp10-cluster-reservation';
+
 /**
 * Service managing all data related to NRP users.
 */
@@ -11,8 +14,29 @@ class NrpUserService extends HttpService {
         super();
 
         this.PROXY_URL = config.api.proxy.url;
+        this.IDENTITY_BASE_URL = `${this.PROXY_URL}${endpoints.proxy.identity.url}`;
         this.IDENTITY_ME_URL = `${this.PROXY_URL}${endpoints.proxy.identity.me.url}`;
         this.IDENTITY_ME_GROUPS_URL = `${this.PROXY_URL}${endpoints.proxy.identity.me.groups.url}`;
+    }
+
+    /**
+     * Get all user information for a given ID.
+     * @param {string} userID - the ID of the user
+     * @returns {promise} Request for the user
+     */
+    async getUser(userID) {
+        return await this.httpRequestGET(this.IDENTITY_BASE_URL + '/' + userID);
+    }
+
+    /**
+     * Get the name displayed for a user ID.
+     * @param {string} userID - the ID of the user
+     * @returns {string} user name, or unknown
+     */
+    async getUserName(userID) {
+        return await this.getUser(userID)
+            .then(({ displayName }) => displayName)
+            .catch(() => 'Unknown');
     }
 
     /**
@@ -20,53 +44,58 @@ class NrpUserService extends HttpService {
      * 
      * @return currentUser - the user currently logged in
      */
-    getCurrentUser() {
+    async getCurrentUser() {
         if (!this.currentUser) {
-            this.currentUser = this.httpRequestGET(this.IDENTITY_ME_URL);
+            this.currentUser = await this.httpRequestGET(this.IDENTITY_ME_URL);
         }
-
         return this.currentUser;
     }
 
     /**
-     * Gives you the currently defined user groups (not the groups the current user belongs to)
+     * Gives you the currently defined user groups.
      * 
-     * @return currentUserGroups - the user groups currently defined
+     * @return currentUserGroups - the user groups currently belonging to
      */
-    getCurrentUserGroups() {
+    async getCurrentUserGroups() {
         if (!this.currentUserGroups) {
-            this.currentUserGroups = this.httpRequestGET(this.IDENTITY_ME_GROUPS_URL);
+            this.currentUserGroups = await this.httpRequestGET(this.IDENTITY_ME_GROUPS_URL);
         }
 
         return this.currentUserGroups;
-    } 
-
-    getReservation() {
-        window.sessionStorage.getItem('clusterReservation');
     }
 
-
-    isGroupMember(group) {
-        this.getCurrentUserGroups().then(groups =>
-            groups.some(g => g.name === group)
+    /**
+     * Checks whether the current user is part of a specified group.
+     * @param {string} groupName - the name of the group to check
+     * @returns {boolean} Whether the user is part of the group.
+     */
+    async isGroupMember(groupName) {
+        return await this.getCurrentUserGroups().then(groups =>
+            groups.some(g => g.name === groupName)
         );
     }
 
-
-    getOwnerName(userId) {
-        /*storageServer
-            .getUser(userId)
-        .then(({ displayName }) => displayName)
-        .catch(() => 'Unkwown');*/
+    /**
+     * Checks if the user is part of the cluster reservation group.
+     */
+    async isMemberOfClusterReservationGroup() {
+        return await this.isGroupMember(USERGROUP_NAME_CLUSTER_RESERVATION);
     }
 
-
-    getCurrentUserInfo() {
-        /*$q.all([this.getCurrentUser()]).then(([{ id }]) => ({
-            userID: id
-        }));*/
+    /**
+     * Checks if the user is part of the administrator group.
+     */
+    async isAdministrator() {
+        return await this.isGroupMember(USERGROUP_NAME_ADMINS);
     }
 
+    /**
+     * Retrieve cluster reservations from the session storage.
+     * @returns {object} Cluster reservation
+     */
+    getReservation() {
+        return window.sessionStorage.getItem('clusterReservation');
+    }
 }
 
 

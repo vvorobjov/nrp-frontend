@@ -4,6 +4,7 @@
             "url": "/storage/experiments"
         },
         "identity": {
+            "url": "/identity",
             "me": {
                 "url": "/identity/me",
                 "groups": {
