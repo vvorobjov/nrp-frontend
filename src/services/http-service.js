@@ -1,3 +1,5 @@
+import AuthenticationService from './authentication-service.js';
+
 /**
 * Base class that performs http requests with default request options.
 * If children need other options they can override the options or the 
@@ -14,7 +16,8 @@ export class HttpService {
             cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
             credentials: 'same-origin', // include, *same-origin, omit
             headers: {
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                'Referer': 'http://localhost:9000/'
             },
             redirect: 'follow', // manual, *follow, error
             referrerPolicy: 'no-referrer', // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
@@ -22,51 +25,64 @@ export class HttpService {
         };
     }
 
-    //TODO remove token when the authentication class is there
     /**
     * Perform a generic http request with options and url
     * @param url - the url to perform the request
     * @param options - the http options object
     */
-    performRequest = async (url, options, token) => {
+    performRequest = async (url, options) => {
         // Add authorization header
-        options.headers.Authorization = `Bearer ${token}`;
+        options.headers.Authorization = `Bearer ${AuthenticationService.getStoredToken()}`;
+
         const response = await fetch(url, options);
-        return await response.json();
+
+        // error handling
+        if (!response.ok) {
+            if (response.status === 477) {
+                const responseText = await response.text();
+                AuthenticationService.openAuthenticationPage(responseText);
+            } else if (response.status === 478) {
+                //TODO: redirect to maintenance page
+            }
+
+            return response;
+        }
+
+        return response.json();
     }
 
     /**
     * Perform a GET http request to a url
     * @param url - the url to perform the request
     */
-    httpRequestGET = (url, token) => {
+    httpRequestGET = (url) => {
         // copy to avoid messing up the options object in case we need to reuse it
         const { ...getOptions } = this.options;
-        return this.performRequest(url, getOptions, token);
+        return this.performRequest(url, getOptions);
     }
 
     /**
     * Perform a POST http request to a url
     * @param url - the url to perform the request
     */
-   httpRequestPOST = (url, token) => {
+    httpRequestPOST = (url) => {
         // copy to avoid messing up the options object in case we need to reuse it
         const { ...postOptions } = this.options;
         postOptions.method = 'POST';
 
-        return this.performRequest(url, postOptions, token);
+        return this.performRequest(url, postOptions);
     }
 
     /**
     * Perform a PUT http request to a url
     * @param url - the url to perform the request
     */
-   httpRequestPUT = async (url, token) => {
+    httpRequestPUT = async (url) => {
         // copy to avoid messing up the options object in case we need to reuse it
         const { ...putOptions } = this.options;
         putOptions.method = 'PUT';
 
-        return this.performRequest(url, putOptions, token);
+        return this.performRequest(url, putOptions);
     }
 
     /**
