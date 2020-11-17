@@ -1,14 +1,16 @@
 import React from "react";
 
-import experimentsService from "./services/proxy/experiments.js";
+import { HashRouter, Switch, Route } from "react-router-dom";
+
+import ExperimentsService from "./services/proxy/experiments.js";
 
 import EntryPage from "./components/entry-page/entry-page.js";
-import ExperimentContainer from "./components/experiment-list/experiment-list.js";
+import ExperimentList from "./components/experiment-list/experiment-list.js";
 
 class App extends React.Component {
   async componentDidMount() {
     try {
-      const experiments = await experimentsService.getExperiments();
+      const experiments = await ExperimentsService.getExperiments();
       console.log(experiments);
     } catch (error) {
       console.error(`Failed to fetch the list of experiments. Error: ${error}`);
@@ -17,10 +19,20 @@ class App extends React.Component {
 
   render() {
     return (
-      <React.Fragment>
+      /*<React.Fragment>
         <EntryPage />
         <ExperimentContainer />
-      </React.Fragment>
+      </React.Fragment>*/
+      <HashRouter>
+        <Switch>
+          <Route path="/experiments-overview">
+            <ExperimentList />
+          </Route>
+          <Route path="/">
+            <EntryPage />
+          </Route>
+        </Switch>
+      </HashRouter>
     );
   }
 }
