@@ -19,10 +19,6 @@ class App extends React.Component {
 
   render() {
     return (
-      /*<React.Fragment>
-        <EntryPage />
-        <ExperimentContainer />
-      </React.Fragment>*/
       <HashRouter>
         <Switch>
           <Route path="/experiments-overview">
