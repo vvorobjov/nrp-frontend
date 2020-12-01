@@ -1,4 +1,4 @@
-import config from "../config.json";
+import config from '../config.json';
 
 let _instance = null;
 const SINGLETON_ENFORCER = Symbol();
@@ -9,7 +9,7 @@ const SINGLETON_ENFORCER = Symbol();
 class AuthenticationService {
   constructor(enforcer) {
     if (enforcer !== SINGLETON_ENFORCER) {
-      throw new Error("Use AuthenticationService.instance");
+      throw new Error('Use AuthenticationService.instance');
     }
 
     this.CLIENT_ID = config.auth.clientId;
@@ -45,7 +45,7 @@ class AuthenticationService {
       //eslint-disable-next-line camelcase
       JSON.stringify([{ access_token: accessToken }])
     );
-    const pathMinusAccessToken = path.substr(0, path.indexOf("&access_token="));
+    const pathMinusAccessToken = path.substr(0, path.indexOf('&access_token='));
     window.location.href = pathMinusAccessToken;
   }
 
@@ -65,7 +65,7 @@ class AuthenticationService {
     let storedItem = localStorage.getItem(this.STORAGE_KEY);
     if (!storedItem) {
       // this token will be rejected by the server and the client will get a proper auth error
-      return "no-token";
+      return 'no-token';
     }
 
     try {
@@ -73,7 +73,7 @@ class AuthenticationService {
       return tokens.length ? tokens[tokens.length - 1].access_token : null;
     } catch (e) {
       // this token will be rejected by the server and the client will get a proper auth error
-      return "malformed-token";
+      return 'malformed-token';
     }
   }
 

@@ -1,12 +1,12 @@
-import React from "react";
-import Dropdown from "react-bootstrap/Dropdown";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faUserCircle, faSignOutAlt } from "@fortawesome/free-solid-svg-icons";
+import React from 'react';
+import Dropdown from 'react-bootstrap/Dropdown';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faUserCircle, faSignOutAlt } from '@fortawesome/free-solid-svg-icons';
 
-import NrpUserService from "../../services/proxy/nrp-user-service.js";
-import AuthenticationService from "../../services/authentication-service.js";
+import NrpUserService from '../../services/proxy/nrp-user-service.js';
+import AuthenticationService from '../../services/authentication-service.js';
 
-import "./user-menu.css";
+import './user-menu.css';
 
 export default class UserMenu extends React.Component {
   constructor() {
@@ -50,7 +50,7 @@ export default class UserMenu extends React.Component {
           >
             <FontAwesomeIcon icon={faUserCircle} className="user-icon" />
             <div className="user-name">
-              {this.state.user ? this.state.user.displayName : "pending ..."}
+              {this.state.user ? this.state.user.displayName : 'pending ...'}
             </div>
           </Dropdown.Toggle>
 

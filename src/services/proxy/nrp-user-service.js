@@ -1,10 +1,10 @@
-import config from "../../config.json";
-import endpoints from "./data/endpoints.json";
+import config from '../../config.json';
+import endpoints from './data/endpoints.json';
 
-import { HttpService } from "../http-service.js";
+import { HttpService } from '../http-service.js';
 
-const USERGROUP_NAME_ADMINS = "hbp-sp10-administrators";
-const USERGROUP_NAME_CLUSTER_RESERVATION = "hbp-sp10-cluster-reservation";
+const USERGROUP_NAME_ADMINS = 'hbp-sp10-administrators';
+const USERGROUP_NAME_CLUSTER_RESERVATION = 'hbp-sp10-cluster-reservation';
 
 let _instance = null;
 const SINGLETON_ENFORCER = Symbol();
@@ -15,7 +15,7 @@ const SINGLETON_ENFORCER = Symbol();
 class NrpUserService extends HttpService {
   constructor(enforcer) {
     if (enforcer !== SINGLETON_ENFORCER) {
-      throw new Error("Use NrpUserService.instance");
+      throw new Error('Use NrpUserService.instance');
     }
 
     super();
@@ -40,7 +40,7 @@ class NrpUserService extends HttpService {
    * @returns {promise} Request for the user
    */
   async getUser(userID) {
-    return await this.httpRequestGET(this.IDENTITY_BASE_URL + "/" + userID);
+    return await this.httpRequestGET(this.IDENTITY_BASE_URL + '/' + userID);
   }
 
   /**
@@ -51,7 +51,7 @@ class NrpUserService extends HttpService {
   async getUserName(userID) {
     return await this.getUser(userID)
       .then(({ displayName }) => displayName)
-      .catch(() => "Unknown");
+      .catch(() => 'Unknown');
   }
 
   /**
@@ -111,7 +111,7 @@ class NrpUserService extends HttpService {
    * @returns {object} Cluster reservation
    */
   getReservation() {
-    return window.sessionStorage.getItem("clusterReservation");
+    return window.sessionStorage.getItem('clusterReservation');
   }
 }
 

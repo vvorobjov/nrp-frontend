@@ -1,4 +1,4 @@
-import AuthenticationService from "./authentication-service.js";
+import AuthenticationService from './authentication-service.js';
 
 /**
  * Base class that performs http requests with default request options.
@@ -11,16 +11,16 @@ export class HttpService {
    */
   constructor() {
     this.options = {
-      method: "GET", // *GET, POST, PUT, DELETE, etc.
-      mode: "cors", // no-cors, *cors, same-origin
-      cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
-      credentials: "same-origin", // include, *same-origin, omit
+      method: 'GET', // *GET, POST, PUT, DELETE, etc.
+      mode: 'cors', // no-cors, *cors, same-origin
+      cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
+      credentials: 'same-origin', // include, *same-origin, omit
       headers: {
-        "Content-Type": "application/json",
-        Referer: "http://localhost:9000/",
+        'Content-Type': 'application/json',
+        Referer: 'http://localhost:9000/',
       },
-      redirect: "follow", // manual, *follow, error
-      referrerPolicy: "no-referrer", // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
+      redirect: 'follow', // manual, *follow, error
+      referrerPolicy: 'no-referrer', // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
       //body: JSON.stringify(data) // body data type must match "Content-Type" header
     };
   }
@@ -68,7 +68,7 @@ export class HttpService {
   httpRequestPOST = (url) => {
     // copy to avoid messing up the options object in case we need to reuse it
     const { ...postOptions } = this.options;
-    postOptions.method = "POST";
+    postOptions.method = 'POST';
 
     return this.performRequest(url, postOptions);
   };
@@ -80,7 +80,7 @@ export class HttpService {
   httpRequestPUT = async (url) => {
     // copy to avoid messing up the options object in case we need to reuse it
     const { ...putOptions } = this.options;
-    putOptions.method = "PUT";
+    putOptions.method = 'PUT';
 
     return this.performRequest(url, putOptions);
   };

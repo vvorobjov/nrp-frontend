@@ -1,7 +1,7 @@
-import endpoints from "./data/endpoints.json";
-import config from "../../config.json";
+import endpoints from './data/endpoints.json';
+import config from '../../config.json';
 
-import { HttpService } from "../http-service.js";
+import { HttpService } from '../http-service.js';
 
 let _instance = null;
 const SINGLETON_ENFORCER = Symbol();
@@ -13,7 +13,7 @@ const SINGLETON_ENFORCER = Symbol();
 class ExperimentsService extends HttpService {
   constructor(enforcer) {
     if (enforcer !== SINGLETON_ENFORCER) {
-      throw new Error("Use ExperimentsService.instance");
+      throw new Error('Use ExperimentsService.instance');
     }
 
     super();

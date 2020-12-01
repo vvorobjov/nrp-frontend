@@ -1,8 +1,8 @@
-import React from "react";
+import React from 'react';
 
-import ExperimentsService from "./services/proxy/experiments.js";
+import ExperimentsService from './services/proxy/experiments.js';
 
-import EntryPage from "./components/entry-page/entry-page.js";
+import EntryPage from './components/entry-page/entry-page.js';
 
 class App extends React.Component {
   async componentDidMount() {

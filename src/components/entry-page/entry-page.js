@@ -1,9 +1,9 @@
-import React from "react";
+import React from 'react';
 
-import UserMenu from "../user-menu/user-menu.js";
+import UserMenu from '../user-menu/user-menu.js';
 
-import "./entry-page.css";
-import PlaceholderImage from "../../assets/images/Artificial_Intelligence_2.jpg";
+import './entry-page.css';
+import PlaceholderImage from '../../assets/images/Artificial_Intelligence_2.jpg';
 
 export default class EntryPage extends React.Component {
   render() {
