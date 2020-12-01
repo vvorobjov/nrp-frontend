@@ -13,7 +13,7 @@ export default class UserMenu extends React.Component {
     super();
 
     this.state = {
-      user: null,
+      user: null
     };
   }
 
@@ -23,7 +23,7 @@ export default class UserMenu extends React.Component {
       .then((currentUser) => {
         this._userRequest = null;
         this.setState(() => ({
-          user: currentUser,
+          user: currentUser
         }));
       });
   }
