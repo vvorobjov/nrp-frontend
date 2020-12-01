@@ -1,21 +1,22 @@
-import React from 'react';
+import React from "react";
 
-import experimentsService from './services/proxy/experiments.js';
+import ExperimentsService from "./services/proxy/experiments.js";
 
-import EntryPage from './components/entry-page/entry-page.js';
+import EntryPage from "./components/entry-page/entry-page.js";
 
 class App extends React.Component {
   async componentDidMount() {
     try {
-      const experiments = await experimentsService.getExperiments();
+      const experiments = await ExperimentsService.instance.getExperiments();
       console.log(experiments);
-    }
-    catch (error) {
+    } catch (error) {
       console.error(`Failed to fetch the list of experiments. Error: ${error}`);
     }
-  };
+  }
 
-  render() {return <EntryPage />;}
+  render() {
+    return <EntryPage />;
+  }
 }
 
 export default App;
