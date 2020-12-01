@@ -1,6 +1,6 @@
 import React from 'react';
 
-import ExperimentsService from './services/proxy/experiments.js';
+import ExperimentsService from './services/proxy/experiments-service.js';
 
 import EntryPage from './components/entry-page/entry-page.js';
 
