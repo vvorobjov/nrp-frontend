@@ -3,11 +3,14 @@ import experimentsService from "../../services/proxy/experiments.js";
 
 import ExperimentListElement from "./experiment-list-element.js";
 
+import "./experiment-list.css";
+
 export default class ExperimentList extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
       experiments: [],
+      pageState: {},
     };
   }
 
@@ -24,29 +27,18 @@ export default class ExperimentList extends React.Component {
   }
 
   render() {
-    /*if (this.state.experiments) {
-      return this.state.experiments.then((file) => {
-        file.forEach((experiment) => {
-          this.renderExperiment(experiment);
-        });
-      });
-    } else {
-      return null;
-    }*/
-    return <ExperimentListElement experiment={this.state.experiments[0]} />;
-  }
-}
-
-/*export default class ExperimentContainer extends React.Component {
-  render() {
     return (
-      <div className="experiment-container">
-        <div className="experiment-list">
-          <ol>
-            <ExperimentList />
-          </ol>
-        </div>
+      <div className="experiment-list">
+        <ol>
+          {this.state.experiments.map(experiment => 
+            {return (
+              <li key={experiment.id} class="nostyle">
+                <ExperimentListElement experiment={experiment} pageState={this.state.pageState} />
+              </li>
+            );}
+          )}
+        </ol>
       </div>
     );
   }
-}*/
+}
