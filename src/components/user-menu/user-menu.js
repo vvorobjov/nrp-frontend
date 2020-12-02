@@ -18,12 +18,14 @@ export default class UserMenu extends React.Component {
   }
 
   componentDidMount() {
-    this._userRequest = NrpUserService.getCurrentUser().then((currentUser) => {
-      this._userRequest = null;
-      this.setState(() => ({
-        user: currentUser,
-      }));
-    });
+    this._userRequest = NrpUserService.instance
+      .getCurrentUser()
+      .then((currentUser) => {
+        this._userRequest = null;
+        this.setState(() => ({
+          user: currentUser
+        }));
+      });
   }
 
   componentWillUnmount() {
@@ -33,7 +35,7 @@ export default class UserMenu extends React.Component {
   }
 
   onClickLogout() {
-    AuthenticationService.clearStoredToken();
+    AuthenticationService.instance.clearStoredToken();
     window.location.reload();
   }
 
@@ -48,7 +50,7 @@ export default class UserMenu extends React.Component {
           >
             <FontAwesomeIcon icon={faUserCircle} className="user-icon" />
             <div className="user-name">
-              {this.state.user ? this.state.user.displayName : "pending ..."}
+              {this.state.user ? this.state.user.displayName : 'pending ...'}
             </div>
           </Dropdown.Toggle>
 

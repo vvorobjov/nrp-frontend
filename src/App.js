@@ -1,6 +1,7 @@
 import React from "react";
 
 import { HashRouter, Switch, Route } from "react-router-dom";
+import ExperimentsService from './services/proxy/experiments-service.js';
 
 import ExperimentsService from "./services/proxy/experiments.js";
 
@@ -10,7 +11,7 @@ import ExperimentList from "./components/experiment-list/experiment-list.js";
 class App extends React.Component {
   async componentDidMount() {
     try {
-      const experiments = await ExperimentsService.getExperiments();
+      const experiments = await ExperimentsService.instance.getExperiments();
       console.log(experiments);
     } catch (error) {
       console.error(`Failed to fetch the list of experiments. Error: ${error}`);

@@ -1,13 +1,17 @@
 import config from '../config.json';
 
+let _instance = null;
+const SINGLETON_ENFORCER = Symbol();
+
 /**
-* Service taking care of OIDC/FS authentication for NRP accounts
-*/
+ * Service taking care of OIDC/FS authentication for NRP accounts
+ */
 class AuthenticationService {
-  /**
-  * Constructor
-  */
-  constructor() {
+  constructor(enforcer) {
+    if (enforcer !== SINGLETON_ENFORCER) {
+      throw new Error('Use AuthenticationService.instance');
+    }
+
     this.CLIENT_ID = config.auth.clientId;
     this.STORAGE_KEY = `tokens-${this.CLIENT_ID}@https://services.humanbrainproject.eu/oidc`;
     this.PROXY_URL = config.api.proxy.url;
@@ -15,8 +19,16 @@ class AuthenticationService {
     this.checkForNewTokenToStore();
   }
 
+  static get instance() {
+    if (_instance == null) {
+      _instance = new AuthenticationService(SINGLETON_ENFORCER);
+    }
+
+    return _instance;
+  }
+
   /**
-   * Checks if the current page URL contains access tokens. 
+   * Checks if the current page URL contains access tokens.
    * This happens when the successfully logging in at the proxy login page and being redirected back with the token info.
    * Will automatically remove additional access info and present a clean URL after being redirected.
    */
@@ -33,10 +45,7 @@ class AuthenticationService {
       //eslint-disable-next-line camelcase
       JSON.stringify([{ access_token: accessToken }])
     );
-    const pathMinusAccessToken = path.substr(
-      0,
-      path.indexOf('&access_token=')
-    );
+    const pathMinusAccessToken = path.substr(0, path.indexOf('&access_token='));
     window.location.href = pathMinusAccessToken;
   }
 
@@ -49,7 +58,7 @@ class AuthenticationService {
 
   /**
    * Get the stored access token.
-   * 
+   *
    * @return token The stored access token. Or strings identifying 'no-token' / 'malformed-token'.
    */
   getStoredToken() {
@@ -70,7 +79,7 @@ class AuthenticationService {
 
   /**
    * Opens the proxy's authentication page.
-   * 
+   *
    * @param {*} url The URL of the authentication page. If not an absolute URL it is assumed to be a subpage of the proxy.
    */
   openAuthenticationPage(url) {
@@ -78,9 +87,10 @@ class AuthenticationService {
 
     let absoluteUrl = /^https?:\/\//i;
     if (!absoluteUrl.test(url)) url = `${this.PROXY_URL}${url}`;
-    window.location.href = `${url}&client_id=${this
-      .CLIENT_ID}&redirect_uri=${encodeURIComponent(window.location.href)}`;
+    window.location.href = `${url}&client_id=${
+      this.CLIENT_ID
+    }&redirect_uri=${encodeURIComponent(window.location.href)}`;
   }
-};
+}
 
-export default new AuthenticationService();
+export default AuthenticationService;
