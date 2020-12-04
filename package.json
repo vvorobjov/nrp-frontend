@@ -25,7 +25,16 @@
     "extends": [
       "react-app",
       "react-app/jest"
-    ]
+    ],
+    "rules": {
+      "quotes": ["error", "single"],
+      "indent": ["error", 2],
+      "curly": ["error", "all"],
+      "block-spacing": ["error", "always"],
+      "brace-style": ["error", "stroustrup"],
+      "comma-dangle": ["error", "never"],
+      "no-trailing-spaces": "error"
+    }
   },
   "browserslist": {
     "production": [
