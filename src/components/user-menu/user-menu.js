@@ -1,12 +1,12 @@
-import React from "react";
-import Dropdown from "react-bootstrap/Dropdown";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faUserCircle, faSignOutAlt } from "@fortawesome/free-solid-svg-icons";
+import React from 'react';
+import Dropdown from 'react-bootstrap/Dropdown';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faUserCircle, faSignOutAlt } from '@fortawesome/free-solid-svg-icons';
 
-import NrpUserService from "../../services/proxy/nrp-user-service.js";
-import AuthenticationService from "../../services/authentication-service.js";
+import NrpUserService from '../../services/proxy/nrp-user-service.js';
+import AuthenticationService from '../../services/authentication-service.js';
 
-import "./user-menu.css";
+import './user-menu.css';
 
 export default class UserMenu extends React.Component {
   constructor() {
@@ -41,25 +41,25 @@ export default class UserMenu extends React.Component {
 
   render() {
     return (
-      <div className="user-menu-wrapper">
+      <div className='user-menu-wrapper'>
         <Dropdown>
           <Dropdown.Toggle
-            className="dropdown-toggle"
-            variant="success"
-            id="dropdown-basic"
+            className='dropdown-toggle'
+            variant='success'
+            id='dropdown-basic'
           >
-            <FontAwesomeIcon icon={faUserCircle} className="user-icon" />
-            <div className="user-name">
+            <FontAwesomeIcon icon={faUserCircle} className='user-icon' />
+            <div className='user-name'>
               {this.state.user ? this.state.user.displayName : 'pending ...'}
             </div>
           </Dropdown.Toggle>
 
-          <Dropdown.Menu className="dropdown-menu">
+          <Dropdown.Menu className='dropdown-menu'>
             <Dropdown.Item
-              className="dropdown-item"
+              className='dropdown-item'
               onClick={this.onClickLogout}
             >
-              <FontAwesomeIcon icon={faSignOutAlt} className="user-icon" />
+              <FontAwesomeIcon icon={faSignOutAlt} className='user-icon' />
               Logout
             </Dropdown.Item>
           </Dropdown.Menu>
