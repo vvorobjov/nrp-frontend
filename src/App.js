@@ -12,7 +12,8 @@ class App extends React.Component {
     try {
       const experiments = await ExperimentsService.instance.getExperiments();
       console.log(experiments);
-    } catch (error) {
+    }
+    catch (error) {
       console.error(`Failed to fetch the list of experiments. Error: ${error}`);
     }
   }

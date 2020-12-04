@@ -36,7 +36,9 @@ class AuthenticationService {
     const path = window.location.href;
     const accessTokenMatch = /&access_token=([^&]*)/.exec(path);
 
-    if (!accessTokenMatch || !accessTokenMatch[1]) return;
+    if (!accessTokenMatch || !accessTokenMatch[1]) {
+      return;
+    }
 
     let accessToken = accessTokenMatch[1];
 
@@ -71,7 +73,8 @@ class AuthenticationService {
     try {
       let tokens = JSON.parse(storedItem);
       return tokens.length ? tokens[tokens.length - 1].access_token : null;
-    } catch (e) {
+    }
+    catch (e) {
       // this token will be rejected by the server and the client will get a proper auth error
       return 'malformed-token';
     }
@@ -86,7 +89,9 @@ class AuthenticationService {
     this.clearStoredToken();
 
     let absoluteUrl = /^https?:\/\//i;
-    if (!absoluteUrl.test(url)) url = `${this.PROXY_URL}${url}`;
+    if (!absoluteUrl.test(url)) {
+      url = `${this.PROXY_URL}${url}`;
+    }
     window.location.href = `${url}&client_id=${
       this.CLIENT_ID
     }&redirect_uri=${encodeURIComponent(window.location.href)}`;
