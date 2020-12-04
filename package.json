@@ -32,7 +32,8 @@
       "curly": ["error", "all"],
       "block-spacing": ["error", "always"],
       "brace-style": ["error", "stroustrup"],
-      "comma-dangle": ["error", "never"]
+      "comma-dangle": ["error", "never"],
+      "no-trailing-spaces": "error"
     }
   },
   "browserslist": {

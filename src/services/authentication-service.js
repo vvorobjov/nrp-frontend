@@ -11,7 +11,6 @@ class AuthenticationService {
     if (enforcer !== SINGLETON_ENFORCER) {
       throw new Error('Use AuthenticationService.instance');
     }
-    
 
     this.CLIENT_ID = config.auth.clientId;
     this.STORAGE_KEY = `tokens-${this.CLIENT_ID}@https://services.humanbrainproject.eu/oidc`;
@@ -24,7 +23,6 @@ class AuthenticationService {
     if (_instance == null) {
       _instance = new AuthenticationService(SINGLETON_ENFORCER);
     }
-    
 
     return _instance;
   }
@@ -71,7 +69,6 @@ class AuthenticationService {
       // this token will be rejected by the server and the client will get a proper auth error
       return 'no-token';
     }
-    
 
     try {
       let tokens = JSON.parse(storedItem);
