@@ -11,6 +11,7 @@ class AuthenticationService {
     if (enforcer !== SINGLETON_ENFORCER) {
       throw new Error('Use AuthenticationService.instance');
     }
+    
 
     this.CLIENT_ID = config.auth.clientId;
     this.STORAGE_KEY = `tokens-${this.CLIENT_ID}@https://services.humanbrainproject.eu/oidc`;
@@ -23,6 +24,7 @@ class AuthenticationService {
     if (_instance == null) {
       _instance = new AuthenticationService(SINGLETON_ENFORCER);
     }
+    
 
     return _instance;
   }
@@ -36,7 +38,9 @@ class AuthenticationService {
     const path = window.location.href;
     const accessTokenMatch = /&access_token=([^&]*)/.exec(path);
 
-    if (!accessTokenMatch || !accessTokenMatch[1]) return;
+    if (!accessTokenMatch || !accessTokenMatch[1]) {
+      return;
+    }
 
     let accessToken = accessTokenMatch[1];
 
@@ -67,11 +71,13 @@ class AuthenticationService {
       // this token will be rejected by the server and the client will get a proper auth error
       return 'no-token';
     }
+    
 
     try {
       let tokens = JSON.parse(storedItem);
       return tokens.length ? tokens[tokens.length - 1].access_token : null;
-    } catch (e) {
+    }
+    catch (e) {
       // this token will be rejected by the server and the client will get a proper auth error
       return 'malformed-token';
     }
@@ -86,7 +92,9 @@ class AuthenticationService {
     this.clearStoredToken();
 
     let absoluteUrl = /^https?:\/\//i;
-    if (!absoluteUrl.test(url)) url = `${this.PROXY_URL}${url}`;
+    if (!absoluteUrl.test(url)) {
+      url = `${this.PROXY_URL}${url}`;
+    }
     window.location.href = `${url}&client_id=${
       this.CLIENT_ID
     }&redirect_uri=${encodeURIComponent(window.location.href)}`;

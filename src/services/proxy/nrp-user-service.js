@@ -15,7 +15,7 @@ const SINGLETON_ENFORCER = Symbol();
 class NrpUserService extends HttpService {
   constructor(enforcer) {
     if (enforcer !== SINGLETON_ENFORCER) {
-      throw new Error('Use NrpUserService.instance');
+      throw new Error('Use NrpUserService.instance'); 
     }
 
     super();
@@ -28,8 +28,9 @@ class NrpUserService extends HttpService {
 
   static get instance() {
     if (_instance == null) {
-      _instance = new NrpUserService(SINGLETON_ENFORCER);
+      _instance = new NrpUserService(SINGLETON_ENFORCER); 
     }
+    
 
     return _instance;
   }
@@ -61,8 +62,9 @@ class NrpUserService extends HttpService {
    */
   async getCurrentUser() {
     if (!this.currentUser) {
-      this.currentUser = await this.httpRequestGET(this.IDENTITY_ME_URL);
+      this.currentUser = await this.httpRequestGET(this.IDENTITY_ME_URL); 
     }
+    
     return this.currentUser;
   }
 
@@ -75,8 +77,9 @@ class NrpUserService extends HttpService {
     if (!this.currentUserGroups) {
       this.currentUserGroups = await this.httpRequestGET(
         this.IDENTITY_ME_GROUPS_URL
-      );
+      ); 
     }
+    
 
     return this.currentUserGroups;
   }
@@ -88,8 +91,7 @@ class NrpUserService extends HttpService {
    */
   async isGroupMember(groupName) {
     return await this.getCurrentUserGroups().then((groups) =>
-      groups.some((g) => g.name === groupName)
-    );
+      groups.some((g) => g.name === groupName));
   }
 
   /**

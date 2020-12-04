@@ -41,7 +41,8 @@ export class HttpService {
       if (response.status === 477) {
         const responseText = await response.text();
         AuthenticationService.instance.openAuthenticationPage(responseText);
-      } else if (response.status === 478) {
+      }
+      else if (response.status === 478) {
         //TODO: redirect to maintenance page
       }
 
