@@ -31,7 +31,6 @@ class NrpUserService extends HttpService {
       _instance = new NrpUserService(SINGLETON_ENFORCER);
     }
 
-
     return _instance;
   }
 
@@ -79,7 +78,6 @@ class NrpUserService extends HttpService {
         this.IDENTITY_ME_GROUPS_URL
       );
     }
-
 
     return this.currentUserGroups;
   }
