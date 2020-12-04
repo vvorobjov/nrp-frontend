@@ -1,12 +1,11 @@
-import React from "react";
+import React from 'react';
 
-import { HashRouter, Switch, Route } from "react-router-dom";
+import { HashRouter, Switch, Route } from 'react-router-dom';
+
 import ExperimentsService from './services/proxy/experiments-service.js';
 
-import ExperimentsService from "./services/proxy/experiments.js";
-
-import EntryPage from "./components/entry-page/entry-page.js";
-import ExperimentList from "./components/experiment-list/experiment-list.js";
+import EntryPage from './components/entry-page/entry-page.js';
+import ExperimentList from './components/experiment-list/experiment-list.js';
 
 class App extends React.Component {
   async componentDidMount() {
@@ -22,10 +21,10 @@ class App extends React.Component {
     return (
       <HashRouter>
         <Switch>
-          <Route path="/experiments-overview">
+          <Route path='/experiments-overview'>
             <ExperimentList />
           </Route>
-          <Route path="/">
+          <Route path='/'>
             <EntryPage />
           </Route>
         </Switch>

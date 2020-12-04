@@ -1,9 +1,12 @@
-import React from "react";
-import experimentsService from "../../services/proxy/experiments.js";
+import React from 'react';
+import { Link } from 'react-router-dom';
 
-import ExperimentListElement from "./experiment-list-element.js";
+import UserMenu from '../user-menu/user-menu.js';
+import ExperimentsService from '../../services/proxy/experiments-service.js';
 
-import "./experiment-list.css";
+import ExperimentListElement from './experiment-list-element.js';
+
+import './experiment-list.css';
 
 export default class ExperimentList extends React.Component {
   constructor(props) {
@@ -17,7 +20,7 @@ export default class ExperimentList extends React.Component {
   async componentDidMount() {
     // replace the token here with a token found in your database in ~/.opt/nrpStorage/FS_db/users for testing
     try {
-      const experiments = await experimentsService.getExperiments();
+      const experiments = await ExperimentsService.instance.getExperiments();
       this.setState({
         experiments: experiments,
       });
@@ -28,16 +31,41 @@ export default class ExperimentList extends React.Component {
 
   render() {
     return (
-      <div className="experiment-list">
-        <ol>
-          {this.state.experiments.map(experiment => 
-            {return (
-              <li key={experiment.id} class="nostyle">
-                <ExperimentListElement experiment={experiment} pageState={this.state.pageState} />
-              </li>
-            );}
-          )}
-        </ol>
+      <div className='experiment-page'>
+        <header className='experiment-page-header'>
+          <div>
+            <Link to='/'>HOME</Link>
+          </div>
+          <div>
+            <Link to='/experiments-overview'>EXPERIMENTS</Link>
+          </div>
+          <a
+            href='https://neurorobotics.net/'
+            target='_blank'
+            rel='noreferrer'
+            className='header-link'
+          >
+            NEUROROBOTICS.AI
+          </a>
+          <UserMenu />
+        </header>
+
+        <div className='experiment-page-banner'>
+          <h1>
+            NEUROROBOTICS <br /> PLATFORM
+          </h1>
+        </div>
+        <div className='experiment-page-experiments'>
+          <ol>
+            {this.state.experiments.map(experiment => 
+              {return (
+                <li key={experiment.id} class='nostyle'>
+                  <ExperimentListElement experiment={experiment} pageState={this.state.pageState} />
+                </li>
+              );}
+            )}
+          </ol>
+        </div>
       </div>
     );
   }

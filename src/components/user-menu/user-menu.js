@@ -13,7 +13,7 @@ export default class UserMenu extends React.Component {
     super();
 
     this.state = {
-      user: null,
+      user: null
     };
   }
 

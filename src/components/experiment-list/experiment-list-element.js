@@ -1,21 +1,22 @@
-import React from "react";
-import timeDDHHMMSS from "../../app/scripts/common/filters/time-filter.js";
+import React from 'react';
+import timeDDHHMMSS from '../../app/scripts/common/filters/time-filter.js';
 
-import "./experiment-list-element.css";
+import './experiment-list-element.css';
 
 export default class ExperimentListElement extends React.Component {
   render() {
     const exp = this.props.experiment;
     const config = this.props.experiment.configuration;
     const pageState =this.props.pageState;
+    config.canLaunchExperiments = true;
     return (
-      <div className="list-entry-container left-right" style={{position:"relative"}}>
-        <div className="list-entry-left" style={{position:"relative"}}>
-          <img class="entity-thumbnail" src={exp.configuration.thumbnail} alt='' />
+      <div className='list-entry-container left-right' style={{position:'relative'}}>
+        <div className='list-entry-left' style={{position:'relative'}}>
+          <img className='entity-thumbnail' src={exp.configuration.thumbnail} alt='' />
         </div>
-        <div className="list-entry-middle list-entry-container up-down">
-          <div className="list-entry-container left-right title-line">
-            <div className="h4">
+        <div className='list-entry-middle list-entry-container up-down'>
+          <div className='list-entry-container left-right title-line'>
+            <div className='h4'>
               {exp.configuration.name}
             </div>
             <br />
@@ -24,7 +25,7 @@ export default class ExperimentListElement extends React.Component {
             {exp.configuration.description}
             <br/>
           </div>
-          <div style={{position:"relative"}}>
+          <div style={{position:'relative'}}>
             <i>
               Timeout:
               {timeDDHHMMSS(exp.configuration.timeout)}
@@ -35,86 +36,107 @@ export default class ExperimentListElement extends React.Component {
               Brain processes: {exp.configuration.brainProcesses}
             </i>
             <br />
-            <div style={{display:"flex"}}>
-              <i style={{marginTop: "4px"}}>Server status: </i>
-              <i className={{serverIcon: 1}} title="Restricted."></i>
+            <div style={{display:'flex'}}>
+              <i style={{marginTop: '4px'}}>Server status: </i>
+              <i className={{serverIcon: 1}} title='Restricted.'></i>
             </div>
           </div>
-          <div  class="list-entry-buttons list-entry-container center" onClick={()=>{return exp.id === pageState.selected}}>
-                    <div class="btn-group" role="group" >
-                        {config.canLaunchExperiments && exp.availableServers.length > 0 &&
-                        exp.configuration.experimentFile && exp.configuration.bibiConfSr
-                       
-                        ? <button analytics-on analytics-event="Launch" analytics-category="Experiment" 
-                            onClick={()=>{return pageState.startingExperiment === exp.id }}
-                            value = {exp.configuration.experimentFile && exp.configuration.bibiConfSrc}
-                            disabled = {pageState.startingExperiment === exp.id || pageState.deletingExperiment}
-                            class="btn btn-default" >
-                            <i class="fa fa-plus"></i> Launch 
-                        </button>
+          <div  class='list-entry-buttons list-entry-container center' onClick={()=>{return exp.id === pageState.selected}}>
+            <div class='btn-group' role='group' >
+              {config.canLaunchExperiments && exp.joinableServers.length > 0 &&
+              exp.configuration.experimentFile && exp.configuration.bibiConfSr
+              
+              ? <button analytics-on analytics-event='Launch' analytics-category='Experiment' 
+                  onClick={()=>{return pageState.startingExperiment === exp.id }}
+                  disabled = {pageState.startingExperiment === exp.id || pageState.deletingExperiment}
+                  class='btn btn-default' >
+                  <i class='fa fa-plus'></i> Launch 
+              </button>
+              :null}
 
-                        :<button canLaunchExp={config.canLaunchExperiments} serverLength={exp.joinableServers.length} class="btn btn-default disabled enable-tooltip"
-                            title="Sorry, no available servers.">
-                            <i class="fa fa-plus"></i> Launch
-                        </button>
-                        }
-                        {/* Option to Launch in Single Process Mode */}
-                        <button canLaunchExp={config.canLaunchExperiments} brainProcesse={exp.configuration.brainProcesses} serverLength={exp.joinableServers.length}
-                            expFile = {exp.configuration.experimentFile} expBibi={exp.configuration.bibiConfSrc} expId={exp.id}
-                            class="btn btn-default">
-                            <i class="fa fa-plus"></i> Launch in Single Process Mode
-                        </button>
+              {config.canLaunchExperiments && exp.joinableServers.length === 0
+              ?<button class='btn btn-default disabled enable-tooltip'
+                  title='Sorry, no available servers.'>
+                  <i class='fa fa-plus'></i> Launch
+              </button>
+              : null}
 
-                        <button analytics-on analytics-event="Launch Multiple Instances" analytics-category="Experiment" 
-                            canLaunchExp={config.canLaunchExperiments}  serverLength={exp.joinableServers.length}
-                            expFile = {exp.configuration.experimentFile} expBibi={exp.configuration.bibiConfSrc}  expId={exp.id}
-                            class="btn btn-default" >
-                            <i class="fa fa-layer-group"></i> Launch Multiple
-                        </button>
+              {config.canLaunchExperiments && config.brainProcesses > 1 && exp.joinableServers.length > 0 &&
+              exp.configuration.experimentFile && exp.configuration.bibiConfSrc
 
-                        <button analytics-on analytics-event="Delete" analytics-category="Experiment" 
-                            canLaunchExp={config.canLaunchExperiments} jServerLength={exp.joinableServers.length}
-                            class="btn btn-default">
-                            <i class="fa fa-times"></i> Delete
-                        </button>
+              ? <button class='btn btn-default'>
+                  <i class='fa fa-plus'></i> Launch in Single Process Mode
+              </button>
+              : null}
 
-                        {/* Records button */}
-                        <button analytics-on analytics-event="ShowRecords" analytics-category="Experiment" canLaunchExp={config.canLaunchExperiments}
-                            class="btn btn-default">
-                            <i class="fa fa-sign-in"></i> Recordings »
-                        </button>
+              {config.canLaunchExperiments && exp.joinableServers.length > 1 &&
+                  exp.configuration.experimentFile && exp.configuration.bibiConfSrc
 
-                        {/* Export button */}
-                        <button analytics-on analytics-event="ExportZip" analytics-category="Experiment" canLaunchExp={config.canLaunchExperiments}
-                            class="btn btn-default">
-                            <i class="fa fa-file-export"></i> Export
-                        </button>
+              ? <button analytics-on analytics-event='Launch Multiple Instances'
+                  class='btn btn-default' >
+                  <i class='fa fa-layer-group'></i> Launch Multiple
+              </button>
+              : null}
 
-                        {/* Join button */}
-                        <button analytics-on analytics-event="Join" analytics-category="Experiment" canLaunchExp={config.canLaunchExperiments} jServerLength={exp.joinableServers.length}
-                            class="btn btn-default" >
-                            <i class="fa fa-sign-in"></i> Simulations »
-                        </button>
+              {/* isPrivateExperiment */}
+              {config.canLaunchExperiments
+              ? <button analytics-on analytics-event='Delete' analytics-category='Experiment' 
+                  class='btn btn-default'>
+                  <i class='fa fa-times'></i> Delete
+              </button>
+              : null}
 
-                        {/* Clone button */}
-                        <button canCloneExp={config.canCloneExperiments} confStorage={exp.configuration.privateStorage} expFile={exp.configuration.experimentFile} expBibi={exp.configuration.bibiConfSrc}
-                            analytics-on analytics-event="Clone" analytics-label="Collab"
-                            analytics-value={exp.id} class="btn btn-default">
-                            <i class="fa fa-pencil-alt"></i> Clone
-                        </button>
+              {/* Records button */}
+              {config.canLaunchExperiments
+              ? <button analytics-on analytics-event='ShowRecords' analytics-category='Experiment' canLaunchExp={config.canLaunchExperiments}
+                  class='btn btn-default'>
+                  <i class='fa fa-sign-in'></i> Recordings »
+              </button>
+              : null}
 
-                        {/* Files button */}
-                        <button canLaunchExp={config.canLaunchExperiments} analytics-on analytics-event="Explorer"
-                            analytics-label="Collab" expId={exp.id} class="btn btn-default" >
+              {/* Export button */}
+              {config.canLaunchExperiments
+              ?
+              <button analytics-on analytics-event='ExportZip' analytics-category='Experiment' canLaunchExp={config.canLaunchExperiments}
+                  class='btn btn-default'>
+                  <i class='fa fa-file-export'></i> Export
+              </button>
+              : null}
 
-                            <i class="fa fa-list-alt"></i> Files
-                        </button>
-                        {/* Shared button */}
-                        <button canLaunchExp={config.canLaunchExperiments} expId={exp.id} analytics-on analytics-event="Explorer" class="btn btn-default" analytics-label="Collab">
-                            <i class="fas fa-share-alt"></i> Share
-                        </button>
-                      </div>
-              </div>
+              {/* Join button */}
+              {config.canLaunchExperiments && exp.joinableServers.length > 0
+              ? <button analytics-on analytics-event='Join' analytics-category='Experiment' canLaunchExp={config.canLaunchExperiments} jServerLength={exp.joinableServers.length}
+                  class='btn btn-default' >
+                  <i class='fa fa-sign-in'></i> Simulations »
+              </button>
+              : null}
+
+              {/* Clone button */}
+              {config.canCloneExperiments && (!exp.configuration.privateStorage || (exp.configuration.experimentFile && exp.configuration.bibiConfSrc))
+              ? <button analytics-on analytics-event='Clone' analytics-label='Collab'
+                  analytics-value={exp.id} class='btn btn-default'>
+                  <i class='fa fa-pencil-alt'></i> Clone
+              </button>
+              : null
+              }
+
+              {/* Files button */}
+              {config.canLaunchExperiments
+              ? <button canLaunchExp={config.canLaunchExperiments} analytics-on analytics-event='Explorer'
+                  analytics-label='Collab' expId={exp.id} class='btn btn-default' >
+
+                  <i class='fa fa-list-alt'></i> Files
+              </button>
+              : null}
+
+              {/* Shared button */}
+              {config.canLaunchExperiments
+              ? <button canLaunchExp={config.canLaunchExperiments} expId={exp.id} analytics-on analytics-event='Explorer' class='btn btn-default' analytics-label='Collab'>
+                  <i class='fas fa-share-alt'></i> Share
+              </button>
+              : null}
+            </div>
+          </div>
         </div>
       </div>
     );
