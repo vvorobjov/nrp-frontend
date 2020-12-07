@@ -21,6 +21,7 @@ export default class ExperimentList extends React.Component {
     // replace the token here with a token found in your database in ~/.opt/nrpStorage/FS_db/users for testing
     try {
       const experiments = await ExperimentsService.instance.getExperiments();
+      console.info(experiments);
       this.setState({
         experiments: experiments
       });

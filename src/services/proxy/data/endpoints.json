@@ -3,6 +3,9 @@
         "experiments": {
             "url": "/storage/experiments"
         },
+        "experimentImage": {
+            "url": "/experimentImage"
+        },
         "identity": {
             "url": "/identity",
             "me": {
@@ -11,6 +14,9 @@
                     "url": "/identity/me/groups"
                 }
             }
+        },
+        "storage": {
+            "url": "/storage"
         }
     }
 }

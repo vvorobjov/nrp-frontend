@@ -49,7 +49,7 @@ export class HttpService {
       return response;
     }
 
-    return response.json();
+    return response;
   };
 
   /**

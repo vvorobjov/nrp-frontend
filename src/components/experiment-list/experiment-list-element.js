@@ -1,9 +1,24 @@
 import React from 'react';
 import timeDDHHMMSS from '../../app/scripts/common/filters/time-filter.js';
+import ExperimentsService from '../../services/proxy/experiments-service.js';
 
 import './experiment-list-element.css';
 
+//import config from '../../config.json';
+//import endpoints from '../../services/proxy/data/endpoints.json';
+
 export default class ExperimentListElement extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {};
+  }
+
+  async componentDidMount() {
+    // retrieve the experiment thumbnail
+    let thumbnail = await ExperimentsService.instance.getThumbnail(this.props.experiment);
+    this.setState({thumbnail: URL.createObjectURL(thumbnail)});
+  }
+
   render() {
     const exp = this.props.experiment;
     const config = this.props.experiment.configuration;
@@ -12,7 +27,7 @@ export default class ExperimentListElement extends React.Component {
     return (
       <div className='list-entry-container left-right' style={{position:'relative'}}>
         <div className='list-entry-left' style={{position:'relative'}}>
-          <img className='entity-thumbnail' src={exp.configuration.thumbnail} alt='' />
+          <img className='entity-thumbnail' src={this.state.thumbnail} alt='' />
         </div>
         <div className='list-entry-middle list-entry-container up-down'>
           <div className='list-entry-container left-right title-line'>

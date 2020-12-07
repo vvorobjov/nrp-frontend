@@ -34,15 +34,23 @@ class ExperimentsService extends HttpService {
    *
    * @return experiments - the list of template experiments
    */
-  getExperiments = () => {
+  async getExperiments() {
     if (!this.experiments) {
       const proxyEndpoint = endpoints.proxy;
       const experimentsUrl = `${config.api.proxy.url}${proxyEndpoint.experiments.url}`;
-      this.experiments = this.httpRequestGET(experimentsUrl);
+      let response = await this.httpRequestGET(experimentsUrl);
+      this.experiments = response.json();
     }
 
     return this.experiments;
   };
+
+  async getThumbnail(experiment) {
+    let url = config.api.proxy.url + endpoints.proxy.storage.url + '/' + experiment.name + '/' + experiment.configuration.thumbnail + '?byname=true';
+    let response = await this.httpRequestGET(url);
+    let image = await response.blob();
+    return image;
+  }
 }
 
 export default ExperimentsService;
