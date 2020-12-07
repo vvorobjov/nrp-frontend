@@ -60,7 +60,7 @@ export default class ExperimentList extends React.Component {
           <ol>
             {this.state.experiments.map(experiment => {
               return (
-                <li key={experiment.id} class='nostyle'>
+                <li key={experiment.id} className='nostyle'>
                   <ExperimentListElement experiment={experiment} pageState={this.state.pageState} />
                 </li>
               );
