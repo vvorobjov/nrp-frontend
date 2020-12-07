@@ -63,6 +63,7 @@ class NrpUserService extends HttpService {
     if (!this.currentUser) {
       this.currentUser = await this.httpRequestGET(this.IDENTITY_ME_URL);
     }
+
     return this.currentUser;
   }
 
@@ -88,8 +89,7 @@ class NrpUserService extends HttpService {
    */
   async isGroupMember(groupName) {
     return await this.getCurrentUserGroups().then((groups) =>
-      groups.some((g) => g.name === groupName)
-    );
+      groups.some((g) => g.name === groupName));
   }
 
   /**
