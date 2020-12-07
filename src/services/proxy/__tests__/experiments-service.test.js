@@ -23,13 +23,13 @@ test('fetches the list of experiments', async () => {
 })
 
 test('makes sure that invoking the constructor fails with the right message', () => {
-  try {
+  expect(() => {
     new ExperimentsService();
-  }
-  catch (err) {
-    expect(err).toBeInstanceOf(Error)
-    expect(err).toStrictEqual(Error('Use ExperimentsService.instance'))
-  }
+  }).toThrow(Error);
+  expect(() => {
+    new ExperimentsService();
+  }).toThrowError(Error('Use ExperimentsService.instance'));
+
 })
 
 test('the experiments service instance always refers to the same object', () => {
