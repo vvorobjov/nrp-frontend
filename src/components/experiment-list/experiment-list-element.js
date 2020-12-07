@@ -30,7 +30,7 @@ export default class ExperimentListElement extends React.Component {
               Timeout:
               {timeDDHHMMSS(exp.configuration.timeout)}
               ({(exp.configuration.timeoutType==='simulation' ? 'simulation' : 'real')} time)
-            </i> 
+            </i>
             <br />
             <i>
               Brain processes: {exp.configuration.brainProcesses}
@@ -41,100 +41,101 @@ export default class ExperimentListElement extends React.Component {
               <i className={{serverIcon: 1}} title='Restricted.'></i>
             </div>
           </div>
-          <div  className='list-entry-buttons list-entry-container center' onClick={()=>{return exp.id === pageState.selected}}>
+          <div  className='list-entry-buttons list-entry-container center' onClick={()=>{
+            return exp.id === pageState.selected
+          }}>
             <div className='btn-group' role='group' >
               {config.canLaunchExperiments && exp.joinableServers.length > 0 &&
               exp.configuration.experimentFile && exp.configuration.bibiConfSr
-              
-              ? <button analytics-on analytics-event='Launch' analytics-category='Experiment' 
-                  onClick={()=>{return pageState.startingExperiment === exp.id }}
+                ? <button analytics-on analytics-event='Launch' analytics-category='Experiment'
+                  onClick={()=>{
+                    return pageState.startingExperiment === exp.id
+                  }}
                   disabled = {pageState.startingExperiment === exp.id || pageState.deletingExperiment}
                   className='btn btn-default' >
-                  <i className='fa fa-plus'></i> Launch 
-              </button>
-              :null}
+                  <i className='fa fa-plus'></i> Launch
+                </button>
+                :null}
 
               {config.canLaunchExperiments && exp.joinableServers.length === 0
-              ?<button className='btn btn-default disabled enable-tooltip'
+                ?<button className='btn btn-default disabled enable-tooltip'
                   title='Sorry, no available servers.'>
                   <i className='fa fa-plus'></i> Launch
-              </button>
-              : null}
+                </button>
+                : null}
 
               {config.canLaunchExperiments && config.brainProcesses > 1 && exp.joinableServers.length > 0 &&
               exp.configuration.experimentFile && exp.configuration.bibiConfSrc
 
-              ? <button className='btn btn-default'>
+                ? <button className='btn btn-default'>
                   <i className='fa fa-plus'></i> Launch in Single Process Mode
-              </button>
-              : null}
+                </button>
+                : null}
 
               {config.canLaunchExperiments && exp.joinableServers.length > 1 &&
                   exp.configuration.experimentFile && exp.configuration.bibiConfSrc
 
-              ? <button analytics-on analytics-event='Launch Multiple Instances'
+                ? <button analytics-on analytics-event='Launch Multiple Instances'
                   className='btn btn-default' >
                   <i className='fa fa-layer-group'></i> Launch Multiple
-              </button>
-              : null}
+                </button>
+                : null}
 
               {/* isPrivateExperiment */}
               {config.canLaunchExperiments
-              ? <button analytics-on analytics-event='Delete' analytics-category='Experiment' 
+                ? <button analytics-on analytics-event='Delete' analytics-category='Experiment'
                   className='btn btn-default'>
                   <i className='fa fa-times'></i> Delete
-              </button>
-              : null}
+                </button>
+                : null}
 
               {/* Records button */}
               {config.canLaunchExperiments
-              ? <button analytics-on analytics-event='ShowRecords' analytics-category='Experiment' canLaunchExp={config.canLaunchExperiments}
+                ? <button analytics-on analytics-event='ShowRecords' analytics-category='Experiment' canLaunchExp={config.canLaunchExperiments}
                   className='btn btn-default'>
                   <i className='fa fa-sign-in'></i> Recordings »
-              </button>
-              : null}
+                </button>
+                : null}
 
               {/* Export button */}
               {config.canLaunchExperiments
-              ?
-              <button analytics-on analytics-event='ExportZip' analytics-category='Experiment' canLaunchExp={config.canLaunchExperiments}
+                ? <button analytics-on analytics-event='ExportZip' analytics-category='Experiment' canLaunchExp={config.canLaunchExperiments}
                   className='btn btn-default'>
                   <i className='fa fa-file-export'></i> Export
-              </button>
-              : null}
+                </button>
+                : null}
 
               {/* Join button */}
               {config.canLaunchExperiments && exp.joinableServers.length > 0
-              ? <button analytics-on analytics-event='Join' analytics-category='Experiment' canLaunchExp={config.canLaunchExperiments} jServerLength={exp.joinableServers.length}
+                ? <button analytics-on analytics-event='Join' analytics-category='Experiment' canLaunchExp={config.canLaunchExperiments} jServerLength={exp.joinableServers.length}
                   className='btn btn-default' >
                   <i className='fa fa-sign-in'></i> Simulations »
-              </button>
-              : null}
+                </button>
+                : null}
 
               {/* Clone button */}
               {config.canCloneExperiments && (!exp.configuration.privateStorage || (exp.configuration.experimentFile && exp.configuration.bibiConfSrc))
-              ? <button analytics-on analytics-event='Clone' analytics-label='Collab'
+                ? <button analytics-on analytics-event='Clone' analytics-label='Collab'
                   analytics-value={exp.id} className='btn btn-default'>
                   <i className='fa fa-pencil-alt'></i> Clone
-              </button>
-              : null
-              }
+                </button>
+                : null}
 
               {/* Files button */}
               {config.canLaunchExperiments
-              ? <button canLaunchExp={config.canLaunchExperiments} analytics-on analytics-event='Explorer'
+                ? <button canLaunchExp={config.canLaunchExperiments} analytics-on analytics-event='Explorer'
                   analytics-label='Collab' expId={exp.id} className='btn btn-default' >
 
                   <i className='fa fa-list-alt'></i> Files
-              </button>
-              : null}
+                </button>
+                : null}
 
               {/* Shared button */}
               {config.canLaunchExperiments
-              ? <button canLaunchExp={config.canLaunchExperiments} expId={exp.id} analytics-on analytics-event='Explorer' className='btn btn-default' analytics-label='Collab'>
+                ? <button canLaunchExp={config.canLaunchExperiments} expId={exp.id} analytics-on analytics-event='Explorer' className='btn btn-default' analytics-label='Collab'>
                   <i className='fas fa-share-alt'></i> Share
-              </button>
-              : null}
+                </button>
+                : null}
             </div>
           </div>
         </div>

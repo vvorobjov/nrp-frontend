@@ -13,7 +13,7 @@ export default class ExperimentList extends React.Component {
     super(props);
     this.state = {
       experiments: [],
-      pageState: {},
+      pageState: {}
     };
   }
 
@@ -22,9 +22,10 @@ export default class ExperimentList extends React.Component {
     try {
       const experiments = await ExperimentsService.instance.getExperiments();
       this.setState({
-        experiments: experiments,
+        experiments: experiments
       });
-    } catch (error) {
+    }
+    catch (error) {
       console.error(`Failed to fetch the list of experiments. Error: ${error}`);
     }
   }
@@ -57,12 +58,13 @@ export default class ExperimentList extends React.Component {
         </div>
         <div className='experiment-page-experiments'>
           <ol>
-            {this.state.experiments.map(experiment => 
-              {return (
+            {this.state.experiments.map(experiment => {
+              return (
                 <li key={experiment.id} class='nostyle'>
                   <ExperimentListElement experiment={experiment} pageState={this.state.pageState} />
                 </li>
-              );}
+              );
+            }
             )}
           </ol>
         </div>
