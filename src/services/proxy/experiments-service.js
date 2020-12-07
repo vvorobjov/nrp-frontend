@@ -45,6 +45,12 @@ class ExperimentsService extends HttpService {
     return this.experiments;
   };
 
+  /**
+   * Retrieves the thumbnail image for a given experiment.
+   * @param {object} experiment - experiment specification and configuration object
+   *
+   * @returns {Blob} image object
+   */
   async getThumbnail(experiment) {
     let url = config.api.proxy.url + endpoints.proxy.storage.url + '/' + experiment.name + '/' + experiment.configuration.thumbnail + '?byname=true';
     let response = await this.httpRequestGET(url);

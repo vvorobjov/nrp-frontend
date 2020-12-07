@@ -4,9 +4,6 @@ import ExperimentsService from '../../services/proxy/experiments-service.js';
 
 import './experiment-list-element.css';
 
-//import config from '../../config.json';
-//import endpoints from '../../services/proxy/data/endpoints.json';
-
 export default class ExperimentListElement extends React.Component {
   constructor(props) {
     super(props);
