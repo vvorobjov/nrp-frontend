@@ -41,31 +41,31 @@ export default class ExperimentListElement extends React.Component {
               <i className={{serverIcon: 1}} title='Restricted.'></i>
             </div>
           </div>
-          <div  class='list-entry-buttons list-entry-container center' onClick={()=>{return exp.id === pageState.selected}}>
-            <div class='btn-group' role='group' >
+          <div  className='list-entry-buttons list-entry-container center' onClick={()=>{return exp.id === pageState.selected}}>
+            <div className='btn-group' role='group' >
               {config.canLaunchExperiments && exp.joinableServers.length > 0 &&
               exp.configuration.experimentFile && exp.configuration.bibiConfSr
               
               ? <button analytics-on analytics-event='Launch' analytics-category='Experiment' 
                   onClick={()=>{return pageState.startingExperiment === exp.id }}
                   disabled = {pageState.startingExperiment === exp.id || pageState.deletingExperiment}
-                  class='btn btn-default' >
-                  <i class='fa fa-plus'></i> Launch 
+                  className='btn btn-default' >
+                  <i className='fa fa-plus'></i> Launch 
               </button>
               :null}
 
               {config.canLaunchExperiments && exp.joinableServers.length === 0
-              ?<button class='btn btn-default disabled enable-tooltip'
+              ?<button className='btn btn-default disabled enable-tooltip'
                   title='Sorry, no available servers.'>
-                  <i class='fa fa-plus'></i> Launch
+                  <i className='fa fa-plus'></i> Launch
               </button>
               : null}
 
               {config.canLaunchExperiments && config.brainProcesses > 1 && exp.joinableServers.length > 0 &&
               exp.configuration.experimentFile && exp.configuration.bibiConfSrc
 
-              ? <button class='btn btn-default'>
-                  <i class='fa fa-plus'></i> Launch in Single Process Mode
+              ? <button className='btn btn-default'>
+                  <i className='fa fa-plus'></i> Launch in Single Process Mode
               </button>
               : null}
 
@@ -73,24 +73,24 @@ export default class ExperimentListElement extends React.Component {
                   exp.configuration.experimentFile && exp.configuration.bibiConfSrc
 
               ? <button analytics-on analytics-event='Launch Multiple Instances'
-                  class='btn btn-default' >
-                  <i class='fa fa-layer-group'></i> Launch Multiple
+                  className='btn btn-default' >
+                  <i className='fa fa-layer-group'></i> Launch Multiple
               </button>
               : null}
 
               {/* isPrivateExperiment */}
               {config.canLaunchExperiments
               ? <button analytics-on analytics-event='Delete' analytics-category='Experiment' 
-                  class='btn btn-default'>
-                  <i class='fa fa-times'></i> Delete
+                  className='btn btn-default'>
+                  <i className='fa fa-times'></i> Delete
               </button>
               : null}
 
               {/* Records button */}
               {config.canLaunchExperiments
               ? <button analytics-on analytics-event='ShowRecords' analytics-category='Experiment' canLaunchExp={config.canLaunchExperiments}
-                  class='btn btn-default'>
-                  <i class='fa fa-sign-in'></i> Recordings »
+                  className='btn btn-default'>
+                  <i className='fa fa-sign-in'></i> Recordings »
               </button>
               : null}
 
@@ -98,24 +98,24 @@ export default class ExperimentListElement extends React.Component {
               {config.canLaunchExperiments
               ?
               <button analytics-on analytics-event='ExportZip' analytics-category='Experiment' canLaunchExp={config.canLaunchExperiments}
-                  class='btn btn-default'>
-                  <i class='fa fa-file-export'></i> Export
+                  className='btn btn-default'>
+                  <i className='fa fa-file-export'></i> Export
               </button>
               : null}
 
               {/* Join button */}
               {config.canLaunchExperiments && exp.joinableServers.length > 0
               ? <button analytics-on analytics-event='Join' analytics-category='Experiment' canLaunchExp={config.canLaunchExperiments} jServerLength={exp.joinableServers.length}
-                  class='btn btn-default' >
-                  <i class='fa fa-sign-in'></i> Simulations »
+                  className='btn btn-default' >
+                  <i className='fa fa-sign-in'></i> Simulations »
               </button>
               : null}
 
               {/* Clone button */}
               {config.canCloneExperiments && (!exp.configuration.privateStorage || (exp.configuration.experimentFile && exp.configuration.bibiConfSrc))
               ? <button analytics-on analytics-event='Clone' analytics-label='Collab'
-                  analytics-value={exp.id} class='btn btn-default'>
-                  <i class='fa fa-pencil-alt'></i> Clone
+                  analytics-value={exp.id} className='btn btn-default'>
+                  <i className='fa fa-pencil-alt'></i> Clone
               </button>
               : null
               }
@@ -123,16 +123,16 @@ export default class ExperimentListElement extends React.Component {
               {/* Files button */}
               {config.canLaunchExperiments
               ? <button canLaunchExp={config.canLaunchExperiments} analytics-on analytics-event='Explorer'
-                  analytics-label='Collab' expId={exp.id} class='btn btn-default' >
+                  analytics-label='Collab' expId={exp.id} className='btn btn-default' >
 
-                  <i class='fa fa-list-alt'></i> Files
+                  <i className='fa fa-list-alt'></i> Files
               </button>
               : null}
 
               {/* Shared button */}
               {config.canLaunchExperiments
-              ? <button canLaunchExp={config.canLaunchExperiments} expId={exp.id} analytics-on analytics-event='Explorer' class='btn btn-default' analytics-label='Collab'>
-                  <i class='fas fa-share-alt'></i> Share
+              ? <button canLaunchExp={config.canLaunchExperiments} expId={exp.id} analytics-on analytics-event='Explorer' className='btn btn-default' analytics-label='Collab'>
+                  <i className='fas fa-share-alt'></i> Share
               </button>
               : null}
             </div>
