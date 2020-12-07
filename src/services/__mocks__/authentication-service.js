@@ -6,7 +6,7 @@ const AthenticationServiceMock = jest.fn().mockImplementation(() => {
 }); */
 class AuthenticationService {
   constructor() {
-
+    this.checkForNewTokenToStore();
   }
 
   static get instance() {

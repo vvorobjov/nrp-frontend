@@ -7,7 +7,6 @@ import 'jest-fetch-mock'
 import ExperimentsService from '../experiments-service'
 import endpoints from '../data/endpoints.json'
 import config from '../../../config.json';
-import AuthenticationService from '../../authentication-service';
 jest.mock('../../authentication-service');
 
 const proxyEndpoint = endpoints.proxy;
