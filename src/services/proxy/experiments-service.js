@@ -37,7 +37,7 @@ class ExperimentsService extends HttpService {
   async getExperiments() {
     if (!this.experiments) {
       const proxyEndpoint = endpoints.proxy;
-      const experimentsUrl = `${config.api.proxy.url}${proxyEndpoint.experiments.url}`;
+      const experimentsUrl = `${config.api.proxy.url}${proxyEndpoint.storage.experiments.url}`;
       let response = await this.httpRequestGET(experimentsUrl);
       this.experiments = response.json();
     }

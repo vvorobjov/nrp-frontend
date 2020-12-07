@@ -1,8 +1,5 @@
 {
     "proxy": {
-        "experiments": {
-            "url": "/storage/experiments"
-        },
         "experimentImage": {
             "url": "/experimentImage"
         },
@@ -16,7 +13,10 @@
             }
         },
         "storage": {
-            "url": "/storage"
+            "url": "/storage",
+            "experiments": {
+                "url": "/storage/experiments"
+            }
         }
     }
 }

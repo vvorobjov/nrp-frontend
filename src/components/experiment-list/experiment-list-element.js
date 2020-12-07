@@ -1,5 +1,5 @@
 import React from 'react';
-import timeDDHHMMSS from '../../app/scripts/common/filters/time-filter.js';
+import timeDDHHMMSS from '../../utility/time-filter.js';
 import ExperimentsService from '../../services/proxy/experiments-service.js';
 
 import './experiment-list-element.css';
