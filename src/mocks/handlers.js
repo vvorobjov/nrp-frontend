@@ -1,4 +1,7 @@
-import { rest } from 'msw'
+import { rest } from 'msw';
+
+import config from '../config.json';
+
 var experiments = [
   {
     'uuid': 'braitenberg_husky_holodeck_1_0_0',
@@ -65,11 +68,11 @@ var experiments = [
     'id': 'template_new_0',
     'private': true
   }
-]
+];
 export const handlers = [
-  rest.get('http://localhost:9000/proxy/storage/experiments', (req, res, ctx) => {
+  rest.get(config.api.proxy.url + '/storage/experiments', (req, res, ctx) => {
     return res(
       ctx.json(experiments)
-    )
+    );
   })
-]
+];
