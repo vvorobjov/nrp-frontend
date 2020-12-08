@@ -28,30 +28,13 @@
       "react-app/jest"
     ],
     "rules": {
-      "quotes": [
-        "error",
-        "single"
-      ],
-      "indent": [
-        "error",
-        2
-      ],
-      "curly": [
-        "error",
-        "all"
-      ],
-      "block-spacing": [
-        "error",
-        "always"
-      ],
-      "brace-style": [
-        "error",
-        "stroustrup"
-      ],
-      "comma-dangle": [
-        "error",
-        "never"
-      ],
+      "semi": [2, "always"],
+      "quotes": ["error", "single"],
+      "indent": ["error", 2],
+      "curly": ["error", "all"],
+      "block-spacing": ["error", "always"],
+      "brace-style": ["error", "stroustrup"],
+      "comma-dangle": ["error", "never"],
       "no-trailing-spaces": "error"
     }
   },
@@ -66,5 +49,9 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "devDependencies": {
+    "jest-fetch-mock": "^3.0.3",
+    "msw": "^0.23.0"
   }
 }
