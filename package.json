@@ -23,10 +23,7 @@
     "eject": "react-scripts eject"
   },
   "eslintConfig": {
-    "extends": [
-      "react-app",
-      "react-app/jest"
-    ],
+    "extends": ["react-app", "react-app/jest"],
     "rules": {
       "semi": [2, "always"],
       "quotes": ["error", "single"],
@@ -35,7 +32,8 @@
       "block-spacing": ["error", "always"],
       "brace-style": ["error", "stroustrup"],
       "comma-dangle": ["error", "never"],
-      "no-trailing-spaces": "error"
+      "no-trailing-spaces": "error",
+      "array-bracket-newline": ["error", "consistent"]
     }
   },
   "browserslist": {

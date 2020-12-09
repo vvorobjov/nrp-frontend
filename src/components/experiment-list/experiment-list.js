@@ -2,7 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 
 import UserMenu from '../user-menu/user-menu.js';
-import ExperimentsService from '../../services/proxy/experiments-service.js';
+import PrivateExperimentsService from '../../services/proxy/experiment-services/experiment-storage-service.js';
 
 import ExperimentListElement from './experiment-list-element.js';
 
@@ -18,10 +18,8 @@ export default class ExperimentList extends React.Component {
   }
 
   async componentDidMount() {
-    // replace the token here with a token found in your database in ~/.opt/nrpStorage/FS_db/users for testing
     try {
-      const experiments = await ExperimentsService.instance.getExperiments();
-      console.info(experiments);
+      const experiments = await PrivateExperimentsService.instance.getExperiments();
       this.setState({
         experiments: experiments
       });
@@ -54,7 +52,7 @@ export default class ExperimentList extends React.Component {
 
         <div className='experiment-page-banner'>
           <h1>
-            NEUROROBOTICS <br /> PLATFORM
+            Experiment <br /> Overview
           </h1>
         </div>
         <div className='experiment-page-experiments'>

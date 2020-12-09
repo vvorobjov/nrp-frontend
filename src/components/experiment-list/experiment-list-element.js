@@ -1,6 +1,6 @@
 import React from 'react';
 import timeDDHHMMSS from '../../utility/time-filter.js';
-import ExperimentsService from '../../services/proxy/experiments-service.js';
+import ExperimentStorageService from '../../services/proxy/experiment-services/experiment-storage-service.js';
 
 import './experiment-list-element.css';
 
@@ -12,7 +12,7 @@ export default class ExperimentListElement extends React.Component {
 
   async componentDidMount() {
     // retrieve the experiment thumbnail
-    let thumbnail = await ExperimentsService.instance.getThumbnail(this.props.experiment);
+    let thumbnail = await ExperimentStorageService.instance.getThumbnail(this.props.experiment.name, this.props.experiment.configuration.thumbnail);
     this.setState({thumbnail: URL.createObjectURL(thumbnail)});
   }
 
@@ -22,12 +22,12 @@ export default class ExperimentListElement extends React.Component {
     const pageState =this.props.pageState;
     config.canLaunchExperiments = true;
     return (
-      <div className='list-entry-container left-right' style={{position:'relative'}}>
+      <div className='list-entry-wrapper flex-container left-right' style={{position:'relative'}}>
         <div className='list-entry-left' style={{position:'relative'}}>
           <img className='entity-thumbnail' src={this.state.thumbnail} alt='' />
         </div>
-        <div className='list-entry-middle list-entry-container up-down'>
-          <div className='list-entry-container left-right title-line'>
+        <div className='list-entry-middle flex-container up-down'>
+          <div className='flex-container left-right title-line'>
             <div className='h4'>
               {exp.configuration.name}
             </div>
@@ -53,14 +53,14 @@ export default class ExperimentListElement extends React.Component {
               <i className={{serverIcon: 1}} title='Restricted.'></i>
             </div>
           </div>
-          <div  className='list-entry-buttons list-entry-container center' onClick={()=>{
-            return exp.id === pageState.selected
+          <div className='list-entry-buttons flex-container' onClick={()=>{
+            return exp.id === pageState.selected;
           }}>
             <div className='btn-group' role='group' >
               {config.canLaunchExperiments && exp.joinableServers.length > 0 &&
               exp.configuration.experimentFile && exp.configuration.bibiConfSr
                 ? <button onClick={()=>{
-                  return pageState.startingExperiment === exp.id
+                  return pageState.startingExperiment === exp.id;
                 }}
                 disabled = {pageState.startingExperiment === exp.id || pageState.deletingExperiment}
                 className='btn btn-default' >

@@ -1,12 +1,17 @@
-.list-entry-container {
+.list-entry-wrapper {
+  padding: 10px 0px 10px 0px;
+  border-top: 1px solid lightgray;
+}
+
+.flex-container {
   display: flex;
 }
 
-.list-entry-container.hover {
+.flex-container:hover {
   background: linear-gradient(to right, #ffffff 0%, #eeeeee 50%, #ffffff 100%);
 }
 
-.list-entry-container.selected {
+.flex-container .selected {
   background: linear-gradient(
     to right,
     rgba(255, 255, 255, 0.8) 0%,
@@ -14,7 +19,7 @@
   );
 }
 
-.list-entry-container.hover-wizard {
+.flex-container.hover-wizard {
   background: linear-gradient(
     to right,
     rgba(255, 255, 255, 0.8) 0%,
@@ -22,7 +27,7 @@
   );
 }
 
-.list-entry-container.selected-wizard {
+.flex-container.selected-wizard {
   background: linear-gradient(
     to right,
     rgba(255, 255, 255, 0.8) 0%,
@@ -30,19 +35,19 @@
   );
 }
 
-.list-entry-container.left-right {
+.flex-container.left-right {
   flex-direction: row;
 }
 
-.list-entry-container.up-down {
+.flex-container.up-down {
   flex-direction: column;
 }
 
-.list-entry-container.title-line {
+.flex-container.title-line {
   align-items: baseline;
 }
 
-.list-entry-container.center {
+.flex-container.center {
   align-items: center;
   justify-content: center;
 }
