@@ -1,7 +1,10 @@
 {
     "proxy": {
-        "experiments": {
-            "url": "/storage/experiments"
+        "availableServers": {
+            "url": "/availableServers"
+        },
+        "experimentImage": {
+            "url": "/experimentImage"
         },
         "identity": {
             "url": "/identity",
@@ -10,6 +13,12 @@
                 "groups": {
                     "url": "/identity/me/groups"
                 }
+            }
+        },
+        "storage": {
+            "url": "/storage",
+            "experiments": {
+                "url": "/storage/experiments"
             }
         }
     }

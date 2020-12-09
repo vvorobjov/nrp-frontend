@@ -10,7 +10,7 @@ class AuthenticationService {
   }
 
   static get instance() {
-    return new AuthenticationService()
+    return new AuthenticationService();
   }
 
   /**
