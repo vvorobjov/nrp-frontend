@@ -6,20 +6,20 @@
 image: node:15.0.1
 
 pipelines:
-  default:
-    - parallel:
-        - step:
-            name: Build and Test
-            caches:
-              - node
-            script:
-              - cp src/mocks/config_test.json src/config.json
-              - npm install
-              - npm test
-        - step:
-            name: Code linting
-            script:
-              - npm install eslint
-              - npx eslint .
-            caches:
-              - node
+  branches:
+    development:
+      - step:
+          name: Build and Test
+          caches:
+            - node
+          script:
+            - cp src/mocks/config_test.json src/config.json
+            - npm install
+            - npm test
+      - step:
+          name: Code linting
+          script:
+            - npm install eslint
+            - npx eslint .
+          caches:
+            - node
