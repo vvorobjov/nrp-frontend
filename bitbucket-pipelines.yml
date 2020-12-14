@@ -13,7 +13,7 @@ pipelines:
             caches:
               - node
             script:
-              - cp src/mocks/config_test.json scr/config.json
+              - cp src/mocks/config_test.json src/config.json
               - npm install
               - npm test
         - step:
