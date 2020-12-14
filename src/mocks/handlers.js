@@ -93,7 +93,7 @@ export const handlers = [
       ctx.json(experiments)
     );
   }),
-  rest.get(`${config.api.proxy.url}${config.api.proxy.url}${endpoints.proxy.availableServers.url}`, (req, res, ctx) => {
+  rest.get(`${config.api.proxy.url}${endpoints.proxy.availableServers.url}`, (req, res, ctx) => {
     return res(
       ctx.json(availableServers)
     );
