@@ -1,8 +1,26 @@
 import { rest } from 'msw';
 
 import config from '../config.json';
+import endpoints from '../services/proxy/data/endpoints';
 
-var experiments = [
+const availableServers = [
+  {
+    'internalIp': 'http://localhost:8080',
+    'gzweb': {
+      'assets': 'http://localhost:8080/assets',
+      'nrp-services': 'http://localhost:8080',
+      'videoStreaming': 'http://localhost:8080/webstream/',
+      'websocket': 'ws://localhost:8080/gzbridge'
+    },
+    'rosbridge': {
+      'websocket': 'ws://localhost:8080/rosbridge'
+    },
+    'serverJobLocation': 'local',
+    'id': 'localhost'
+  }
+];
+
+const experiments = [
   {
     'uuid': 'braitenberg_husky_holodeck_1_0_0',
     'name': 'braitenberg_husky_holodeck_1_0_0',
@@ -70,9 +88,14 @@ var experiments = [
   }
 ];
 export const handlers = [
-  rest.get(config.api.proxy.url + '/storage/experiments', (req, res, ctx) => {
+  rest.get(`${config.api.proxy.url}${endpoints.proxy.storage.experiments.url}`, (req, res, ctx) => {
     return res(
       ctx.json(experiments)
+    );
+  }),
+  rest.get(`${config.api.proxy.url}${config.api.proxy.url}${endpoints.proxy.availableServers.url}`, (req, res, ctx) => {
+    return res(
+      ctx.json(availableServers)
     );
   })
 ];

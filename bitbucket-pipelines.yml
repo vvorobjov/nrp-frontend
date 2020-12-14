@@ -13,6 +13,7 @@ pipelines:
             caches:
               - node
             script:
+              - cp src/mocks/config_test.json scr/config.json
               - npm install
               - npm test
         - step:
@@ -22,8 +23,3 @@ pipelines:
               - npx eslint .
             caches:
               - node
-        - step:
-            name: Coverage
-            script:
-              - git archive --remote=ssh://git@bitbucket.org/hbpneurorobotics/admin-scripts.git refs/heads/master nrp_cobertura_check | tar xf -
-              - ./nrp_cobertura_check reports/coverage/*/cobertura-coverage.xml
