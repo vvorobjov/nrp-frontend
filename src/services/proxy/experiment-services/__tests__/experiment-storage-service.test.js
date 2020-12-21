@@ -18,6 +18,7 @@ test('fetches the list of experiments', async () => {
   expect(ExperimentStorageService.instance.performRequest).toHaveBeenCalledWith(experimentsUrl, ExperimentStorageService.instance.options);
   expect(experiments[0].name).toBe('braitenberg_husky_holodeck_1_0_0');
   expect(experiments[1].configuration.maturity).toBe('production');
+  expect(experiments[1].availableServers[0].internalIp).toBe('http://localhost:8080');
 });
 
 test('makes sure that invoking the constructor fails with the right message', () => {

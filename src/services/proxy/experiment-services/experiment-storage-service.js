@@ -41,7 +41,7 @@ class ExperimentStorageService extends HttpService {
       let response = await this.httpRequestGET(experimentsUrl);
       this.experiments = await response.json();
       this.sortExperiments();
-      this.fillExperimentDetails();
+      await this.fillExperimentDetails();
     }
 
     return this.experiments;
