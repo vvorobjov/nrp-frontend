@@ -2,7 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 
 import UserMenu from '../user-menu/user-menu.js';
-import PrivateExperimentsService from '../../services/proxy/experiment-services/experiment-storage-service.js';
+import ExperimentStorageService from '../../services/experiments/storage/experiment-storage-service.js';
 
 import ExperimentListElement from './experiment-list-element.js';
 
@@ -19,7 +19,7 @@ export default class ExperimentList extends React.Component {
 
   async componentDidMount() {
     try {
-      const experiments = await PrivateExperimentsService.instance.getExperiments();
+      const experiments = await ExperimentStorageService.instance.getExperiments();
       this.setState({
         experiments: experiments
       });

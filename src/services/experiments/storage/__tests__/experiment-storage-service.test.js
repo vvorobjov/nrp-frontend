@@ -5,7 +5,7 @@ import '@testing-library/jest-dom';
 import 'jest-fetch-mock';
 
 import ExperimentStorageService from '../experiment-storage-service';
-import endpoints from '../../data/endpoints.json';
+import endpoints from '../../../proxy/data/endpoints.json';
 import config from '../../../../config.json';
 jest.mock('../../../authentication-service');
 
@@ -15,7 +15,8 @@ const experimentsUrl = `${config.api.proxy.url}${proxyEndpoint.storage.experimen
 test('fetches the list of experiments', async () => {
   jest.spyOn(ExperimentStorageService.instance, 'performRequest');
   const experiments = await ExperimentStorageService.instance.getExperiments();
-  expect(ExperimentStorageService.instance.performRequest).toHaveBeenCalledWith(experimentsUrl, ExperimentStorageService.instance.options);
+  expect(ExperimentStorageService.instance.performRequest)
+    .toHaveBeenCalledWith(experimentsUrl, ExperimentStorageService.instance.options);
   expect(experiments[0].name).toBe('braitenberg_husky_holodeck_1_0_0');
   expect(experiments[1].configuration.maturity).toBe('production');
   expect(experiments[1].availableServers[0].internalIp).toBe('http://localhost:8080');

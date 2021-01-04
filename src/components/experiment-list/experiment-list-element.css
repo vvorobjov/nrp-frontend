@@ -102,3 +102,15 @@
   margin-top: 5px;
   margin-bottom: 5px;
 }
+
+.server-status-available {
+  background-color: #449d44;
+}
+
+.server-status-unavailable {
+  background-color: #d9534f;
+}
+
+.server-status-restricted {
+  background-color: #f0ad4e;
+}

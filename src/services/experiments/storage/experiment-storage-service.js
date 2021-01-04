@@ -1,7 +1,9 @@
-import endpoints from '../data/endpoints.json';
-import config from '../../../config.json';
-
 import { HttpService } from '../../http-service.js';
+
+import endpoints from '../../proxy/data/endpoints.json';
+import config from '../../../config.json';
+const storageExperimentsURL = `${config.api.proxy.url}${endpoints.proxy.storage.experiments.url}`;
+const availableServersURL = `${config.api.proxy.url}${endpoints.proxy.availableServers.url}`;
 
 let _instance = null;
 const SINGLETON_ENFORCER = Symbol();
@@ -12,11 +14,10 @@ const SINGLETON_ENFORCER = Symbol();
  */
 class ExperimentStorageService extends HttpService {
   constructor(enforcer) {
-    if (enforcer !== SINGLETON_ENFORCER) {
-      throw new Error('Use ExperimentStorageService.instance');
-    }
-
     super();
+    if (enforcer !== SINGLETON_ENFORCER) {
+      throw new Error('Use ' + this.constructor.name + '.instance');
+    }
   }
 
   static get instance() {
@@ -36,9 +37,7 @@ class ExperimentStorageService extends HttpService {
    */
   async getExperiments() {
     if (!this.experiments) {
-      const proxyEndpoint = endpoints.proxy;
-      const experimentsUrl = `${config.api.proxy.url}${proxyEndpoint.storage.experiments.url}`;
-      let response = await this.httpRequestGET(experimentsUrl);
+      let response = await this.httpRequestGET(storageExperimentsURL);
       this.experiments = await response.json();
       this.sortExperiments();
       await this.fillExperimentDetails();
@@ -55,7 +54,8 @@ class ExperimentStorageService extends HttpService {
    * @returns {Blob} image object
    */
   async getThumbnail(experimentName, thumbnailFilename) {
-    let url = config.api.proxy.url + endpoints.proxy.storage.url + '/' + experimentName + '/' + thumbnailFilename + '?byname=true';
+    let url = config.api.proxy.url + endpoints.proxy.storage.url +
+      '/' + experimentName + '/' + thumbnailFilename + '?byname=true';
     let response = await this.httpRequestGET(url);
     let image = await response.blob();
     return image;
@@ -78,8 +78,6 @@ class ExperimentStorageService extends HttpService {
   }
 
   async fillExperimentDetails() {
-    //TODO: needs to go into its own service
-    const availableServersURL = `${config.api.proxy.url}${endpoints.proxy.availableServers.url}`;
     let response = await this.httpRequestGET(availableServersURL);
     let availableServers = await response.json();
 

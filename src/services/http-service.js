@@ -19,8 +19,11 @@ export class HttpService {
         'Content-Type': 'application/json',
         Referer: 'http://localhost:9000/'
       },
-      redirect: 'follow', // manual, *follow, error
-      referrerPolicy: 'no-referrer' // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
+      // redirect: manual, *follow, error
+      redirect: 'follow',
+      // referrerPolicy: no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin,
+      // strict-origin, strict-origin-when-cross-origin, unsafe-url
+      referrerPolicy: 'no-referrer'
       //body: JSON.stringify(data) // body data type must match "Content-Type" header
     };
   }
@@ -30,9 +33,13 @@ export class HttpService {
    * @param url - the url to perform the request
    * @param options - the http options object
    */
-  performRequest = async (url, options) => {
+  performRequest = async (url, options, data) => {
     // Add authorization header
     options.headers.Authorization = `Bearer ${AuthenticationService.instance.getStoredToken()}`;
+    if (data) {
+      console.info(options);
+      options.body = data;
+    }
 
     const response = await fetch(url, options);
 
@@ -66,12 +73,12 @@ export class HttpService {
    * Perform a POST http request to a url
    * @param url - the url to perform the request
    */
-  httpRequestPOST = (url) => {
+  httpRequestPOST = (url, data) => {
     // copy to avoid messing up the options object in case we need to reuse it
     const { ...postOptions } = this.options;
     postOptions.method = 'POST';
 
-    return this.performRequest(url, postOptions);
+    return this.performRequest(url, postOptions, data);
   };
 
   /**

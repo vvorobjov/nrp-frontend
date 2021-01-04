@@ -1,31 +1,103 @@
 import React from 'react';
 import timeDDHHMMSS from '../../utility/time-filter.js';
-import ExperimentStorageService from '../../services/proxy/experiment-services/experiment-storage-service.js';
+import ExperimentStorageService from '../../services/experiments/storage/experiment-storage-service.js';
+import ExperimentExecutionService from '../../services/experiments/execution/experiment-execution-service.js';
 
 import './experiment-list-element.css';
+import ExperimentServerService from '../../services/experiments/execution/experiment-server-service.js';
+
+const CLUSTER_THRESHOLDS = {
+  UNAVAILABLE: 2,
+  AVAILABLE: 4
+};
+const SHORT_DESCRIPTION_LENGTH = 200;
 
 export default class ExperimentListElement extends React.Component {
   constructor(props) {
     super(props);
     this.state = {};
+
+    this.canLaunchExperiment = (this.props.experiment.private && this.props.experiment.owned) ||
+    !this.props.experiment.private;
+
+    this.wrapperRef = React.createRef();
+    this.handleClickOutside = this.handleClickOutside.bind(this);
   }
 
   async componentDidMount() {
     // retrieve the experiment thumbnail
-    let thumbnail = await ExperimentStorageService.instance.getThumbnail(this.props.experiment.name, this.props.experiment.configuration.thumbnail);
-    this.setState({thumbnail: URL.createObjectURL(thumbnail)});
+    let thumbnail = await ExperimentStorageService.instance.getThumbnail(
+      this.props.experiment.name,
+      this.props.experiment.configuration.thumbnail);
+    this.setState({ thumbnail: URL.createObjectURL(thumbnail) });
+
+    document.addEventListener('mousedown', this.handleClickOutside);
+  }
+
+  componentWillUnmount() {
+    document.removeEventListener('mousedown', this.handleClickOutside);
+  }
+
+  handleClickOutside(event) {
+    if (this.wrapperRef && !this.wrapperRef.current.contains(event.target)) {
+      this.setState({selected: false});
+    }
+  }
+
+  getAvailabilityInfo() {
+    const experiment = this.props.experiment;
+    const clusterAvailability = ExperimentServerService.instance.getClusterAvailability();
+
+    let status;
+    if (clusterAvailability && clusterAvailability.free > CLUSTER_THRESHOLDS.AVAILABLE) {
+      status = 'Available';
+    }
+    else if (!experiment.availableServers || experiment.availableServers.length === 0) {
+      status = 'Unavailable';
+    }
+    else {
+      status = 'Restricted';
+    }
+
+    let cluster = `Cluster availability: ${clusterAvailability.free} / ${clusterAvailability.total}`;
+    let backends = `Backends: ${experiment.availableServers.length}`;
+
+    return `${status}\n${cluster}\n${backends}`;
+  }
+
+  getServerStatusClass() {
+    const experiment = this.props.experiment;
+    const clusterAvailability = ExperimentServerService.instance.getClusterAvailability();
+
+    let status = '';
+    if (clusterAvailability && clusterAvailability.free > CLUSTER_THRESHOLDS.AVAILABLE) {
+      status = 'server-status-available';
+    }
+    else if (!experiment.availableServers || experiment.availableServers.length === 0) {
+      status = 'server-status-unavailable';
+    }
+    else {
+      status = 'server-status-restricted';
+    }
+
+    return status;
   }
 
   render() {
     const exp = this.props.experiment;
     const config = this.props.experiment.configuration;
-    const pageState =this.props.pageState;
-    config.canLaunchExperiments = true;
+    const pageState = this.props.pageState;
+
     return (
-      <div className='list-entry-wrapper flex-container left-right' style={{position:'relative'}}>
-        <div className='list-entry-left' style={{position:'relative'}}>
+      <div className='list-entry-wrapper flex-container left-right'
+        style={{ position: 'relative' }}
+        onClick={() => this.setState({ selected: true})}
+        ref={this.wrapperRef}>
+
+        <div className='list-entry-left' style={{ position: 'relative' }}>
           <img className='entity-thumbnail' src={this.state.thumbnail} alt='' />
         </div>
+
         <div className='list-entry-middle flex-container up-down'>
           <div className='flex-container left-right title-line'>
             <div className='h4'>
@@ -34,57 +106,66 @@ export default class ExperimentListElement extends React.Component {
             <br />
           </div>
           <div>
-            {exp.configuration.description}
-            <br/>
+            {!this.state.selected && exp.configuration.description.length > SHORT_DESCRIPTION_LENGTH ?
+              exp.configuration.description.substr(0, SHORT_DESCRIPTION_LENGTH) + ' ...' :
+              exp.configuration.description}
+            <br />
           </div>
-          <div style={{position:'relative'}}>
+
+          {this.state.selected &&
+          <div style={{ position: 'relative' }} >
             <i>
               Timeout:
               {timeDDHHMMSS(exp.configuration.timeout)}
-              ({(exp.configuration.timeoutType==='simulation' ? 'simulation' : 'real')} time)
+              ({(exp.configuration.timeoutType === 'simulation' ? 'simulation' : 'real')} time)
             </i>
             <br />
             <i>
               Brain processes: {exp.configuration.brainProcesses}
             </i>
             <br />
-            <div style={{display:'flex'}}>
-              <i style={{marginTop: '4px'}}>Server status: </i>
-              <i className={{serverIcon: 1}} title='Restricted.'></i>
+            <div style={{ display: 'flex' }}>
+              <i style={{ marginTop: '4px' }}>Server status: </i>
+              <i className={'server-icon ' + this.getServerStatusClass()}
+                title={this.getAvailabilityInfo()}></i>
             </div>
-          </div>
-          <div className='list-entry-buttons flex-container' onClick={()=>{
+          </div>}
+
+          {this.state.selected &&
+          <div className='list-entry-buttons flex-container' onClick={() => {
             return exp.id === pageState.selected;
           }}>
             <div className='btn-group' role='group' >
-              {config.canLaunchExperiments && exp.joinableServers.length > 0 &&
-              exp.configuration.experimentFile && exp.configuration.bibiConfSr
-                ? <button onClick={()=>{
-                  return pageState.startingExperiment === exp.id;
+              {this.canLaunchExperiment && exp.availableServers.length > 0 &&
+                exp.configuration.experimentFile && exp.configuration.bibiConfSrc
+                ? <button onClick={() => {
+                  return ExperimentExecutionService.instance.startingExperiment === exp.id ||
+                    ExperimentExecutionService.instance.startNewExperiment(exp, false);
                 }}
-                disabled = {pageState.startingExperiment === exp.id || pageState.deletingExperiment}
+                disabled={pageState.startingExperiment === exp.id || pageState.deletingExperiment}
                 className='btn btn-default' >
                   <i className='fa fa-plus'></i> Launch
                 </button>
-                :null}
+                : null}
 
-              {config.canLaunchExperiments && exp.joinableServers.length === 0
-                ?<button className='btn btn-default disabled enable-tooltip'
+              {this.canLaunchExperiment && exp.availableServers.length === 0
+                ? <button className='btn btn-default disabled enable-tooltip'
                   title='Sorry, no available servers.'>
                   <i className='fa fa-plus'></i> Launch
                 </button>
                 : null}
 
-              {config.canLaunchExperiments && config.brainProcesses > 1 && exp.joinableServers.length > 0 &&
-              exp.configuration.experimentFile && exp.configuration.bibiConfSrc
+              {this.canLaunchExperiment && config.brainProcesses > 1 &&
+                exp.availableServers.length > 0 &&
+                exp.configuration.experimentFile && exp.configuration.bibiConfSrc
 
                 ? <button className='btn btn-default'>
                   <i className='fa fa-plus'></i> Launch in Single Process Mode
                 </button>
                 : null}
 
-              {config.canLaunchExperiments && exp.joinableServers.length > 1 &&
-                  exp.configuration.experimentFile && exp.configuration.bibiConfSrc
+              {this.canLaunchExperiment && exp.availableServers.length > 1 &&
+                exp.configuration.experimentFile && exp.configuration.bibiConfSrc
 
                 ? <button className='btn btn-default' >
                   <i className='fa fa-layer-group'></i> Launch Multiple
@@ -92,55 +173,56 @@ export default class ExperimentListElement extends React.Component {
                 : null}
 
               {/* isPrivateExperiment */}
-              {config.canLaunchExperiments
+              {this.canLaunchExperiment
                 ? <button className='btn btn-default'>
                   <i className='fa fa-times'></i> Delete
                 </button>
                 : null}
 
               {/* Records button */}
-              {config.canLaunchExperiments
+              {this.canLaunchExperiment
                 ? <button className='btn btn-default'>
                   <i className='fa fa-sign-in'></i> Recordings »
                 </button>
                 : null}
 
               {/* Export button */}
-              {config.canLaunchExperiments
+              {this.canLaunchExperiment
                 ? <button className='btn btn-default'>
                   <i className='fa fa-file-export'></i> Export
                 </button>
                 : null}
 
               {/* Join button */}
-              {config.canLaunchExperiments && exp.joinableServers.length > 0
+              {this.canLaunchExperiment && exp.joinableServers.length > 0
                 ? <button className='btn btn-default' >
                   <i className='fa fa-sign-in'></i> Simulations »
                 </button>
                 : null}
 
               {/* Clone button */}
-              {config.canCloneExperiments && (!exp.configuration.privateStorage || (exp.configuration.experimentFile && exp.configuration.bibiConfSrc))
+              {config.canCloneExperiments && (!exp.configuration.privateStorage ||
+                (exp.configuration.experimentFile && exp.configuration.bibiConfSrc))
                 ? <button className='btn btn-default'>
                   <i className='fa fa-pencil-alt'></i> Clone
                 </button>
                 : null}
 
               {/* Files button */}
-              {config.canLaunchExperiments
+              {this.canLaunchExperiment
                 ? <button className='btn btn-default' >
                   <i className='fa fa-list-alt'></i> Files
                 </button>
                 : null}
 
               {/* Shared button */}
-              {config.canLaunchExperiments
-                ? <button  className='btn btn-default'>
+              {this.canLaunchExperiment
+                ? <button className='btn btn-default'>
                   <i className='fas fa-share-alt'></i> Share
                 </button>
                 : null}
             </div>
-          </div>
+          </div>}
         </div>
       </div>
     );

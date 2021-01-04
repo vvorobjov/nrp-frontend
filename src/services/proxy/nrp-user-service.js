@@ -14,11 +14,11 @@ const SINGLETON_ENFORCER = Symbol();
  */
 class NrpUserService extends HttpService {
   constructor(enforcer) {
+    super();
     if (enforcer !== SINGLETON_ENFORCER) {
-      throw new Error('Use NrpUserService.instance');
+      throw new Error('Use ' + this.constructor.name + '.instance');
     }
 
-    super();
 
     this.PROXY_URL = config.api.proxy.url;
     this.IDENTITY_BASE_URL = `${this.PROXY_URL}${endpoints.proxy.identity.url}`;

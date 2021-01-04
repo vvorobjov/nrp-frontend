@@ -9,7 +9,7 @@ const SINGLETON_ENFORCER = Symbol();
 class AuthenticationService {
   constructor(enforcer) {
     if (enforcer !== SINGLETON_ENFORCER) {
-      throw new Error('Use AuthenticationService.instance');
+      throw new Error('Use ' + this.constructor.name + '.instance');
     }
 
     this.CLIENT_ID = config.auth.clientId;
@@ -29,7 +29,8 @@ class AuthenticationService {
 
   /**
    * Checks if the current page URL contains access tokens.
-   * This happens when the successfully logging in at the proxy login page and being redirected back with the token info.
+   * This happens when the successfully logging in at the proxy login page and
+   * being redirected back with the token info.
    * Will automatically remove additional access info and present a clean URL after being redirected.
    */
   checkForNewTokenToStore() {
@@ -83,7 +84,8 @@ class AuthenticationService {
   /**
    * Opens the proxy's authentication page.
    *
-   * @param {*} url The URL of the authentication page. If not an absolute URL it is assumed to be a subpage of the proxy.
+   * @param {*} url The URL of the authentication page.
+   * If not an absolute URL it is assumed to be a subpage of the proxy.
    */
   openAuthenticationPage(url) {
     this.clearStoredToken();

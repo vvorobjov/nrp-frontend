@@ -16,6 +16,8 @@
     "react-dom": "^17.0.1",
     "react-router-dom": "5.2.0",
     "react-scripts": "4.0.0",
+    "roslib": "1.1.0",
+    "rxjs": "6.6.3",
     "ts-node": "^9.1.1",
     "web-vitals": "^0.2.4"
   },
@@ -26,17 +28,45 @@
     "eject": "react-scripts eject"
   },
   "eslintConfig": {
-    "extends": ["react-app", "react-app/jest"],
+    "extends": [
+      "react-app",
+      "react-app/jest"
+    ],
     "rules": {
-      "semi": [2, "always"],
-      "quotes": ["error", "single"],
-      "indent": ["error", 2],
-      "curly": ["error", "all"],
-      "block-spacing": ["error", "always"],
-      "brace-style": ["error", "stroustrup"],
-      "comma-dangle": ["error", "never"],
+      "semi": [
+        2,
+        "always"
+      ],
+      "quotes": [
+        "error",
+        "single"
+      ],
+      "indent": [
+        "error",
+        2
+      ],
+      "curly": [
+        "error",
+        "all"
+      ],
+      "block-spacing": [
+        "error",
+        "always"
+      ],
+      "brace-style": [
+        "error",
+        "stroustrup"
+      ],
+      "comma-dangle": [
+        "error",
+        "never"
+      ],
       "no-trailing-spaces": "error",
-      "array-bracket-newline": ["error", "consistent"]
+      "array-bracket-newline": [
+        "error",
+        "consistent"
+      ],
+      "max-len": ["error", { "code": 120 }]
     }
   },
   "browserslist": {
