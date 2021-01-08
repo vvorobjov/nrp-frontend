@@ -5,6 +5,7 @@ import UserMenu from '../user-menu/user-menu.js';
 import ExperimentStorageService from '../../services/experiments/storage/experiment-storage-service.js';
 
 import ExperimentListElement from './experiment-list-element.js';
+import ImportExperimentButtons from './import-experiment-buttons.js';
 
 import './experiment-list.css';
 
