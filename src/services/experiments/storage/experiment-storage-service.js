@@ -3,7 +3,6 @@ import { HttpService } from '../../http-service.js';
 import endpoints from '../../proxy/data/endpoints.json';
 import config from '../../../config.json';
 const storageExperimentsURL = `${config.api.proxy.url}${endpoints.proxy.storage.experiments.url}`;
-const availableServersURL = `${config.api.proxy.url}${endpoints.proxy.availableServers.url}`;
 
 let _instance = null;
 const SINGLETON_ENFORCER = Symbol();
@@ -35,8 +34,9 @@ class ExperimentStorageService extends HttpService {
    *
    * @return experiments - the list of template experiments
    */
-  async getExperiments() {
-    if (!this.experiments) {
+  async getExperiments(forceUpdate = false) {
+    console.info('getExperiments');
+    if (!this.experiments || forceUpdate) {
       let response = await this.httpRequestGET(storageExperimentsURL);
       this.experiments = await response.json();
       this.sortExperiments();
@@ -78,11 +78,7 @@ class ExperimentStorageService extends HttpService {
   }
 
   async fillExperimentDetails() {
-    let response = await this.httpRequestGET(availableServersURL);
-    let availableServers = await response.json();
-
     this.experiments.forEach(exp => {
-      exp.availableServers = availableServers;
       if (!exp.configuration.brainProcesses && exp.configuration.bibiConfSrc) {
         exp.configuration.brainProcesses = 1;
       }

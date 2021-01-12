@@ -47,10 +47,11 @@ class ExperimentExecutionService extends HttpService {
 
     this.startingExperiment = experiment;
 
+    console.info(ExperimentServerService.instance.getServerAvailability(true));
     let fatalErrorOccurred = false,
       serversToTry = experiment.devServer
         ? [experiment.devServer]
-        : experiment.availableServers.map(s => s.id);
+        : ExperimentServerService.instance.getServerAvailability(true).map(s => s.id);
 
     let brainProcesses = launchSingleMode ? 1 : experiment.configuration.brainProcesses;
 

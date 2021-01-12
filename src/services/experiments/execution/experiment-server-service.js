@@ -11,12 +11,14 @@ import endpoints from '../../proxy/data/endpoints.json';
 import config from '../../../config.json';
 const proxyServerURL = `${config.api.proxy.url}${endpoints.proxy.server.url}`;
 const slurmMonitorURL = `${config.api.slurmmonitor.url}/api/v1/partitions/interactive`;
+const availableServersURL = `${config.api.proxy.url}${endpoints.proxy.availableServers.url}`;
 
 let _instance = null;
 const SINGLETON_ENFORCER = Symbol();
 
 let rosConnections = new Map();
 const SLURM_MONITOR_POLL_INTERVAL = 5000;
+const SERVER_AVAILABILITY_POLL_INTERVAL = 5000;
 let clusterAvailability = { free: 'N/A', total: 'N/A' };
 
 /**
@@ -49,7 +51,12 @@ class ExperimentServerService extends HttpService {
       .pipe(map(({ free, nodes }) => ({ free, total: nodes[3] })))
       .pipe(multicast(new Subject())).refCount();
 
+    this.listOfAvailableServers = [];
+
     this.startUpdates();
+    window.onbeforeunload = () => {
+      this.stopUpdates();
+    };
   }
 
   static get instance() {
@@ -61,20 +68,34 @@ class ExperimentServerService extends HttpService {
   }
 
   /**
+   * Get available servers.
+   */
+  get availableServers() {
+    return this.listOfAvailableServers;
+  }
+
+  /**
    * Start polling updates.
    */
   startUpdates() {
     this.clusterAvailabilitySubscription = this.clusterAvailabilityObservable.subscribe(
       availability => (clusterAvailability = availability)
     );
+
+    this.timerPollServerAvailability = setInterval(
+      () => {
+        this.getServerAvailability(true);
+      },
+      SERVER_AVAILABILITY_POLL_INTERVAL
+    );
   }
 
   /**
    * Stop polling updates.
    */
-  //TODO: find proper place to call
   stopUpdates() {
     this.clusterAvailabilitySubscription && this.clusterAvailabilitySubscription.unsubscribe();
+    this.timerPollServerAvailability && clearInterval(this.timerPollServerAvailability);
   }
 
   /**
@@ -83,6 +104,19 @@ class ExperimentServerService extends HttpService {
    */
   getClusterAvailability() {
     return clusterAvailability;
+  }
+
+  getServerAvailability(forceUpdate = false) {
+    if (!this.listOfAvailableServers || forceUpdate) {
+      let update = async () => {
+        let response = await this.httpRequestGET(availableServersURL);
+        this.listOfAvailableServers = await response.json();
+      };
+      update();
+      this.emit(ExperimentServerService.EVENTS.UPDATE_SERVER_AVAILABILITY, this.listOfAvailableServers);
+    }
+
+    return this.listOfAvailableServers;
   }
 
   /**
@@ -203,5 +237,9 @@ class ExperimentServerService extends HttpService {
     });
   };
 }
+
+ExperimentServerService.EVENTS = Object.freeze({
+  UPDATE_SERVER_AVAILABILITY: 'UPDATE_SERVER_AVAILABILITY'
+});
 
 export default ExperimentServerService;

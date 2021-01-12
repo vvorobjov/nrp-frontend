@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 
 import UserMenu from '../user-menu/user-menu.js';
 import ExperimentStorageService from '../../services/experiments/storage/experiment-storage-service.js';
+import ExperimentServerService from '../../services/experiments/execution/experiment-server-service.js';
 
 import ExperimentListElement from './experiment-list-element.js';
 
@@ -60,7 +61,8 @@ export default class ExperimentList extends React.Component {
             {this.state.experiments.map(experiment => {
               return (
                 <li key={experiment.id} className='nostyle'>
-                  <ExperimentListElement experiment={experiment} pageState={this.state.pageState} />
+                  <ExperimentListElement experiment={experiment}
+                    pageState={this.state.pageState} />
                 </li>
               );
             }
