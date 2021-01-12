@@ -1,8 +1,8 @@
 import React from 'react';
 import timeDDHHMMSS from '../../utility/time-filter.js';
 import ExperimentStorageService from '../../services/experiments/storage/experiment-storage-service.js';
-import ExperimentExecutionService from '../../services/experiments/execution/experiment-execution-service.js';
 import ExperimentServerService from '../../services/experiments/execution/experiment-server-service.js';
+import ExperimentExecutionService from '../../services/experiments/execution/experiment-execution-service.js';
 
 import './experiment-list-element.css';
 
@@ -15,7 +15,7 @@ const SHORT_DESCRIPTION_LENGTH = 200;
 export default class ExperimentListElement extends React.Component {
   constructor(props) {
     super(props);
-    this.state = {availableServers: [], experimentStarting: false};
+    this.state = {};
 
     this.canLaunchExperiment = (this.props.experiment.private && this.props.experiment.owned) ||
     !this.props.experiment.private;
@@ -34,40 +34,11 @@ export default class ExperimentListElement extends React.Component {
 
     this.handleClickOutside = this.handleClickOutside.bind(this);
     document.addEventListener('mousedown', this.handleClickOutside);
-
-    this.onUpdateServerAvailability = this.onUpdateServerAvailability.bind(this);
-    ExperimentServerService.instance.addListener(
-      ExperimentServerService.EVENTS.UPDATE_SERVER_AVAILABILITY,
-      this.onUpdateServerAvailability
-    );
-
-    this.onStartExperiment = this.onStartExperiment.bind(this);
-    ExperimentExecutionService.instance.addListener(
-      ExperimentExecutionService.EVENTS.START_EXPERIMENT,
-      this.onStartExperiment
-    );
   }
 
   componentWillUnmount() {
     document.removeEventListener('mousedown', this.handleClickOutside);
-
-    ExperimentServerService.instance.removeListener(
-      ExperimentServerService.EVENTS.UPDATE_SERVER_AVAILABILITY,
-      this.onUpdateServerAvailability
-    );
-    ExperimentServerService.instance.removeListener(
-      ExperimentExecutionService.EVENTS.START_EXPERIMENT,
-      this.onStartExperiment
-    );
   }
-
-  onUpdateServerAvailability(availableServers) {
-    this.setState({availableServers: availableServers});
-  };
-
-  onStartExperiment(experiment) {
-    this.setState({experimentStarting: experiment === this.props.experiment});
-  };
 
   handleClickOutside(event) {
     if (this.wrapperRef && !this.wrapperRef.current.contains(event.target)) {
@@ -82,7 +53,7 @@ export default class ExperimentListElement extends React.Component {
     if (clusterAvailability && clusterAvailability.free > CLUSTER_THRESHOLDS.AVAILABLE) {
       status = 'Available';
     }
-    else if (!this.state.availableServers || this.state.availableServers.length === 0) {
+    else if (!this.props.availableServers || this.props.availableServers.length === 0) {
       status = 'Unavailable';
     }
     else {
@@ -90,7 +61,7 @@ export default class ExperimentListElement extends React.Component {
     }
 
     let cluster = `Cluster availability: ${clusterAvailability.free} / ${clusterAvailability.total}`;
-    let backends = `Backends: ${this.state.availableServers.length}`;
+    let backends = `Backends: ${this.props.availableServers.length}`;
 
     return `${status}\n${cluster}\n${backends}`;
   }
@@ -102,7 +73,7 @@ export default class ExperimentListElement extends React.Component {
     if (clusterAvailability && clusterAvailability.free > CLUSTER_THRESHOLDS.AVAILABLE) {
       status = 'server-status-available';
     }
-    else if (!this.state.availableServers || this.state.availableServers.length === 0) {
+    else if (!this.props.availableServers || this.props.availableServers.length === 0) {
       status = 'server-status-unavailable';
     }
     else {
@@ -165,20 +136,20 @@ export default class ExperimentListElement extends React.Component {
             return exp.id === pageState.selected;
           }}>
             <div className='btn-group' role='group' >
-              {this.canLaunchExperiment && this.state.availableServers.length > 0 &&
+              {this.canLaunchExperiment && this.props.availableServers.length > 0 &&
                 exp.configuration.experimentFile && exp.configuration.bibiConfSrc
                 ? <button onClick={() => {
                   ExperimentExecutionService.instance.startNewExperiment(exp, false);
                 }}
                 //TODO: adjust disabled state to be reactive
-                disabled={this.state.experimentStarting /*|| pageState.deletingExperiment*/}
+                disabled={this.props.startingExperiment === exp /*|| pageState.deletingExperiment*/}
                 className='btn btn-default' >
                   <i className='fa fa-plus'></i> Launch
                 </button>
                 : null}
 
-              {this.canLaunchExperiment && this.state.availableServers.length === 0
-                ? <button disabled={this.canLaunchExperiment && this.state.availableServers.length === 0}
+              {this.canLaunchExperiment && this.props.availableServers.length === 0
+                ? <button disabled={this.canLaunchExperiment && this.props.availableServers.length === 0}
                   className='btn btn-default disabled enable-tooltip'
                   title='Sorry, no available servers.'>
                   <i className='fa fa-plus'></i> Launch
@@ -186,7 +157,7 @@ export default class ExperimentListElement extends React.Component {
                 : null}
 
               {this.canLaunchExperiment && config.brainProcesses > 1 &&
-                this.state.availableServers.length > 0 &&
+                this.props.availableServers.length > 0 &&
                 exp.configuration.experimentFile && exp.configuration.bibiConfSrc
 
                 ? <button className='btn btn-default'>
@@ -194,7 +165,7 @@ export default class ExperimentListElement extends React.Component {
                 </button>
                 : null}
 
-              {this.canLaunchExperiment && this.state.availableServers.length > 1 &&
+              {this.canLaunchExperiment && this.props.availableServers.length > 1 &&
                 exp.configuration.experimentFile && exp.configuration.bibiConfSrc
 
                 ? <button className='btn btn-default' >
