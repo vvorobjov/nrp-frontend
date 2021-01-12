@@ -18,7 +18,7 @@ const SINGLETON_ENFORCER = Symbol();
 
 let rosConnections = new Map();
 const SLURM_MONITOR_POLL_INTERVAL = 5000;
-const SERVER_AVAILABILITY_POLL_INTERVAL = 3000;
+const POLL_INTERVAL_SERVER_AVAILABILITY = 3000;
 let clusterAvailability = { free: 'N/A', total: 'N/A' };
 
 /**
@@ -31,6 +31,7 @@ class ExperimentServerService extends HttpService {
       throw new Error('Use ' + this.constructor.name + '.instance');
     }
 
+    //TODO: a bit too much code for a constructor, move into its own function
     this.clusterAvailabilityObservable = timer(0, SLURM_MONITOR_POLL_INTERVAL)
       .pipe(switchMap(() => {
         try {
@@ -80,7 +81,7 @@ class ExperimentServerService extends HttpService {
       () => {
         this.getServerAvailability(true);
       },
-      SERVER_AVAILABILITY_POLL_INTERVAL
+      POLL_INTERVAL_SERVER_AVAILABILITY
     );
   }
 

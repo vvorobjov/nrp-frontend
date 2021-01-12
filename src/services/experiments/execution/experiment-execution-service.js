@@ -45,7 +45,6 @@ class ExperimentExecutionService extends HttpService {
     NrpAnalyticsService.instance.eventTrack('Start', { category: 'Experiment' });
     NrpAnalyticsService.instance.tickDurationEvent('Server-initialization');
 
-    //this.startingExperiment = experiment;
     ExperimentExecutionService.instance.emit(ExperimentExecutionService.EVENTS.START_EXPERIMENT, experiment);
 
     let fatalErrorOccurred = false,
@@ -155,7 +154,6 @@ class ExperimentExecutionService extends HttpService {
         .then((simulation) => {
           ExperimentServerService.instance.initConfigFiles(serverURL, simulation.simulationID)
             .then(() => {
-              //this.startingExperiment = undefined;
               ExperimentExecutionService.instance.emit(ExperimentExecutionService.EVENTS.START_EXPERIMENT, undefined);
               resolve(
                 'esv-private/experiment-view/' +

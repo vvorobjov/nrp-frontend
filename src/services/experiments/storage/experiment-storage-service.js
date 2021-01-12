@@ -7,6 +7,8 @@ const storageExperimentsURL = `${config.api.proxy.url}${endpoints.proxy.storage.
 let _instance = null;
 const SINGLETON_ENFORCER = Symbol();
 
+const POLL_INTERVAL_EXPERIMENTS = 3000;
+
 /**
  * Service that fetches the template experiments list from the proxy given
  * that the user has authenticated successfully.
@@ -17,6 +19,11 @@ class ExperimentStorageService extends HttpService {
     if (enforcer !== SINGLETON_ENFORCER) {
       throw new Error('Use ' + this.constructor.name + '.instance');
     }
+
+    this.startUpdates();
+    window.onbeforeunload = () => {
+      this.stopUpdates();
+    };
   }
 
   static get instance() {
@@ -25,6 +32,26 @@ class ExperimentStorageService extends HttpService {
     }
 
     return _instance;
+  }
+
+  /**
+   * Start polling updates.
+   */
+  startUpdates() {
+    this.getExperiments(true);
+    this.timerPollExperiments = setInterval(
+      () => {
+        this.getExperiments(true);
+      },
+      POLL_INTERVAL_EXPERIMENTS
+    );
+  }
+
+  /**
+   * Stop polling updates.
+   */
+  stopUpdates() {
+    this.timerPollExperiments && clearInterval(this.timerPollExperiments);
   }
 
   /**

@@ -2,21 +2,16 @@ li.nostyle {
     list-style-type: none;
 }
 
-.experiment-page {
+.experiment-list-wrapper {
     height: 100vh;
     display: grid;
-    grid-template-rows: 200px auto;
-    grid-template-columns: auto minmax(250px, 500px) minmax(250px, 500px) auto;
+    grid-template-rows: auto;
+    grid-template-columns: auto;
     grid-template-areas:
-        "header header header header"
-        "experiments experiments experiments experiments";
-}
-  
-.experiment-list-header {
-    grid-area: header;
+        "experiments";
 }
 
-.experiment-page-experiments {
+.experiment-list {
     text-align: left;
     grid-area: experiments;
     color: black;

@@ -4,7 +4,6 @@ import ExperimentStorageService from '../../services/experiments/storage/experim
 import ExperimentServerService from '../../services/experiments/execution/experiment-server-service.js';
 import ExperimentExecutionService from '../../services/experiments/execution/experiment-execution-service.js';
 
-import NrpHeader from '../nrp-header/nrp-header.js';
 import ExperimentListElement from './experiment-list-element.js';
 
 import './experiment-list.css';
@@ -14,6 +13,8 @@ export default class ExperimentList extends React.Component {
     super(props);
     this.state = {
       experiments: [],
+      availableServers: [],
+      startingExperiment: undefined,
       pageState: {}
     };
   }
@@ -48,7 +49,7 @@ export default class ExperimentList extends React.Component {
       this.onUpdateServerAvailability
     );
 
-    ExperimentServerService.instance.removeListener(
+    ExperimentExecutionService.instance.removeListener(
       ExperimentExecutionService.EVENTS.START_EXPERIMENT,
       this.onStartExperiment
     );
@@ -64,12 +65,8 @@ export default class ExperimentList extends React.Component {
 
   render() {
     return (
-      <div className='experiment-page'>
-        <div className='experiment-list-header'>
-          <NrpHeader title1='EXPERIMENT' title2='OVERVIEW' />
-        </div>
-
-        <div className='experiment-page-experiments'>
+      <div className='experiment-list-wrapper'>
+        <div className='experiment-list'>
           <ol>
             {this.state.experiments.map(experiment => {
               return (
