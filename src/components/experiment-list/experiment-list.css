@@ -3,61 +3,22 @@ li.nostyle {
 }
 
 .experiment-page {
-text-align: center;
-color: white;
-background-color: black;
-height: 100vh;
-display: grid;
-grid-template-rows: 50px 300px auto;
-grid-template-columns: auto minmax(250px, 500px) minmax(250px, 500px) auto;
-grid-template-areas:
-    ". header header ."
-    ". banner banner ."
-    "experiments experiments experiments experiments";
-
-background-image: url("../../assets/images/Artificial_Intelligence_2.jpg");
-background-size: 800px;
-background-position-x: center;
-background-repeat: no-repeat;
+    height: 100vh;
+    display: grid;
+    grid-template-rows: 200px auto;
+    grid-template-columns: auto minmax(250px, 500px) minmax(250px, 500px) auto;
+    grid-template-areas:
+        "header header header header"
+        "experiments experiments experiments experiments";
 }
   
-.experiment-page-header {
-grid-area: header;
-min-height: 10hv;
-padding: 30px;
-display: flex;
-flex-direction: row;
-justify-content: space-evenly;
-align-items: center;
-font-size: 15px;
-}
-
-.header-link {
-color: white;
-text-decoration: none;
-}
-
-.header-link:hover {
-opacity: 0.5;
-transition: 200ms linear;
-}
-
-.experiment-page-banner {
-grid-area: banner;
-max-width: 1000px;
-}
-
-.experiment-page-banner h1 {
-margin: 0px;
-padding: 50px;
-text-align: left;
-font-family: "Open Sans", sans-serif, Arial, Helvetica;
-font-weight: normal;
+.experiment-list-header {
+    grid-area: header;
 }
 
 .experiment-page-experiments {
-text-align: left;
-grid-area: experiments;
-color: black;
-background-color: white;
+    text-align: left;
+    grid-area: experiments;
+    color: black;
+    background-color: white;
 }

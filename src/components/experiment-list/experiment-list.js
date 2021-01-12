@@ -1,10 +1,8 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
 
-import UserMenu from '../user-menu/user-menu.js';
 import ExperimentStorageService from '../../services/experiments/storage/experiment-storage-service.js';
-import ExperimentServerService from '../../services/experiments/execution/experiment-server-service.js';
 
+import NrpHeader from '../nrp-header/nrp-header.js';
 import ExperimentListElement from './experiment-list-element.js';
 
 import './experiment-list.css';
@@ -33,29 +31,10 @@ export default class ExperimentList extends React.Component {
   render() {
     return (
       <div className='experiment-page'>
-        <header className='experiment-page-header'>
-          <div>
-            <Link to='/'>HOME</Link>
-          </div>
-          <div>
-            <Link to='/experiments-overview'>EXPERIMENTS</Link>
-          </div>
-          <a
-            href='https://neurorobotics.net/'
-            target='_blank'
-            rel='noreferrer'
-            className='header-link'
-          >
-            NEUROROBOTICS.AI
-          </a>
-          <UserMenu />
-        </header>
-
-        <div className='experiment-page-banner'>
-          <h1>
-            Experiment <br /> Overview
-          </h1>
+        <div className='experiment-list-header'>
+          <NrpHeader title1='EXPERIMENT' title2='OVERVIEW' />
         </div>
+
         <div className='experiment-page-experiments'>
           <ol>
             {this.state.experiments.map(experiment => {
