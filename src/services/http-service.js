@@ -42,7 +42,6 @@ export class HttpService extends EventEmitter {
     // Add authorization header
     options.headers.Authorization = `Bearer ${AuthenticationService.instance.getStoredToken()}`;
     if (data) {
-      console.info(options);
       options.body = data;
     }
 

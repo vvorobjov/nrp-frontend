@@ -35,7 +35,6 @@ class ExperimentStorageService extends HttpService {
    * @return experiments - the list of template experiments
    */
   async getExperiments(forceUpdate = false) {
-    console.info('getExperiments');
     if (!this.experiments || forceUpdate) {
       let response = await this.httpRequestGET(storageExperimentsURL);
       this.experiments = await response.json();

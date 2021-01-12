@@ -15,13 +15,12 @@ const SHORT_DESCRIPTION_LENGTH = 200;
 export default class ExperimentListElement extends React.Component {
   constructor(props) {
     super(props);
-    this.state = {availableServers: []};
+    this.state = {availableServers: [], experimentStarting: false};
 
     this.canLaunchExperiment = (this.props.experiment.private && this.props.experiment.owned) ||
     !this.props.experiment.private;
 
     this.wrapperRef = React.createRef();
-    this.handleClickOutside = this.handleClickOutside.bind(this);
   }
 
   async componentDidMount() {
@@ -33,24 +32,42 @@ export default class ExperimentListElement extends React.Component {
       thumbnail: URL.createObjectURL(thumbnail)
     });
 
+    this.handleClickOutside = this.handleClickOutside.bind(this);
     document.addEventListener('mousedown', this.handleClickOutside);
 
-    this.onUpdateServerAvailability = (availableServers) => {
-      this.setState({availableServers: availableServers});
-    };
+    this.onUpdateServerAvailability = this.onUpdateServerAvailability.bind(this);
     ExperimentServerService.instance.addListener(
       ExperimentServerService.EVENTS.UPDATE_SERVER_AVAILABILITY,
       this.onUpdateServerAvailability
+    );
+
+    this.onStartExperiment = this.onStartExperiment.bind(this);
+    ExperimentExecutionService.instance.addListener(
+      ExperimentExecutionService.EVENTS.START_EXPERIMENT,
+      this.onStartExperiment
     );
   }
 
   componentWillUnmount() {
     document.removeEventListener('mousedown', this.handleClickOutside);
-    this.onUpdateServerAvailability && ExperimentServerService.instance.removeListener(
+
+    ExperimentServerService.instance.removeListener(
       ExperimentServerService.EVENTS.UPDATE_SERVER_AVAILABILITY,
       this.onUpdateServerAvailability
     );
+    ExperimentServerService.instance.removeListener(
+      ExperimentExecutionService.EVENTS.START_EXPERIMENT,
+      this.onStartExperiment
+    );
   }
+
+  onUpdateServerAvailability(availableServers) {
+    this.setState({availableServers: availableServers});
+  };
+
+  onStartExperiment(experiment) {
+    this.setState({experimentStarting: experiment === this.props.experiment});
+  };
 
   handleClickOutside(event) {
     if (this.wrapperRef && !this.wrapperRef.current.contains(event.target)) {
@@ -154,8 +171,7 @@ export default class ExperimentListElement extends React.Component {
                   ExperimentExecutionService.instance.startNewExperiment(exp, false);
                 }}
                 //TODO: adjust disabled state to be reactive
-                disabled={ExperimentExecutionService.instance.startingExperiment === exp
-                  || pageState.deletingExperiment}
+                disabled={this.state.experimentStarting /*|| pageState.deletingExperiment*/}
                 className='btn btn-default' >
                   <i className='fa fa-plus'></i> Launch
                 </button>

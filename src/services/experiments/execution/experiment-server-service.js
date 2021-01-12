@@ -18,7 +18,7 @@ const SINGLETON_ENFORCER = Symbol();
 
 let rosConnections = new Map();
 const SLURM_MONITOR_POLL_INTERVAL = 5000;
-const SERVER_AVAILABILITY_POLL_INTERVAL = 5000;
+const SERVER_AVAILABILITY_POLL_INTERVAL = 3000;
 let clusterAvailability = { free: 'N/A', total: 'N/A' };
 
 /**
@@ -51,7 +51,7 @@ class ExperimentServerService extends HttpService {
       .pipe(map(({ free, nodes }) => ({ free, total: nodes[3] })))
       .pipe(multicast(new Subject())).refCount();
 
-    this.listOfAvailableServers = [];
+    this.availableServers = [];
 
     this.startUpdates();
     window.onbeforeunload = () => {
@@ -68,13 +68,6 @@ class ExperimentServerService extends HttpService {
   }
 
   /**
-   * Get available servers.
-   */
-  get availableServers() {
-    return this.listOfAvailableServers;
-  }
-
-  /**
    * Start polling updates.
    */
   startUpdates() {
@@ -82,6 +75,7 @@ class ExperimentServerService extends HttpService {
       availability => (clusterAvailability = availability)
     );
 
+    this.getServerAvailability(true);
     this.timerPollServerAvailability = setInterval(
       () => {
         this.getServerAvailability(true);
@@ -107,16 +101,16 @@ class ExperimentServerService extends HttpService {
   }
 
   getServerAvailability(forceUpdate = false) {
-    if (!this.listOfAvailableServers || forceUpdate) {
+    if (!this.availableServers || forceUpdate) {
       let update = async () => {
         let response = await this.httpRequestGET(availableServersURL);
-        this.listOfAvailableServers = await response.json();
+        this.availableServers = await response.json();
       };
       update();
-      this.emit(ExperimentServerService.EVENTS.UPDATE_SERVER_AVAILABILITY, this.listOfAvailableServers);
+      this.emit(ExperimentServerService.EVENTS.UPDATE_SERVER_AVAILABILITY, this.availableServers);
     }
 
-    return this.listOfAvailableServers;
+    return this.availableServers;
   }
 
   /**
@@ -162,8 +156,9 @@ class ExperimentServerService extends HttpService {
     return new Promise((resolve, reject) => {
       let verifySimulation = () => {
         setTimeout(() => {
-          this.httpRequestGET(serverURL + '/simulation').then(function(simulations) {
+          this.httpRequestGET(serverURL + '/simulation').then(async (reponse) => {
             let continueVerify = true;
+            let simulations = await reponse.json();
 
             if (simulations.length > 0) {
               let last = simulations.length - 1;
