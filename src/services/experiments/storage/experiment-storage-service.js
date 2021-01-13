@@ -67,6 +67,7 @@ class ExperimentStorageService extends HttpService {
       this.experiments = await response.json();
       this.sortExperiments();
       await this.fillExperimentDetails();
+      this.emit(ExperimentStorageService.EVENTS.UPDATE_EXPERIMENTS, this.experiments);
     }
 
     return this.experiments;
@@ -111,5 +112,9 @@ class ExperimentStorageService extends HttpService {
     });
   }
 }
+
+ExperimentStorageService.EVENTS = Object.freeze({
+  UPDATE_EXPERIMENTS: 'UPDATE_EXPERIMENTS'
+});
 
 export default ExperimentStorageService;

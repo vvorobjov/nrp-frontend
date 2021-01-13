@@ -28,53 +28,6 @@
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
-  "eslintConfig": {
-    "extends": [
-      "react-app",
-      "react-app/jest"
-    ],
-    "rules": {
-      "semi": [
-        2,
-        "always"
-      ],
-      "quotes": [
-        "error",
-        "single"
-      ],
-      "indent": [
-        "error",
-        2
-      ],
-      "curly": [
-        "error",
-        "all"
-      ],
-      "block-spacing": [
-        "error",
-        "always"
-      ],
-      "brace-style": [
-        "error",
-        "stroustrup"
-      ],
-      "comma-dangle": [
-        "error",
-        "never"
-      ],
-      "no-trailing-spaces": "error",
-      "array-bracket-newline": [
-        "error",
-        "consistent"
-      ],
-      "max-len": [
-        "error",
-        {
-          "code": 120
-        }
-      ]
-    }
-  },
   "browserslist": {
     "production": [
       ">0.2%",
