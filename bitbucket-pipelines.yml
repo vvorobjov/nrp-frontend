@@ -16,6 +16,10 @@ pipelines:
             - cp src/mocks/config_test.json src/config.json
             - npm install
             - npm test
+            # Coverage check
+            - git archive --remote=ssh://git@bitbucket.org/hbpneurorobotics/admin-scripts.git refs/heads/master nrp_cobertura_check | tar xf -
+            - ./nrp_cobertura_check reports/coverage/*/cobertura-coverage.xml
+
       - step:
           name: Code linting
           script:
