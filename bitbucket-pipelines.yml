@@ -3,8 +3,7 @@
 #  This template allows you to validate your NodeJS code.
 #  The workflow allows running tests and code linting on the default branch.
 
-image: node:15.0.1
-
+image: hbpneurorobotics/nrp_frontend:dev
 pipelines:
   branches:
     development:
@@ -13,6 +12,7 @@ pipelines:
           caches:
             - node
           script:
+            - sudo apt-get update && sudo apt-get install -y nodejs npm 
             - cp src/mocks/config_test.json src/config.json
             - npm install
             - npm test
