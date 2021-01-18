@@ -27,6 +27,8 @@ pipelines:
       - step:
           name: Code linting
           script:
+            - nvm install node
+            - nvm use node
             - npm install eslint
             - npx eslint .
           caches:
