@@ -243,7 +243,7 @@ export default class ExperimentListElement extends React.Component {
               </div>
             </div>
           }
-          {/*this.state.selected && exp.joinableServers.length > 0*/ true ?
+          {this.state.selected /*&& exp.joinableServers.length > 0*/ ?
             <SimulationDetails simulations={exp.joinableServers} />
             : null
           }

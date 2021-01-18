@@ -1,14 +1,14 @@
-.monospace-text {
-    font-family: monospace;
+.simulations-details-wrapper {}
+
+.table-header {
+  font-weight: bold;
 }
 
-.table tbody tr td:nth-of-type(4) {
-    font-family: Courier, monospace;
+.table-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
 }
 
-.table-wrapper {
-  margin: 0 auto;
-  padding: 10px;
-  max-width: 800px;
-  width: 100%;
+.table-column-last {
+  grid-area: 1 / -2 / 2 / -1;
 }
