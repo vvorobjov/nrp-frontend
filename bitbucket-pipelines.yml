@@ -3,7 +3,7 @@
 #  This template allows you to validate your NodeJS code.
 #  The workflow allows running tests and code linting on the default branch.
 
-image: hbpneurorobotics/nrp_frontend:dev
+image: node:15.0.1
 pipelines:
   branches:
     development:
@@ -12,8 +12,6 @@ pipelines:
           caches:
             - node
           script:
-            - nvm install node
-            - nvm use node
             - cp src/mocks/config_test.json src/config.json
             - npm install
             - npm test
@@ -27,8 +25,6 @@ pipelines:
       - step:
           name: Code linting
           script:
-            - nvm install node
-            - nvm use node
             - npm install eslint
             - npx eslint .
           caches:
