@@ -1,7 +1,6 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
 
-import UserMenu from '../user-menu/user-menu.js';
+import NrpHeader from '../nrp-header/nrp-header.js';
 
 import './entry-page.css';
 import PlaceholderImage from '../../assets/images/Artificial_Intelligence_2.jpg';
@@ -9,29 +8,9 @@ import PlaceholderImage from '../../assets/images/Artificial_Intelligence_2.jpg'
 export default class EntryPage extends React.Component {
   render() {
     return (
-      <div className='entry-page'>
-        <header className='entry-page-header'>
-          <div>
-            <Link to='/'>HOME</Link>
-          </div>
-          <div>
-            <Link to='/experiments-overview'>EXPERIMENTS</Link>
-          </div>
-          <a
-            href='https://neurorobotics.net/'
-            target='_blank'
-            rel='noreferrer'
-            className='header-link'
-          >
-            NEUROROBOTICS.AI
-          </a>
-          <UserMenu />
-        </header>
-
-        <div className='entry-page-banner'>
-          <h1>
-            NEUROROBOTICS <br /> PLATFORM
-          </h1>
+      <div className='entry-page-wrapper'>
+        <div className='entry-page-header'>
+          <NrpHeader title1='NEUROROBOTICS' title2='PLATFORM' />
         </div>
 
         <div className='sidebar-left'></div>

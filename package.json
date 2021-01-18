@@ -16,6 +16,7 @@
     "react-dom": "^17.0.1",
     "react-router-dom": "5.2.0",
     "react-scripts": "4.0.0",
+    "react-tabs": "3.1.2",
     "roslib": "1.1.0",
     "rxjs": "6.6.3",
     "ts-node": "^9.1.1",
@@ -26,48 +27,6 @@
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
-  },
-  "eslintConfig": {
-    "extends": [
-      "react-app",
-      "react-app/jest"
-    ],
-    "rules": {
-      "semi": [
-        2,
-        "always"
-      ],
-      "quotes": [
-        "error",
-        "single"
-      ],
-      "indent": [
-        "error",
-        2
-      ],
-      "curly": [
-        "error",
-        "all"
-      ],
-      "block-spacing": [
-        "error",
-        "always"
-      ],
-      "brace-style": [
-        "error",
-        "stroustrup"
-      ],
-      "comma-dangle": [
-        "error",
-        "never"
-      ],
-      "no-trailing-spaces": "error",
-      "array-bracket-newline": [
-        "error",
-        "consistent"
-      ],
-      "max-len": ["error", { "code": 120 }]
-    }
   },
   "browserslist": {
     "production": [
