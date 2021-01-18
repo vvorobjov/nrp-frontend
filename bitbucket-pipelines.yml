@@ -18,7 +18,10 @@ pipelines:
             - npm install
             - npm test
             # Coverage check
-            - ./nrp_cobertura_check reports/coverage/*/cobertura-coverage.xml
+            - sudo chmod +x nrp_cobertura_check
+            - export NRP_COVERAGE_BRANCH=5
+            - export NRP_COVERAGE_LINE=12
+            - ./nrp_cobertura_check coverage/*/cobertura-coverage.xml
 
       - step:
           name: Code linting
