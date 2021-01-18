@@ -1,5 +1,8 @@
 {
   "name": "nrp-frontend",
+  "jest": {
+    "coverageReporters": ["html","cobertura"]
+  },
   "version": "0.1.0",
   "private": true,
   "dependencies": {
