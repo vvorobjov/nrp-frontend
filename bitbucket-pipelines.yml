@@ -18,6 +18,7 @@ pipelines:
             - npm install
             - npm test
             # Coverage check
+            - npm run coverage
             - sudo chmod +x nrp_cobertura_check
             - export NRP_COVERAGE_BRANCH=5
             - export NRP_COVERAGE_LINE=12
