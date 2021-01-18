@@ -12,7 +12,8 @@ pipelines:
           caches:
             - node
           script:
-            - sudo apt-get update && sudo apt-get install -y nodejs npm 
+            - nvm install node
+            - nvm use node
             - cp src/mocks/config_test.json src/config.json
             - npm install
             - npm test
