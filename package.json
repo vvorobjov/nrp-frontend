@@ -29,7 +29,6 @@
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
-<<<<<<< HEAD
   "eslintConfig": {
     "extends": [
       "react-app",
@@ -77,8 +76,6 @@
       ]
     }
   },
-=======
->>>>>>> remotes/origin/development
   "browserslist": {
     "production": [
       ">0.2%",
