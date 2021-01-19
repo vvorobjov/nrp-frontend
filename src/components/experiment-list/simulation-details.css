@@ -1,12 +1,19 @@
-.simulations-details-wrapper {}
+.simulations-details-wrapper {
+  width: 640px;
+}
 
 .table-header {
   font-weight: bold;
+  padding-bottom: 5px;
+  border-bottom: 2px solid lightgray;
 }
 
 .table-row {
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
+  gap: 10px;
+  grid-template-columns: repeat(5, 120px);
+
+  padding-top: 10px;
 }
 
 .table-column-last {

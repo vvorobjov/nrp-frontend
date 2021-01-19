@@ -1,5 +1,5 @@
 import _ from 'lodash';
-import {Subject, timer}from 'rxjs';
+import { Subject, timer } from 'rxjs';
 import { switchMap, filter, map, multicast } from 'rxjs/operators';
 
 import ErrorHandlerService from '../../error-handler-service.js';
@@ -19,6 +19,7 @@ const SINGLETON_ENFORCER = Symbol();
 let rosConnections = new Map();
 const SLURM_MONITOR_POLL_INTERVAL = 5000;
 const POLL_INTERVAL_SERVER_AVAILABILITY = 3000;
+const CHECK_SIMULATION_READY_INTERVAL = 1000;
 let clusterAvailability = { free: 'N/A', total: 'N/A' };
 
 /**
@@ -77,7 +78,7 @@ class ExperimentServerService extends HttpService {
     );
 
     this.getServerAvailability(true);
-    this.timerPollServerAvailability = setInterval(
+    this.intervalGetServerAvailability = setInterval(
       () => {
         this.getServerAvailability(true);
       },
@@ -90,7 +91,7 @@ class ExperimentServerService extends HttpService {
    */
   stopUpdates() {
     this.clusterAvailabilitySubscription && this.clusterAvailabilitySubscription.unsubscribe();
-    this.timerPollServerAvailability && clearInterval(this.timerPollServerAvailability);
+    this.intervalGetServerAvailability && clearInterval(this.intervalGetServerAvailability);
   }
 
   /**
@@ -101,6 +102,11 @@ class ExperimentServerService extends HttpService {
     return clusterAvailability;
   }
 
+  /**
+   * Return a list of available servers for starting simulations.
+   * @param {boolean} forceUpdate force an update
+   * @returns {Array} A list of available servers.
+   */
   getServerAvailability(forceUpdate = false) {
     if (!this.availableServers || forceUpdate) {
       let update = async () => {
@@ -184,7 +190,7 @@ class ExperimentServerService extends HttpService {
               verifySimulation();
             }
           }).catch(reject);
-        }, 1000);
+        }, CHECK_SIMULATION_READY_INTERVAL);
       };
 
       verifySimulation();
@@ -214,7 +220,7 @@ class ExperimentServerService extends HttpService {
       rosConnection,
       config['ros-topics'].status
     );
-    rosConnections.set(rosbridgeWebsocket, {rosConnection, statusListener});
+    rosConnections.set(rosbridgeWebsocket, { rosConnection, statusListener });
 
     statusListener.subscribe((data) => {
       let message = JSON.parse(data.data);
@@ -232,6 +238,28 @@ class ExperimentServerService extends HttpService {
       }
     });
   };
+
+  async getSimulationState(serverURL, simulationID) {
+    let url = serverURL + '/simulation/' + simulationID + '/state';
+    try {
+      let response = await (await this.httpRequestGET(url)).json();
+      return response;
+    }
+    catch (error) {
+      ErrorHandlerService.instance.displayServerHTTPError(error);
+    }
+  }
+
+  async updateSimulationState(serverURL, simulationID, state) {
+    let url = serverURL + '/simulation/' + simulationID + '/state';
+    try {
+      let response = await this.httpRequestPUT(url, JSON.stringify(state));
+      return response;
+    }
+    catch (error) {
+      ErrorHandlerService.instance.onErrorSimulationUpdate(error);
+    }
+  }
 }
 
 ExperimentServerService.EVENTS = Object.freeze({
