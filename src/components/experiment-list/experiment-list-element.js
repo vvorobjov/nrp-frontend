@@ -19,6 +19,7 @@ export default class ExperimentListElement extends React.Component {
     super(props);
     this.state = {};
 
+    //TODO: put in service?
     this.canLaunchExperiment = (this.props.experiment.private && this.props.experiment.owned) ||
       !this.props.experiment.private;
     this.launchButtonTitle = '';

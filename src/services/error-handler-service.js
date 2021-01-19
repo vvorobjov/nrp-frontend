@@ -20,7 +20,12 @@ class ErrorHandlerService {
   }
 
   displayServerHTTPError(error) {
-    //TODO: needs proper implementation
+    //TODO: needs proper UI implementation
+    console.error(error);
+  }
+
+  onErrorSimulationUpdate(error) {
+    //TODO: needs proper UI implementation
     console.error(error);
   }
 }

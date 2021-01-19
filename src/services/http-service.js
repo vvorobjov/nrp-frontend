@@ -89,12 +89,12 @@ export class HttpService extends EventEmitter {
    * Perform a PUT http request to a url
    * @param url - the url to perform the request
    */
-  httpRequestPUT = async (url) => {
+  httpRequestPUT = async (url, data) => {
     // copy to avoid messing up the options object in case we need to reuse it
     const { ...putOptions } = this.options;
     putOptions.method = 'PUT';
 
-    return this.performRequest(url, putOptions);
+    return this.performRequest(url, putOptions, data);
   };
 
   /**
