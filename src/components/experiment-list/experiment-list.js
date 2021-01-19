@@ -57,6 +57,7 @@ export default class ExperimentList extends React.Component {
           </h1>
         </div>
         <div className='experiment-page-experiments'>
+          <ImportExperimentButtons pageState={this.state.pageState}/>
           <ol>
             {this.state.experiments.map(experiment => {
               return (

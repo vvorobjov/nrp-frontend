@@ -11,4 +11,16 @@
     box-shadow: 5px 5px 5px #000;
     z-index: 10001;
   }
+
+  .import-experiment-folder-input {
+    display: none;
+  }
+
+  .import-zip-experiment-input {
+    display: none;
+  }
   
+  #import-buttons {
+    vertical-align: middle;
+    margin: auto 0;
+  }
