@@ -3,10 +3,11 @@ import { HttpService } from '../../http-service.js';
 import endpoints from '../../proxy/data/endpoints.json';
 import config from '../../../config.json';
 const storageExperimentsURL = `${config.api.proxy.url}${endpoints.proxy.storage.experiments.url}`;
-const availableServersURL = `${config.api.proxy.url}${endpoints.proxy.availableServers.url}`;
 
 let _instance = null;
 const SINGLETON_ENFORCER = Symbol();
+
+const POLL_INTERVAL_EXPERIMENTS = 3000;
 
 /**
  * Service that fetches the template experiments list from the proxy given
@@ -18,6 +19,11 @@ class ExperimentStorageService extends HttpService {
     if (enforcer !== SINGLETON_ENFORCER) {
       throw new Error('Use ' + this.constructor.name + '.instance');
     }
+
+    this.startUpdates();
+    window.onbeforeunload = () => {
+      this.stopUpdates();
+    };
   }
 
   static get instance() {
@@ -29,18 +35,39 @@ class ExperimentStorageService extends HttpService {
   }
 
   /**
+   * Start polling updates.
+   */
+  startUpdates() {
+    this.getExperiments(true);
+    this.timerPollExperiments = setInterval(
+      () => {
+        this.getExperiments(true);
+      },
+      POLL_INTERVAL_EXPERIMENTS
+    );
+  }
+
+  /**
+   * Stop polling updates.
+   */
+  stopUpdates() {
+    this.timerPollExperiments && clearInterval(this.timerPollExperiments);
+  }
+
+  /**
    * Retrieves the list of template experiments from the proxy and stores
    * them in the experiments class property. If the experiments are already
    * there it just returns them, else does an HTTP request.
    *
    * @return experiments - the list of template experiments
    */
-  async getExperiments() {
-    if (!this.experiments) {
+  async getExperiments(forceUpdate = false) {
+    if (!this.experiments || forceUpdate) {
       let response = await this.httpRequestGET(storageExperimentsURL);
       this.experiments = await response.json();
       this.sortExperiments();
       await this.fillExperimentDetails();
+      this.emit(ExperimentStorageService.EVENTS.UPDATE_EXPERIMENTS, this.experiments);
     }
 
     return this.experiments;
@@ -78,16 +105,16 @@ class ExperimentStorageService extends HttpService {
   }
 
   async fillExperimentDetails() {
-    let response = await this.httpRequestGET(availableServersURL);
-    let availableServers = await response.json();
-
     this.experiments.forEach(exp => {
-      exp.availableServers = availableServers;
       if (!exp.configuration.brainProcesses && exp.configuration.bibiConfSrc) {
         exp.configuration.brainProcesses = 1;
       }
     });
   }
 }
+
+ExperimentStorageService.EVENTS = Object.freeze({
+  UPDATE_EXPERIMENTS: 'UPDATE_EXPERIMENTS'
+});
 
 export default ExperimentStorageService;

@@ -11,12 +11,14 @@ import endpoints from '../../proxy/data/endpoints.json';
 import config from '../../../config.json';
 const proxyServerURL = `${config.api.proxy.url}${endpoints.proxy.server.url}`;
 const slurmMonitorURL = `${config.api.slurmmonitor.url}/api/v1/partitions/interactive`;
+const availableServersURL = `${config.api.proxy.url}${endpoints.proxy.availableServers.url}`;
 
 let _instance = null;
 const SINGLETON_ENFORCER = Symbol();
 
 let rosConnections = new Map();
 const SLURM_MONITOR_POLL_INTERVAL = 5000;
+const POLL_INTERVAL_SERVER_AVAILABILITY = 3000;
 let clusterAvailability = { free: 'N/A', total: 'N/A' };
 
 /**
@@ -29,6 +31,7 @@ class ExperimentServerService extends HttpService {
       throw new Error('Use ' + this.constructor.name + '.instance');
     }
 
+    //TODO: a bit too much code for a constructor, move into its own function
     this.clusterAvailabilityObservable = timer(0, SLURM_MONITOR_POLL_INTERVAL)
       .pipe(switchMap(() => {
         try {
@@ -49,7 +52,12 @@ class ExperimentServerService extends HttpService {
       .pipe(map(({ free, nodes }) => ({ free, total: nodes[3] })))
       .pipe(multicast(new Subject())).refCount();
 
+    this.availableServers = [];
+
     this.startUpdates();
+    window.onbeforeunload = () => {
+      this.stopUpdates();
+    };
   }
 
   static get instance() {
@@ -67,14 +75,22 @@ class ExperimentServerService extends HttpService {
     this.clusterAvailabilitySubscription = this.clusterAvailabilityObservable.subscribe(
       availability => (clusterAvailability = availability)
     );
+
+    this.getServerAvailability(true);
+    this.timerPollServerAvailability = setInterval(
+      () => {
+        this.getServerAvailability(true);
+      },
+      POLL_INTERVAL_SERVER_AVAILABILITY
+    );
   }
 
   /**
    * Stop polling updates.
    */
-  //TODO: find proper place to call
   stopUpdates() {
     this.clusterAvailabilitySubscription && this.clusterAvailabilitySubscription.unsubscribe();
+    this.timerPollServerAvailability && clearInterval(this.timerPollServerAvailability);
   }
 
   /**
@@ -83,6 +99,19 @@ class ExperimentServerService extends HttpService {
    */
   getClusterAvailability() {
     return clusterAvailability;
+  }
+
+  getServerAvailability(forceUpdate = false) {
+    if (!this.availableServers || forceUpdate) {
+      let update = async () => {
+        let response = await this.httpRequestGET(availableServersURL);
+        this.availableServers = await response.json();
+      };
+      update();
+      this.emit(ExperimentServerService.EVENTS.UPDATE_SERVER_AVAILABILITY, this.availableServers);
+    }
+
+    return this.availableServers;
   }
 
   /**
@@ -128,8 +157,9 @@ class ExperimentServerService extends HttpService {
     return new Promise((resolve, reject) => {
       let verifySimulation = () => {
         setTimeout(() => {
-          this.httpRequestGET(serverURL + '/simulation').then(function(simulations) {
+          this.httpRequestGET(serverURL + '/simulation').then(async (reponse) => {
             let continueVerify = true;
+            let simulations = await reponse.json();
 
             if (simulations.length > 0) {
               let last = simulations.length - 1;
@@ -203,5 +233,9 @@ class ExperimentServerService extends HttpService {
     });
   };
 }
+
+ExperimentServerService.EVENTS = Object.freeze({
+  UPDATE_SERVER_AVAILABILITY: 'UPDATE_SERVER_AVAILABILITY'
+});
 
 export default ExperimentServerService;
