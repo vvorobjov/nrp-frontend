@@ -66,6 +66,7 @@ class ExperimentStorageService extends HttpService {
    * them in the experiments class property. If the experiments are already
    * there it just returns them, else does an HTTP request.
    *
+   * @param {boolean} forceUpdate forces an update of the list
    * @return experiments - the list of template experiments
    */
   async getExperiments(forceUpdate = false) {
@@ -74,6 +75,7 @@ class ExperimentStorageService extends HttpService {
       this.experiments = await response.json();
       this.sortExperiments();
       await this.fillExperimentDetails();
+      console.info('experiment lsit update');
       this.emit(ExperimentStorageService.EVENTS.UPDATE_EXPERIMENTS, this.experiments);
     }
 

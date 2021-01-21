@@ -59,7 +59,7 @@ class ExperimentExecutionService extends HttpService {
 
     //TODO: placeholder, register actual progress callback later
     let progressCallback = (msg) => {
-      console.info(msg);
+      //console.info(msg);
     };
 
     let launchOnNextServer = async () => {
@@ -157,10 +157,10 @@ class ExperimentExecutionService extends HttpService {
         .then((simulation) => {
           ExperimentServerService.instance.initConfigFiles(serverURL, simulation.simulationID)
             .then(() => {
-              ExperimentExecutionService.instance.emit(ExperimentExecutionService.EVENTS.START_EXPERIMENT, undefined);
               let simulationURL = 'esv-private/experiment-view/' + server + '/' + experimentID + '/' +
                 privateExperiment + '/' + simulation.simulationID;
               resolve(simulationURL);
+              ExperimentExecutionService.instance.emit(ExperimentExecutionService.EVENTS.START_EXPERIMENT, undefined);
             })
             .catch(reject);
         })
