@@ -17,9 +17,9 @@ let _instance = null;
 const SINGLETON_ENFORCER = Symbol();
 
 let rosConnections = new Map();
-const SLURM_MONITOR_POLL_INTERVAL = 5000;
-const POLL_INTERVAL_SERVER_AVAILABILITY = 3000;
-const CHECK_SIMULATION_READY_INTERVAL = 1000;
+const INTERVAL_POLL__SLURM_MONITOR = 5000;
+const INTERVAL_POLL_SERVER_AVAILABILITY = 3000;
+const INTERVAL_CHECK_SIMULATION_READY = 1000;
 let clusterAvailability = { free: 'N/A', total: 'N/A' };
 
 /**
@@ -33,7 +33,7 @@ class ExperimentServerService extends HttpService {
     }
 
     //TODO: a bit too much code for a constructor, move into its own function
-    this.clusterAvailabilityObservable = timer(0, SLURM_MONITOR_POLL_INTERVAL)
+    this.clusterAvailabilityObservable = timer(0, INTERVAL_POLL__SLURM_MONITOR)
       .pipe(switchMap(() => {
         try {
           return this.httpRequestGET(slurmMonitorURL);
@@ -82,7 +82,7 @@ class ExperimentServerService extends HttpService {
       () => {
         this.getServerAvailability(true);
       },
-      POLL_INTERVAL_SERVER_AVAILABILITY
+      INTERVAL_POLL_SERVER_AVAILABILITY
     );
   }
 
@@ -190,7 +190,7 @@ class ExperimentServerService extends HttpService {
               verifySimulation();
             }
           }).catch(reject);
-        }, CHECK_SIMULATION_READY_INTERVAL);
+        }, INTERVAL_CHECK_SIMULATION_READY);
       };
 
       verifySimulation();
@@ -239,6 +239,7 @@ class ExperimentServerService extends HttpService {
     });
   };
 
+  //TODO: maybe move to separate simulation-status-service
   async getSimulationState(serverURL, simulationID) {
     let url = serverURL + '/simulation/' + simulationID + '/state';
     try {

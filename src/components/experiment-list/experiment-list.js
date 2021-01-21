@@ -9,18 +9,19 @@ export default class ExperimentList extends React.Component {
     return (
       <div className='experiment-list-wrapper'>
         <div className='experiment-list'>
-          <ol>
-            {this.props.experiments.map(experiment => {
-              return (
-                <li key={experiment.id} className='nostyle'>
-                  <ExperimentListElement experiment={experiment}
-                    availableServers={this.props.availableServers}
-                    startingExperiment={this.props.startingExperiment} />
-                </li>
-              );
-            }
-            )}
-          </ol>
+          {this.props.experiments.length === 0 ?
+            <div className='no-items-notification'>List is currently empty ...</div> :
+            <ol>
+              {this.props.experiments.map(experiment => {
+                return (
+                  <li key={experiment.id} className='nostyle'>
+                    <ExperimentListElement experiment={experiment}
+                      availableServers={this.props.availableServers}
+                      startingExperiment={this.props.startingExperiment} />
+                  </li>
+                );
+              })}
+            </ol>}
         </div>
       </div>
     );
