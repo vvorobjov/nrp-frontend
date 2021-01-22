@@ -1,7 +1,7 @@
 import React from 'react';
 import timeDDHHMMSS from '../../utility/time-filter.js';
 import ExperimentStorageService from '../../services/experiments/storage/experiment-storage-service.js';
-import ExperimentServerService from '../../services/experiments/execution/experiment-server-service.js';
+import ExperimentServerService from '../../services/experiments/execution/server-resources-service.js';
 import ExperimentExecutionService from '../../services/experiments/execution/experiment-execution-service.js';
 
 import SimulationDetails from './simulation-details';
@@ -131,7 +131,11 @@ export default class ExperimentListElement extends React.Component {
             <div className='h4'>
               {exp.configuration.name}
             </div>
-            <br />
+            {exp.joinableServers.length > 0 ?
+              <div className='exp-title-sim-info'>
+                ({exp.joinableServers.length} simulation{exp.joinableServers.length > 1 ? 's' : ''} running)
+              </div>
+              : null}
           </div>
           <div>
             {!this.state.selected && exp.configuration.description.length > SHORT_DESCRIPTION_LENGTH ?

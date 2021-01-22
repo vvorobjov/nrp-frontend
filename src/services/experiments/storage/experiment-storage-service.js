@@ -7,7 +7,7 @@ const storageExperimentsURL = `${config.api.proxy.url}${endpoints.proxy.storage.
 let _instance = null;
 const SINGLETON_ENFORCER = Symbol();
 
-const POLL_INTERVAL_EXPERIMENTS = 3000;
+const INTERVAL_POLL_EXPERIMENTS = 3000;
 
 /**
  * Service that fetches the template experiments list from the proxy given
@@ -43,7 +43,7 @@ class ExperimentStorageService extends HttpService {
       () => {
         this.getExperiments(true);
       },
-      POLL_INTERVAL_EXPERIMENTS
+      INTERVAL_POLL_EXPERIMENTS
     );
   }
 
@@ -68,7 +68,6 @@ class ExperimentStorageService extends HttpService {
       this.experiments = await response.json();
       this.sortExperiments();
       await this.fillExperimentDetails();
-      console.info('experiment lsit update');
       this.emit(ExperimentStorageService.EVENTS.UPDATE_EXPERIMENTS, this.experiments);
     }
 
@@ -90,6 +89,9 @@ class ExperimentStorageService extends HttpService {
     return image;
   }
 
+  /**
+   * Sort the local list of experiments alphabetically.
+   */
   sortExperiments() {
     this.experiments = this.experiments.sort(
       (a, b) => {
@@ -106,6 +108,9 @@ class ExperimentStorageService extends HttpService {
     );
   }
 
+  /**
+   * Fill in some details for the local experiment list that might be missing.
+   */
   async fillExperimentDetails() {
     this.experiments.forEach(exp => {
       if (!exp.configuration.brainProcesses && exp.configuration.bibiConfSrc) {

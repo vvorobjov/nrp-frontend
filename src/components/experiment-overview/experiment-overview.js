@@ -3,7 +3,7 @@ import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
 import 'react-tabs/style/react-tabs.css';
 
 import ExperimentStorageService from '../../services/experiments/storage/experiment-storage-service.js';
-import ExperimentServerService from '../../services/experiments/execution/experiment-server-service.js';
+import ExperimentServerService from '../../services/experiments/execution/server-resources-service.js';
 import ExperimentExecutionService from '../../services/experiments/execution/experiment-execution-service.js';
 
 import ExperimentList from '../experiment-list/experiment-list.js';
