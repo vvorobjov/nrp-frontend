@@ -73,18 +73,17 @@ export default class SimulationDetails extends React.Component {
               <div>{simulation.runningSimulation.state}</div>
               <div>
                 {/* Join button enabled provided simulation state is consistent */}
-                <button analytics-on analytics-event="Join" analytics-category="Experiment"
+                <button /*analytics-on analytics-event="Join" analytics-category="Experiment"
                   ng-click="(simulation.runningSimulation.state === STATE.CREATED) ||
-                    simulation.stopping || joinExperiment(simulation, exp);"
+                    simulation.stopping || joinExperiment(simulation, exp);"*/
                   type="button" className="btn btn-default"
                   disabled={this.isJoinDisabled(simulation)}>
                   Join »
                 </button>
                 {/* Stop button enabled provided simulation state is consistent */}
-                <button analytics-on analytics-event="Stop" analytics-category="Experiment"
+                <button /*analytics-on analytics-event="Stop" analytics-category="Experiment"*/
                   onClick={() => ExperimentExecutionService.instance.stopExperiment(simulation)}
                   type="button" className="btn btn-default"
-                  ng-if="canStopSimulation(simulation)"
                   disabled={this.isStopDisabled(simulation)}
                   title={this.state.titleButtonStop}>
                   <i className="fa fa-spinner fa-spin" ng-if="simulation.stopping"></i> Stop

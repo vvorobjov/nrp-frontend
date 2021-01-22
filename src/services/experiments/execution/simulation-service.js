@@ -7,130 +7,31 @@ import RoslibService from '../../roslib-service.js';
 import { HttpService } from '../../http-service.js';
 import { EXPERIMENT_STATE } from '../experiment-constants.js';
 
-import endpoints from '../../proxy/data/endpoints.json';
 import config from '../../../config.json';
-const proxyServerURL = `${config.api.proxy.url}${endpoints.proxy.server.url}`;
-const slurmMonitorURL = `${config.api.slurmmonitor.url}/api/v1/partitions/interactive`;
-const availableServersURL = `${config.api.proxy.url}${endpoints.proxy.availableServers.url}`;
 
 let _instance = null;
 const SINGLETON_ENFORCER = Symbol();
 
 let rosConnections = new Map();
-const INTERVAL_POLL__SLURM_MONITOR = 5000;
-const INTERVAL_POLL_SERVER_AVAILABILITY = 3000;
 const INTERVAL_CHECK_SIMULATION_READY = 1000;
-let clusterAvailability = { free: 'N/A', total: 'N/A' };
 
 /**
- * Service handling server resources for simulating experiments.
+ * Service handling state and info of running simulations.
  */
-class ExperimentServerService extends HttpService {
+class SimulationService extends HttpService {
   constructor(enforcer) {
     super();
     if (enforcer !== SINGLETON_ENFORCER) {
       throw new Error('Use ' + this.constructor.name + '.instance');
     }
-
-    //TODO: a bit too much code for a constructor, move into its own function
-    this.clusterAvailabilityObservable = timer(0, INTERVAL_POLL__SLURM_MONITOR)
-      .pipe(switchMap(() => {
-        try {
-          return this.httpRequestGET(slurmMonitorURL);
-        }
-        catch (error) {
-          _.once(error => {
-            if (error.status === -1) {
-              error = Object.assign(error, {
-                data: 'Could not probe vizualization cluster'
-              });
-            }
-            ErrorHandlerService.instance.displayServerHTTPError(error);
-          });
-        }
-      }))
-      .pipe(filter(e => e))
-      .pipe(map(({ free, nodes }) => ({ free, total: nodes[3] })))
-      .pipe(multicast(new Subject())).refCount();
-
-    this.availableServers = [];
-
-    this.startUpdates();
-    window.onbeforeunload = () => {
-      this.stopUpdates();
-    };
   }
 
   static get instance() {
     if (_instance == null) {
-      _instance = new ExperimentServerService(SINGLETON_ENFORCER);
+      _instance = new SimulationService(SINGLETON_ENFORCER);
     }
 
     return _instance;
-  }
-
-  /**
-   * Start polling updates.
-   */
-  startUpdates() {
-    this.clusterAvailabilitySubscription = this.clusterAvailabilityObservable.subscribe(
-      availability => (clusterAvailability = availability)
-    );
-
-    this.getServerAvailability(true);
-    this.intervalGetServerAvailability = setInterval(
-      () => {
-        this.getServerAvailability(true);
-      },
-      INTERVAL_POLL_SERVER_AVAILABILITY
-    );
-  }
-
-  /**
-   * Stop polling updates.
-   */
-  stopUpdates() {
-    this.clusterAvailabilitySubscription && this.clusterAvailabilitySubscription.unsubscribe();
-    this.intervalGetServerAvailability && clearInterval(this.intervalGetServerAvailability);
-  }
-
-  /**
-   * Get available cluster server info.
-   * @returns {object} cluster availability info
-   */
-  getClusterAvailability() {
-    return clusterAvailability;
-  }
-
-  /**
-   * Return a list of available servers for starting simulations.
-   * @param {boolean} forceUpdate force an update
-   * @returns {Array} A list of available servers.
-   */
-  getServerAvailability(forceUpdate = false) {
-    if (!this.availableServers || forceUpdate) {
-      let update = async () => {
-        let response = await this.httpRequestGET(availableServersURL);
-        this.availableServers = await response.json();
-      };
-      update();
-      this.emit(ExperimentServerService.EVENTS.UPDATE_SERVER_AVAILABILITY, this.availableServers);
-    }
-
-    return this.availableServers;
-  }
-
-  /**
-   * Get the server config for a given server ID.
-   * @param {string} serverID - ID of the server
-   * @returns {object} The server configuration
-   */
-  getServerConfig(serverID) {
-    return this.httpRequestGET(proxyServerURL + '/' + serverID)
-      .then(async (response) => {
-        return await response.json();
-      })
-      .catch(/*serverError.displayHTTPError*/ErrorHandlerService.instance.displayServerHTTPError);
   }
 
   /**
@@ -239,8 +140,13 @@ class ExperimentServerService extends HttpService {
     });
   };
 
-  //TODO: maybe move to separate simulation-status-service
-  async getSimulationState(serverURL, simulationID) {
+  /**
+   * Get the state the simulation is currently in.
+   * @param {string} serverURL URL of the server the simulation is running on
+   * @param {number} simulationID ID of the simulation
+   * @returns {object} The simulation state
+   */
+  async getState(serverURL, simulationID) {
     let url = serverURL + '/simulation/' + simulationID + '/state';
     try {
       let response = await (await this.httpRequestGET(url)).json();
@@ -251,7 +157,13 @@ class ExperimentServerService extends HttpService {
     }
   }
 
-  async updateSimulationState(serverURL, simulationID, state) {
+  /**
+   * Set the state for a simulation.
+   * @param {string} serverURL URL of the server the simulation is running on
+   * @param {number} simulationID ID of the simulation
+   * @param {EXPERIMENT_STATE} state state to set for the simulation
+   */
+  async updateState(serverURL, simulationID, state) {
     let url = serverURL + '/simulation/' + simulationID + '/state';
     try {
       let response = await this.httpRequestPUT(url, JSON.stringify(state));
@@ -263,8 +175,4 @@ class ExperimentServerService extends HttpService {
   }
 }
 
-ExperimentServerService.EVENTS = Object.freeze({
-  UPDATE_SERVER_AVAILABILITY: 'UPDATE_SERVER_AVAILABILITY'
-});
-
-export default ExperimentServerService;
+export default SimulationService;

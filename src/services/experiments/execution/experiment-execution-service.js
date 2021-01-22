@@ -1,7 +1,8 @@
 import _ from 'lodash';
 
 import NrpAnalyticsService from '../../nrp-analytics-service.js';
-import ExperimentServerService from './experiment-server-service.js';
+import ServerResourcesService from './server-resources-service.js';
+import SimulationService from './simulation-service.js';
 import { HttpService } from '../../http-service.js';
 import { EXPERIMENT_STATE } from '../experiment-constants.js';
 
@@ -53,13 +54,13 @@ class ExperimentExecutionService extends HttpService {
     let fatalErrorOccurred = false;
     let serversToTry = experiment.devServer
       ? [experiment.devServer]
-      : ExperimentServerService.instance.getServerAvailability(true).map(s => s.id);
+      : ServerResourcesService.instance.getServerAvailability(true).map(s => s.id);
 
     let brainProcesses = launchSingleMode ? 1 : experiment.configuration.brainProcesses;
 
     //TODO: placeholder, register actual progress callback later
     let progressCallback = (msg) => {
-      //console.info(msg);
+      console.info(msg);
     };
 
     let launchOnNextServer = async () => {
@@ -70,7 +71,7 @@ class ExperimentExecutionService extends HttpService {
       }
 
       let server = nextServer[0];
-      let serverConfig = await ExperimentServerService.instance.getServerConfig(server);
+      let serverConfig = await ServerResourcesService.instance.getServerConfig(server);
 
       return await this.launchExperimentOnServer(
         experiment.id,
@@ -148,14 +149,14 @@ class ExperimentExecutionService extends HttpService {
       progressCallback({ main: 'Initialize Simulation...' });
 
       // register for messages during initialization
-      ExperimentServerService.instance.registerForRosStatusInformation(
+      SimulationService.instance.registerForRosStatusInformation(
         serverConfiguration.rosbridge.websocket,
         progressCallback
       );
 
-      ExperimentServerService.instance.simulationReady(serverURL, simInitData.creationUniqueID)
+      SimulationService.instance.simulationReady(serverURL, simInitData.creationUniqueID)
         .then((simulation) => {
-          ExperimentServerService.instance.initConfigFiles(serverURL, simulation.simulationID)
+          SimulationService.instance.initConfigFiles(serverURL, simulation.simulationID)
             .then(() => {
               let simulationURL = 'esv-private/experiment-view/' + server + '/' + experimentID + '/' +
                 privateExperiment + '/' + simulation.simulationID;
@@ -183,7 +184,7 @@ class ExperimentExecutionService extends HttpService {
         simulationID: simulation.runningSimulation.experimentID
       });*/
 
-      ExperimentServerService.instance
+      ServerResourcesService.instance
         .getServerConfig(simulation.server)
         .then((serverConfig) => {
           let serverURL = serverConfig.gzweb['nrp-services'];
@@ -191,15 +192,15 @@ class ExperimentExecutionService extends HttpService {
 
           function updateSimulationState(state) {
             /*eslint-disable camelcase*/
-            return ExperimentServerService.instance.updateSimulationState(
+            return SimulationService.instance.updateState(
               serverURL,
               simulationID,
               { state: state }
             );
           }
 
-          return ExperimentServerService.instance
-            .getSimulationState(serverURL, simulationID)
+          return SimulationService.instance
+            .getState(serverURL, simulationID)
             .then((data) => {
               if (!data || !data.state) {
                 return Promise.reject();

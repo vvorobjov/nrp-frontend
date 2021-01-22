@@ -114,3 +114,14 @@
 .server-status-restricted {
   background-color: #f0ad4e;
 }
+
+.h4 {
+  font-size: 1.2em;
+  font-weight: bold;
+  padding-bottom: 10px;
+}
+
+.exp-title-sim-info {
+  padding-left: 20px;
+  font-style: italic;
+}
