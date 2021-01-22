@@ -1,10 +1,13 @@
-import React from 'react';
 import JSZip from 'jszip';
+
+import ExperimentStorageService from './experiment-storage-service.js';
+import { HttpService } from '../../http-service.js';
+import ErrorHandlingService from '../../error-handler-service.js';
 
 let _instance = null;
 const SINGLETON_ENFORCER = Symbol();
 
-export default class ImportExperimentService extends React.Component {
+class ImportExperimentService extends HttpService {
   constructor(enforcer) {
     super();
     if (enforcer !== SINGLETON_ENFORCER) {
@@ -21,7 +24,7 @@ export default class ImportExperimentService extends React.Component {
   }
 
   createImportErrorPopup(error) {
-    this.nrpErrorDialog.open({
+    ErrorHandlingService.instance.displayError({
       type: 'Import Error.',
       message: error.data
     });
@@ -48,7 +51,7 @@ export default class ImportExperimentService extends React.Component {
   }
 
   scanStorage() {
-    return this.storageServer
+    return ExperimentStorageService.instance
       .scanStorage()
       .then(this.getScanStorageResponse)
       .catch(this.createImportPopupError);
@@ -63,7 +66,7 @@ export default class ImportExperimentService extends React.Component {
     let promises = [];
     Array.from(files).forEach(file => {
       promises.push(
-        this.$q((resolve, reject) => {
+        new Promise((resolve, reject) => {
           let reader = new FileReader();
           reader.onerror = err => {
             reader.abort();
@@ -83,29 +86,29 @@ export default class ImportExperimentService extends React.Component {
           }
         })
           .then(([filepath, filecontent]) =>
-            this.$q.resolve(
+            Promise.resolve(
               zip.file(filepath, filecontent, { createFolders: true })
             )
           )
           .catch(err => {
             this.createImportErrorPopup(err);
-            return this.$q.reject(err);
+            return Promise.reject(err);
           })
       );
     });
 
-    return this.$q
+    return Promise
       .all(promises)
       .then(() => zip.generateAsync({ type: 'blob' }))
       .catch(err => {
         this.createImportErrorPopup(err);
-        return this.$q.reject(err);
+        return Promise.reject(err);
       });
   }
 
   importExperimentFolder(e) {
     return this.zipExperimentFolder(e).then(zipContent => {
-      return this.storageServer
+      return ExperimentStorageService.instance
         .importExperiment(zipContent)
         .catch(this.createImportErrorPopup);
     });
@@ -125,27 +128,27 @@ export default class ImportExperimentService extends React.Component {
       }
     });
     let promises = zipFiles.map(zipFile => {
-      return this.$q(resolve => {
+      return new Promise(resolve => {
         let reader = new FileReader();
         reader.onload = f => resolve(f.target.result);
         reader.readAsArrayBuffer(zipFile);
       });
     });
-    return this.$q.all(promises);
+    return Promise.all(promises);
   }
 
   importZippedExperiment(e) {
     let promises = this.readZippedExperimentExperiment(e)
       .then(zipContents =>
         zipContents.map(zipContent =>
-          this.storageServer.importExperiment(zipContent).catch(err => {
+          ExperimentStorageService.instance.importExperiment(zipContent).catch(err => {
             this.createImportErrorPopup(err);
-            return this.$q.reject();
+            return Promise.reject();
           })
         )
       )
       .then(responses =>
-        this.$q
+        Promise
           .all(responses)
           .then(responses => this.getImportZipResponses(responses))
       );
@@ -153,3 +156,5 @@ export default class ImportExperimentService extends React.Component {
   }
 
 }
+
+export default ImportExperimentService;

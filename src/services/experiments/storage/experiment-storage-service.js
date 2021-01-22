@@ -73,6 +73,14 @@ class ExperimentStorageService extends HttpService {
     return this.experiments;
   };
 
+  async loadExperiments(){
+    //TODO
+  }
+
+  async selectExperiment(){
+    //TODO
+  }
+
   /**
    * Retrieves the thumbnail image for a given experiment.
    * @param {string} experimentName - name of the experiment
@@ -110,6 +118,18 @@ class ExperimentStorageService extends HttpService {
         exp.configuration.brainProcesses = 1;
       }
     });
+  }
+
+  async importExperiment(zipContent){
+    let url = `${config.api.proxy.url}${endpoints.proxy.storage.importExperiment.url}`;
+    let response = await this.httpRequestPOST(url, zipContent);
+    return response;
+  }
+
+  async scanStorage(){
+    let url = `${config.api.proxy.url}${endpoints.proxy.storage.scanStorage.url}`;
+    let response = await this.httpRequestPOST(url);
+    return response;
   }
 }
 

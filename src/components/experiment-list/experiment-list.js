@@ -10,7 +10,7 @@ export default class ExperimentList extends React.Component {
     return (
       <div className='experiment-list-wrapper'>
         <div className='experiment-list'>
-          <div ImportExperimentService ></div>
+          <ImportExperimentButtons />
           <ol>
             {this.props.experiments.map(experiment => {
               return (

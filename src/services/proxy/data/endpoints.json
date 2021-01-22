@@ -22,6 +22,12 @@
             "url": "/storage",
             "experiments": {
                 "url": "/storage/experiments"
+            },
+            "importExperiment":{
+              "url": "/importExperiment"
+            },
+            "scanStorage":{
+                "url":"/scanStorage"
             }
         }
     }

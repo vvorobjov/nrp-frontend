@@ -1,16 +1,15 @@
 import React from 'react';
 
-import ImportExperimentService from '../../services/experiments/import-experiment-service.js';
+import ImportExperimentService from '../../services/experiments/storage/import-experiment-service.js';
+import ExperimentStorageService from '../../services/experiments/storage/experiment-storage-service.js';
 
+import { FaFolder, FaFileArchive, FaAudible } from 'react-icons/fa';
 import './experiment-list-element.css';
-
-
-export default class ImportExperimentButtons extends React.Component {
+import './import-experiment-buttons.css';
+class ImportExperimentButtons extends React.Component {
   constructor(props) {
     super(props);
-    this.state = {
-      isImporting: false
-    };
+    this.state = {};
   }
 
   importFolderPopupClick() {
@@ -31,7 +30,7 @@ export default class ImportExperimentButtons extends React.Component {
     });
   }
 
-  importExperimentFolderClick(e) {
+  importExperimentFolderChange(e) {
     this.setState({
       isImporting : true
     });
@@ -41,22 +40,25 @@ export default class ImportExperimentButtons extends React.Component {
         this.setState({
           importFolderResponse : response
         });
-        this.loadExperiments(true);
-
-        // Allows to re-import the same zip file
-        let items = [...this.state.importExperimentFolderInput];
-        let item = {...items[0]};
-        item.value = '';
-        items[0] = item;
-
+        let ExperimentStorage = ExperimentStorageService.instance;
+        ExperimentStorage.loadExperiments(true);
+        ExperimentStorage.selectExperiment();
+      })
+      .finally(() => {
+        if (this.state.importExperimentFolderInput){
+          // Allows to re-import the same zip file
+          let items = [...this.state.importExperimentFolderInput];
+          let item = {...items[0]};
+          item.value = '';
+          items[0] = item;
+        }
         this.setState({
-          importExperimentFolderInput: items,
           isImporting : false
         });
       });
   };
 
-  importZippedExperimentClick(e) {
+  importZippedExperimentChange(e) {
     this.setState({
       isImporting : true
     });
@@ -66,22 +68,16 @@ export default class ImportExperimentButtons extends React.Component {
         this.setState({
           importZipResponses : responses
         });
-        this.loadExperiments(true);
+        let ExperimentStorage = ExperimentStorageService.instance;
+        ExperimentStorage.loadExperiments(true);
         const lastImportedExperiment = responses.destFolderName
           .split(',')
           .pop()
           .trim();
-        this.selectExperiment({ id: lastImportedExperiment });
+        ExperimentStorage.selectExperiment({ id: lastImportedExperiment });
       })
       .finally(() => {
-        // Allows to re-import the same zip file
-        let items = [...this.state.importExperimentFolderInput];
-        let item = {...items[0]};
-        item.value = '';
-        items[0] = item;
-
         this.setState({
-          importZippedExperimentInput: items,
           isImporting : false
         });
       });
@@ -97,12 +93,13 @@ export default class ImportExperimentButtons extends React.Component {
         this.setState({
           scanStorageResponse : response
         });
-        this.loadExperiments(true);
+        let ExperimentStorage = ExperimentStorageService.instance;
+        ExperimentStorage.loadExperiments(true);
         const lastImportedExperiment = response.addedFolders
           .split(',')
           .pop()
           .trim();
-        this.selectExperiment({ id: lastImportedExperiment });
+        ExperimentStorage.selectExperiment({ id: lastImportedExperiment });
       })
       .finally(() => {
         this.setState({
@@ -171,35 +168,34 @@ export default class ImportExperimentButtons extends React.Component {
         }
 
         {/* Import buttons */}
-        <div className="list-entry-container left-right">
-          <input type="file" multiple id="import-experiment-folder-input" webkitdirectory directory/>
-          <input type="file" multiple id="import-zip-experiment-input" accept="application/zip"/>
-          <div className="list-entry-left" style={{position:'relative'}}>
-            <img className="entity-thumbnail" src="img/esv/import-icon.png" alt='' style={{selected: 'false'}} />
-          </div>
-          <div className="list-entry-middle list-entry-container up-down" id="import-buttons">
-            <div ng-show="!running" className="list-entry-buttons list-entry-container center">
-              <div className="btn-group" role="group" ng-disabled="isImporting">
-                <button className={this.state.importExperimentFolderActive
+        <div className="list-entry-buttons flex-container center">
+          <input id="folder" type="file" style={{display:'none'}}
+            multiple directory="" webkitdirectory=""
+            onChange={(e) => this.importExperimentFolderChange(e)}/>
+          <input id="zip" type="file" style={{display:'none'}}
+            multiple webkitdirectory directory
+            onChange={(e) => this.importZippedExperimentChange(e)}/>
+          {!this.state.isImporting
+            ? <div className="btn-group" role="group">
+              <button>
+                <label for="folder" className={this.state.importExperimentFolderActive
                   ? 'import-experiment-folder-input btn btn-default'
-                  : 'btn btn-default'}
-                onClick={(e) => this.importExperimentFolderClick(e)}> <i className="fa fa-folder"></i> Import folder
-                </button>
-                <button claasName={this.state.importZippedExperimentActive
+                  : 'btn btn-default'}><FaFolder/> Import folder</label>
+              </button>
+              <button>
+                <label for="zip" className={this.state.importZippedExperimentActive
                   ? 'import-zip-experiment-input btn btn-default'
-                  : 'btn btn-default'}
-                onClick={(e) => this.importZippedExperimentClick(e)}>
-                  <i className="fa fa-file-archive"></i> Import zip
-                </button>
-                <button className="btn btn-default" onClick={() => this.scanStorageClick()}>
-                  <i className="fab fa-audible"></i> Scan Storage
-                </button>
-              </div>
+                  : 'btn btn-default'}><FaFileArchive/> Import zip</label>
+              </button>
+              <button className="btn btn-default" onClick={() => this.scanStorageClick()}>
+                <FaAudible/> Scan Storage
+              </button>
             </div>
-          </div>
+            : null}
         </div>
-        <hr className="list-separator"/>
       </div>
     );
   }
 }
+
+export default ImportExperimentButtons;
