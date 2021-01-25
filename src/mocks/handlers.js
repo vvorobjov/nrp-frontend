@@ -11,8 +11,7 @@ const availableServers = MockAvailableServers;
 const experiments = MockExperiments;
 
 const thumbnailURL = `${config.api.proxy.url}${endpoints.proxy.storage.url}` +
-  `/${experiments[0].name}/${experiments[0].configuration.thumbnail}?byname=true`;
-console.info('thumbnailURL:\n' + thumbnailURL);
+  `/${experiments[0].name}/${experiments[0].configuration.thumbnail}`;
 
 export const handlers = [
   rest.get(`${config.api.proxy.url}${endpoints.proxy.storage.experiments.url}`, (req, res, ctx) => {
@@ -26,6 +25,6 @@ export const handlers = [
     );
   }),
   rest.get(thumbnailURL, (req, res, ctx) => {
-    return res(ctx.json(JSON.stringify({})));
+    return res(ctx.body(ImageAI));
   })
 ];

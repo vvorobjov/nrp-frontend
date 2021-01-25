@@ -17,7 +17,7 @@ afterEach(() => {
   jest.restoreAllMocks();
 });
 
-test('fetches the list of experiments', async () => {
+test('fetches the list of experiments and emits event on update', async () => {
   jest.spyOn(ExperimentStorageService.instance, 'performRequest');
 
   const experiments = await ExperimentStorageService.instance.getExperiments();
@@ -35,7 +35,14 @@ test('fetches the list of experiments', async () => {
   await ExperimentStorageService.instance.getExperiments(true);
   expect(ExperimentStorageService.instance.performRequest.mock.calls.length).toBe(oldCallCount + 1);
 
-  //spyPerformRequest.mockRestore();
+  // check event is emitted when list is updated
+  let onUpdateExperiments = jest.fn();
+  ExperimentStorageService.instance.addListener(
+    ExperimentStorageService.EVENTS.UPDATE_EXPERIMENTS, onUpdateExperiments);
+  await ExperimentStorageService.instance.getExperiments(true);
+  expect(onUpdateExperiments).toHaveBeenCalled();
+  ExperimentStorageService.instance.removeListener(
+    ExperimentStorageService.EVENTS.UPDATE_EXPERIMENTS, onUpdateExperiments);
 });
 
 test('makes sure that invoking the constructor fails with the right message', () => {
@@ -58,6 +65,27 @@ test('gets a thumbnail image for experiments', async () => {
   let experiment = MockExperiments[0];
   const imageBlob = await ExperimentStorageService.instance.getThumbnail(experiment.name,
     experiment.configuration.thumbnail);
-  console.info(imageBlob);
-  expect(true).toBe(true);
+  expect(imageBlob).toBeDefined();
+});
+
+test('sorts the local experiment list by display name', async () => {
+  let mockExperimentList = [
+    {
+      configuration: { name: 'bcd' }
+    },
+    {
+      configuration: { name: 'Abc' }
+    }
+  ];
+  ExperimentStorageService.instance.experiments = mockExperimentList;
+  ExperimentStorageService.instance.sortExperiments();
+  expect(mockExperimentList[0].configuration.name).toBe('Abc');
+  expect(mockExperimentList[1].configuration.name).toBe('bcd');
+});
+
+test('fills missing experiment details', async () => {
+  const experiments = await ExperimentStorageService.instance.getExperiments(true);
+  experiments.forEach(experiment => {
+    expect(experiment.configuration.brainProcesses).toBe(1);
+  });
 });
