@@ -7,6 +7,7 @@ import 'jest-fetch-mock';
 import ExperimentStorageService from '../experiment-storage-service';
 import endpoints from '../../../proxy/data/endpoints.json';
 import config from '../../../../config.json';
+import MockExperiments from '../../../../mocks/mock_experiments.json';
 jest.mock('../../../authentication-service');
 
 const proxyEndpoint = endpoints.proxy;
@@ -19,6 +20,15 @@ test('fetches the list of experiments', async () => {
     .toHaveBeenCalledWith(experimentsUrl, ExperimentStorageService.instance.options);
   expect(experiments[0].name).toBe('braitenberg_husky_holodeck_1_0_0');
   expect(experiments[1].configuration.maturity).toBe('production');
+
+  // no forced update should not result in additional requests being sent
+  let oldCallCount = ExperimentStorageService.instance.performRequest.mock.calls.length;
+  await ExperimentStorageService.instance.getExperiments();
+  expect(ExperimentStorageService.instance.performRequest.mock.calls.length).toBe(oldCallCount);
+
+  // forced update should result in new request
+  await ExperimentStorageService.instance.getExperiments(true);
+  expect(ExperimentStorageService.instance.performRequest.mock.calls.length).toBe(oldCallCount + 1);
 });
 
 test('makes sure that invoking the constructor fails with the right message', () => {
@@ -35,4 +45,11 @@ test('the experiments service instance always refers to the same object', () => 
   const instance1 = ExperimentStorageService.instance;
   const instance2 = ExperimentStorageService.instance;
   expect(instance1).toBe(instance2);
+});
+
+test('gets a thumbnail image for experiments', async () => {
+  let experiment = MockExperiments[0];
+  let imageBlob = await ExperimentStorageService.instance.getThumbnail(experiment.name,
+    experiment.configuration.thumbnail);
+  console.info(imageBlob);
 });
