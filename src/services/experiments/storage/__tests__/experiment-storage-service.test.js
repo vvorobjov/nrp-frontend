@@ -13,8 +13,13 @@ jest.mock('../../../authentication-service');
 const proxyEndpoint = endpoints.proxy;
 const experimentsUrl = `${config.api.proxy.url}${proxyEndpoint.storage.experiments.url}`;
 
+afterEach(() => {
+  jest.restoreAllMocks();
+});
+
 test('fetches the list of experiments', async () => {
   jest.spyOn(ExperimentStorageService.instance, 'performRequest');
+
   const experiments = await ExperimentStorageService.instance.getExperiments();
   expect(ExperimentStorageService.instance.performRequest)
     .toHaveBeenCalledWith(experimentsUrl, ExperimentStorageService.instance.options);
@@ -29,6 +34,8 @@ test('fetches the list of experiments', async () => {
   // forced update should result in new request
   await ExperimentStorageService.instance.getExperiments(true);
   expect(ExperimentStorageService.instance.performRequest.mock.calls.length).toBe(oldCallCount + 1);
+
+  //spyPerformRequest.mockRestore();
 });
 
 test('makes sure that invoking the constructor fails with the right message', () => {
@@ -49,7 +56,8 @@ test('the experiments service instance always refers to the same object', () => 
 
 test('gets a thumbnail image for experiments', async () => {
   let experiment = MockExperiments[0];
-  let imageBlob = await ExperimentStorageService.instance.getThumbnail(experiment.name,
+  const imageBlob = await ExperimentStorageService.instance.getThumbnail(experiment.name,
     experiment.configuration.thumbnail);
   console.info(imageBlob);
+  expect(true).toBe(true);
 });
