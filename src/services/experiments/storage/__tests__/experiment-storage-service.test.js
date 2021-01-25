@@ -17,7 +17,7 @@ afterEach(() => {
   jest.restoreAllMocks();
 });
 
-test('fetches the list of experiments and emits event on update', async () => {
+test('fetches the list of experiments', async () => {
   jest.spyOn(ExperimentStorageService.instance, 'performRequest');
 
   const experiments = await ExperimentStorageService.instance.getExperiments();
@@ -34,8 +34,9 @@ test('fetches the list of experiments and emits event on update', async () => {
   // forced update should result in new request
   await ExperimentStorageService.instance.getExperiments(true);
   expect(ExperimentStorageService.instance.performRequest.mock.calls.length).toBe(oldCallCount + 1);
+});
 
-  // check event is emitted when list is updated
+test('emits an event when updating the experiment list', async () => {
   let onUpdateExperiments = jest.fn();
   ExperimentStorageService.instance.addListener(
     ExperimentStorageService.EVENTS.UPDATE_EXPERIMENTS, onUpdateExperiments);
