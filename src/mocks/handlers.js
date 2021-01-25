@@ -12,23 +12,20 @@ const experiments = MockExperiments;
 
 const thumbnailURL = `${config.api.proxy.url}${endpoints.proxy.storage.url}` +
   `/${experiments[0].name}/${experiments[0].configuration.thumbnail}?byname=true`;
-console.info(thumbnailURL);
+console.info('thumbnailURL:\n' + thumbnailURL);
 
 export const handlers = [
   rest.get(`${config.api.proxy.url}${endpoints.proxy.storage.experiments.url}`, (req, res, ctx) => {
-    console.info('experiments handler');
     return res(
       ctx.json(experiments)
     );
   }),
   rest.get(`${config.api.proxy.url}${endpoints.proxy.availableServers.url}`, (req, res, ctx) => {
-    console.info('availableServers handler');
     return res(
       ctx.json(availableServers)
     );
   }),
   rest.get(thumbnailURL, (req, res, ctx) => {
-    console.info('thumbnail request');
-    return res(ctx.json(JSON.stringify({})/*new Blob(ImageAI, {type: 'image/jpg'})*/));
+    return res(ctx.json(JSON.stringify({})));
   })
 ];

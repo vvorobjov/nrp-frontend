@@ -91,9 +91,7 @@ class ExperimentStorageService extends HttpService {
   async getThumbnail(experimentName, thumbnailFilename) {
     let url = config.api.proxy.url + endpoints.proxy.storage.url +
       '/' + experimentName + '/' + thumbnailFilename + '?byname=true';
-    console.info('getThumbnail: ' + url);
     let response = await this.httpRequestGET(url);
-    console.info(response);
     let image = await response.blob();
     return image;
   }
