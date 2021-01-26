@@ -39,7 +39,7 @@ class ExperimentStorageService extends HttpService {
    */
   startUpdates() {
     this.getExperiments(true);
-    this.timerPollExperiments = setInterval(
+    this.intervalPollExperiments = setInterval(
       () => {
         this.getExperiments(true);
       },
@@ -51,7 +51,7 @@ class ExperimentStorageService extends HttpService {
    * Stop polling updates.
    */
   stopUpdates() {
-    this.timerPollExperiments && clearInterval(this.timerPollExperiments);
+    this.intervalPollExperiments && clearInterval(this.intervalPollExperiments);
   }
 
   /**
@@ -122,6 +122,10 @@ class ExperimentStorageService extends HttpService {
 
 ExperimentStorageService.EVENTS = Object.freeze({
   UPDATE_EXPERIMENTS: 'UPDATE_EXPERIMENTS'
+});
+
+ExperimentStorageService.CONSTANTS = Object.freeze({
+  INTERVAL_POLL_EXPERIMENTS: INTERVAL_POLL_EXPERIMENTS
 });
 
 export default ExperimentStorageService;
