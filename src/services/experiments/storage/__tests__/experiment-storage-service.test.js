@@ -14,6 +14,8 @@ jest.mock('../../../authentication-service');
 const proxyEndpoint = endpoints.proxy;
 const experimentsUrl = `${config.api.proxy.url}${proxyEndpoint.storage.experiments.url}`;
 
+jest.setTimeout(3 * ExperimentStorageService.CONSTANTS.INTERVAL_POLL_EXPERIMENTS);
+
 afterEach(() => {
   jest.restoreAllMocks();
 });
@@ -45,6 +47,25 @@ test('emits an event when updating the experiment list', async () => {
   expect(onUpdateExperiments).toHaveBeenCalled();
   ExperimentStorageService.instance.removeListener(
     ExperimentStorageService.EVENTS.UPDATE_EXPERIMENTS, onUpdateExperiments);
+});
+
+test('does automatic poll updates of experiment list which can be stopped', (done) => {
+  jest.spyOn(ExperimentStorageService.instance, 'getExperiments');
+
+  // check that getExperiments is periodically called
+  let numCallsT0 = ExperimentStorageService.instance.getExperiments.mock.calls.length;
+  setTimeout(() => {
+    let numCallsT1 = ExperimentStorageService.instance.getExperiments.mock.calls.length;
+    expect(numCallsT1 > numCallsT0).toBe(true);
+
+    // stop updates and check that no more calls occur
+    ExperimentStorageService.instance.stopUpdates();
+    setTimeout(() => {
+      let numCallsT2 = ExperimentStorageService.instance.getExperiments.mock.calls.length;
+      expect(numCallsT2 === numCallsT1).toBe(true);
+      done();
+    }, ExperimentStorageService.CONSTANTS.INTERVAL_POLL_EXPERIMENTS);
+  }, ExperimentStorageService.CONSTANTS.INTERVAL_POLL_EXPERIMENTS);
 });
 
 test('makes sure that invoking the constructor fails with the right message', () => {

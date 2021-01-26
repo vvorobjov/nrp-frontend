@@ -1,7 +1,10 @@
 {
   "name": "nrp-frontend",
   "jest": {
-    "coverageReporters": ["html","cobertura"]
+    "coverageReporters": ["html","cobertura"],
+    "collectCoverageFrom": [
+      "src/services/**/*.js"
+    ]
   },
   "version": "0.1.0",
   "private": true,
