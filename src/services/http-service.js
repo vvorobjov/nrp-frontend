@@ -1,3 +1,6 @@
+
+import {EventEmitter} from 'events';
+
 import AuthenticationService from './authentication-service.js';
 
 /**
@@ -5,11 +8,13 @@ import AuthenticationService from './authentication-service.js';
  * If children need other options they can override the options or the
  * http verb (GET, POST, PUT etc) functions.
  */
-export class HttpService {
+export class HttpService extends EventEmitter {
   /**
    * Create a simple http request object with default options, default method is GET
    */
   constructor() {
+    super();
+
     this.options = {
       method: 'GET', // *GET, POST, PUT, DELETE, etc.
       mode: 'cors', // no-cors, *cors, same-origin
@@ -37,7 +42,6 @@ export class HttpService {
     // Add authorization header
     options.headers.Authorization = `Bearer ${AuthenticationService.instance.getStoredToken()}`;
     if (data) {
-      console.info(options);
       options.body = data;
     }
 
