@@ -52,13 +52,13 @@ test('emits an event when updating the experiment list', async () => {
 test('does automatic poll updates of experiment list which can be stopped', (done) => {
   jest.spyOn(ExperimentStorageService.instance, 'getExperiments');
 
-  // check that getExperiments is periodically called
+  // check that getExperiments is periodically called after poll interval
   let numCallsT0 = ExperimentStorageService.instance.getExperiments.mock.calls.length;
   setTimeout(() => {
     let numCallsT1 = ExperimentStorageService.instance.getExperiments.mock.calls.length;
     expect(numCallsT1 > numCallsT0).toBe(true);
 
-    // stop updates and check that no more calls occur
+    // stop updates and check that no more calls occur after poll interval
     ExperimentStorageService.instance.stopUpdates();
     setTimeout(() => {
       let numCallsT2 = ExperimentStorageService.instance.getExperiments.mock.calls.length;
