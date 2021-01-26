@@ -1,7 +1,3 @@
-import _ from 'lodash';
-import { Subject, timer } from 'rxjs';
-import { switchMap, filter, map, multicast } from 'rxjs/operators';
-
 import ErrorHandlerService from '../../error-handler-service.js';
 import RoslibService from '../../roslib-service.js';
 import { HttpService } from '../../http-service.js';
@@ -12,7 +8,7 @@ import config from '../../../config.json';
 let _instance = null;
 const SINGLETON_ENFORCER = Symbol();
 
-let rosConnections = new Map();
+let rosStatusListeners = new Map();
 const INTERVAL_CHECK_SIMULATION_READY = 1000;
 
 /**
@@ -105,23 +101,23 @@ class SimulationService extends HttpService {
    */
   registerForRosStatusInformation(rosbridgeWebsocket, setProgressMessage) {
     let destroyCurrentConnection = () => {
-      if (rosConnections.has(rosbridgeWebsocket)) {
-        let statusListener = rosConnections.get(rosbridgeWebsocket).statusListener;
+      if (rosStatusListeners.has(rosbridgeWebsocket)) {
+        let statusListener = rosStatusListeners.get(rosbridgeWebsocket);
         // remove the progress bar callback only, unsubscribe terminates the rosbridge
         // connection for any other subscribers on the status topic
         statusListener.removeAllListeners();
-        rosConnections.delete(rosbridgeWebsocket);
+        rosStatusListeners.delete(rosbridgeWebsocket);
       }
     };
 
     destroyCurrentConnection();
 
-    let rosConnection = RoslibService.instance.getOrCreateConnectionTo(rosbridgeWebsocket);
+    let rosConnection = RoslibService.instance.getConnection(rosbridgeWebsocket);
     let statusListener = RoslibService.instance.createStringTopic(
       rosConnection,
       config['ros-topics'].status
     );
-    rosConnections.set(rosbridgeWebsocket, { rosConnection, statusListener });
+    rosStatusListeners.set(rosbridgeWebsocket, statusListener);
 
     statusListener.subscribe((data) => {
       let message = JSON.parse(data.data);

@@ -14,6 +14,8 @@ class RoslibService {
     if (enforcer !== SINGLETON_ENFORCER) {
       throw new Error('Use ' + this.constructor.name + '.instance');
     }
+
+    this.connections = new Map();
   }
 
   static get instance() {
@@ -28,10 +30,13 @@ class RoslibService {
    * Create a new connection or return an existing one to a ROS websocket.
    * @param {string} url - URL of the ROS websocket to connect to
    */
-  getOrCreateConnectionTo(url) {
-    url = url + '?token=' + AuthenticationService.instance.getStoredToken();
+  getConnection(url) {
+    if (!this.connections.has(url)) {
+      let urlWithAuth = url + '?token=' + AuthenticationService.instance.getStoredToken();
+      this.connections.set(url, new ROSLIB.Ros({ url: urlWithAuth }));
+    }
 
-    return new ROSLIB.Ros({ url: url });
+    return this.connections.get(url);
   };
 
   /**
