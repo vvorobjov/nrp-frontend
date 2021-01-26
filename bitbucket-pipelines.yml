@@ -4,7 +4,6 @@
 #  The workflow allows running tests and code linting on the default branch.
 
 image: node:15.0.1
-
 pipelines:
   branches:
     development:
@@ -16,6 +15,13 @@ pipelines:
             - cp src/mocks/config_test.json src/config.json
             - npm install
             - npm test
+            # Coverage check
+            - npm run coverage
+            - chmod +x nrp_cobertura_check
+            - export NRP_COVERAGE_BRANCH=5
+            - export NRP_COVERAGE_LINE=12
+            - ./nrp_cobertura_check coverage/cobertura-coverage.xml
+
       - step:
           name: Code linting
           script:

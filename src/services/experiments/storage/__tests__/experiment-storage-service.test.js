@@ -7,7 +7,6 @@ import 'jest-fetch-mock';
 import ExperimentStorageService from '../experiment-storage-service';
 import endpoints from '../../../proxy/data/endpoints.json';
 import config from '../../../../config.json';
-import MockExperiments from '../../../../mocks/mock_experiments.json';
 import { storageThumbnailExperiment } from '../../../../mocks/handlers.js';
 jest.mock('../../../authentication-service');
 
