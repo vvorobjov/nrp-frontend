@@ -12,6 +12,7 @@ const experiments = MockExperiments;
 
 const thumbnailURL = `${config.api.proxy.url}${endpoints.proxy.storage.url}` +
   `/${experiments[0].name}/${experiments[0].configuration.thumbnail}`;
+export const storageThumbnailExperiment = experiments[0];
 
 export const handlers = [
   rest.get(`${config.api.proxy.url}${endpoints.proxy.storage.experiments.url}`, (req, res, ctx) => {

@@ -8,6 +8,7 @@ import ExperimentStorageService from '../experiment-storage-service';
 import endpoints from '../../../proxy/data/endpoints.json';
 import config from '../../../../config.json';
 import MockExperiments from '../../../../mocks/mock_experiments.json';
+import { storageThumbnailExperiment } from '../../../../mocks/handlers.js';
 jest.mock('../../../authentication-service');
 
 const proxyEndpoint = endpoints.proxy;
@@ -63,7 +64,7 @@ test('the experiments service instance always refers to the same object', () => 
 });
 
 test('gets a thumbnail image for experiments', async () => {
-  let experiment = MockExperiments[0];
+  let experiment = storageThumbnailExperiment;
   const imageBlob = await ExperimentStorageService.instance.getThumbnail(experiment.name,
     experiment.configuration.thumbnail);
   expect(imageBlob).toBeDefined();
