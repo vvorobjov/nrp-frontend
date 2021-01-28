@@ -26,18 +26,10 @@ class ExperimentStorageService extends HttpService {
     }
 
     this.startUpdates();
-<<<<<<< HEAD
-    if (typeof window !== 'undefined'){
-      window.onbeforeunload = () => {
-        this.stopUpdates();
-      };
-    }
-=======
     window.addEventListener('beforeunload', (event) => {
       this.stopUpdates();
       event.returnValue = '';
     });
->>>>>>> bfdbf49... test optics
   }
 
   static get instance() {

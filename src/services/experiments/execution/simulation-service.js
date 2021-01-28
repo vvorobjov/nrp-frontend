@@ -40,8 +40,8 @@ class SimulationService extends HttpService {
     let cachedConfigFiles = undefined;
     try {
       let url = serverBaseUrl + '/simulation/' + simulationID + '/resources';
-      let response = await this.httpRequestGET(url);
-      cachedConfigFiles = await response.json().resources;
+      let response = await (await this.httpRequestGET(url)).json();
+      cachedConfigFiles = response.resources;
     }
     catch (error) {
       ErrorHandlerService.instance.displayServerHTTPError(error);
@@ -60,33 +60,35 @@ class SimulationService extends HttpService {
     return new Promise((resolve, reject) => {
       let verifySimulation = () => {
         setTimeout(() => {
-          this.httpRequestGET(serverURL + '/simulation').then(async (reponse) => {
-            let continueVerify = true;
-            let simulations = await reponse.json();
+          this.httpRequestGET(serverURL + '/simulation')
+            .then(async (reponse) => {
+              let continueVerify = true;
+              let simulations = await reponse.json();
 
-            if (simulations.length > 0) {
-              let last = simulations.length - 1;
-              let state = simulations[last].state;
+              if (simulations.length > 0) {
+                let last = simulations.length - 1;
+                let state = simulations[last].state;
 
-              if (state === EXPERIMENT_STATE.PAUSED || state === EXPERIMENT_STATE.INITIALIZED) {
-                if (simulations[last].creationUniqueID === creationUniqueID) {
+                if (state === EXPERIMENT_STATE.PAUSED || state === EXPERIMENT_STATE.INITIALIZED) {
+                  if (simulations[last].creationUniqueID === creationUniqueID) {
+                    continueVerify = false;
+                    resolve(simulations[last]);
+                  }
+                  else {
+                    reject();
+                  }
+                }
+                else if (state === EXPERIMENT_STATE.HALTED || state === EXPERIMENT_STATE.FAILED) {
                   continueVerify = false;
-                  resolve(simulations[last]);
-                }
-                else {
-                  reject();
+                  reject(state);
                 }
               }
-              else if (state === EXPERIMENT_STATE.HALTED || state === EXPERIMENT_STATE.FAILED) {
-                continueVerify = false;
-                reject();
-              }
-            }
 
-            if (continueVerify) {
-              verifySimulation();
-            }
-          }).catch(reject);
+              if (continueVerify) {
+                verifySimulation();
+              }
+            })
+            .catch(reject);
         }, INTERVAL_CHECK_SIMULATION_READY);
       };
 

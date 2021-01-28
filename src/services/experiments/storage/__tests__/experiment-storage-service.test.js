@@ -8,7 +8,6 @@ import ExperimentStorageService from '../experiment-storage-service';
 import endpoints from '../../../proxy/data/endpoints.json';
 import config from '../../../../config.json';
 import MockExperiments from '../../../../mocks/mock_experiments.json';
-import { storageThumbnailExperiment } from '../../../../mocks/handlers.js';
 jest.mock('../../../authentication-service');
 
 const proxyEndpoint = endpoints.proxy;
@@ -18,6 +17,21 @@ jest.setTimeout(3 * ExperimentStorageService.CONSTANTS.INTERVAL_POLL_EXPERIMENTS
 
 afterEach(() => {
   jest.restoreAllMocks();
+});
+
+test('makes sure that invoking the constructor fails with the right message', () => {
+  expect(() => {
+    new ExperimentStorageService();
+  }).toThrow(Error);
+  expect(() => {
+    new ExperimentStorageService();
+  }).toThrowError(Error('Use ExperimentStorageService.instance'));
+});
+
+test('the experiments service instance always refers to the same object', () => {
+  const instance1 = ExperimentStorageService.instance;
+  const instance2 = ExperimentStorageService.instance;
+  expect(instance1).toBe(instance2);
 });
 
 test('fetches the list of experiments', async () => {
@@ -68,24 +82,8 @@ test('does automatic poll updates of experiment list which can be stopped', (don
   }, ExperimentStorageService.CONSTANTS.INTERVAL_POLL_EXPERIMENTS);
 });
 
-test('makes sure that invoking the constructor fails with the right message', () => {
-  expect(() => {
-    new ExperimentStorageService();
-  }).toThrow(Error);
-  expect(() => {
-    new ExperimentStorageService();
-  }).toThrowError(Error('Use ExperimentStorageService.instance'));
-
-});
-
-test('the experiments service instance always refers to the same object', () => {
-  const instance1 = ExperimentStorageService.instance;
-  const instance2 = ExperimentStorageService.instance;
-  expect(instance1).toBe(instance2);
-});
-
 test('gets a thumbnail image for experiments', async () => {
-  let experiment = storageThumbnailExperiment;
+  let experiment = MockExperiments[0];
   const imageBlob = await ExperimentStorageService.instance.getThumbnail(experiment.name,
     experiment.configuration.thumbnail);
   expect(imageBlob).toBeDefined();
