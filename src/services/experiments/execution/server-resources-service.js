@@ -106,7 +106,7 @@ class ServerResourcesService extends HttpService {
       .then(async (response) => {
         return await response.json();
       })
-      .catch(/*serverError.displayHTTPError*/ErrorHandlerService.instance.displayServerHTTPError);
+      .catch(ErrorHandlerService.instance.displayServerHTTPError);
   }
 
   _createSlurmMonitorObservable() {
