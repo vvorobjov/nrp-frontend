@@ -9,6 +9,7 @@ import MockSimulations from '../../../../mocks/mock_simulations.json';
 
 import SimulationService from '../../../../services/experiments/execution/simulation-service.js';
 import ErrorHandlerService from '../../../error-handler-service';
+import RoslibService from '../../../roslib-service';
 import { EXPERIMENT_STATE } from '../../../../services/experiments/experiment-constants.js';
 
 jest.setTimeout(10000);
@@ -92,4 +93,96 @@ test('verifies whether a simulation is ready', async () => {
   simReady = SimulationService.instance
     .simulationReady('mock-server-url', 'wrong-creation-id');
   await expect(simReady).rejects.toEqual(undefined);
+});
+
+test('register for ROS status information', () => {
+  let statusUpdateCallback = undefined;
+  let mockStatusListener = {
+    subscribe: jest.fn((callback) => {
+      statusUpdateCallback = callback;
+    }),
+    removeAllListeners: jest.fn()
+  };
+  jest.spyOn(RoslibService.instance, 'getConnection').mockImplementation();
+  jest.spyOn(RoslibService.instance, 'createStringTopic').mockImplementation(() => {
+    return mockStatusListener;
+  });
+  let progressMessageCallback = jest.fn();
+
+  // we register twice to check that original sub is destroyed and re-created without error
+  SimulationService.instance.registerForRosStatusInformation('test-ros-ws-url', progressMessageCallback);
+  SimulationService.instance.registerForRosStatusInformation('test-ros-ws-url', progressMessageCallback);
+  expect(RoslibService.instance.getConnection.mock.calls.length).toBe(2);
+  expect(mockStatusListener.removeAllListeners.mock.calls.length).toBe(1);
+
+  // send status update with task info
+  let rosStatusData = {
+    progress: {
+      task: 'test-some-task',
+      subtask: 'test-some-subtask'
+    }
+  };
+  statusUpdateCallback({ data: JSON.stringify(rosStatusData) });
+  expect(progressMessageCallback).toHaveBeenCalledWith({
+    main: rosStatusData.progress.task,
+    sub: rosStatusData.progress.subtask
+  });
+
+  // send status update indicating we're done
+  rosStatusData.progress.done = true;
+  statusUpdateCallback({ data: JSON.stringify(rosStatusData) });
+  expect(progressMessageCallback).toHaveBeenCalledWith({
+    main: 'Simulation initialized.'
+  });
+  expect(mockStatusListener.removeAllListeners.mock.calls.length).toBe(2);
+});
+
+test('can retrieve the state of a simulation', async () => {
+  let returnValueGET = undefined;
+  jest.spyOn(ErrorHandlerService.instance, 'displayServerHTTPError').mockImplementation();
+  jest.spyOn(SimulationService.instance, 'httpRequestGET').mockImplementation(() => {
+    if (SimulationService.instance.httpRequestGET.mock.calls.length === 1) {
+      returnValueGET = { state: EXPERIMENT_STATE.PAUSED }; // proper state msg
+    }
+    else if (SimulationService.instance.httpRequestGET.mock.calls.length === 2) {
+      return Promise.reject();
+    }
+
+    return Promise.resolve({
+      json: () => {
+        return returnValueGET;
+      }
+    });
+  });
+
+  // call 1 => proper return
+  let simSate = await SimulationService.instance.getState('test-url', 1);
+  expect(simSate).toBe(returnValueGET);
+
+  // call 2 => rejected
+  simSate = await SimulationService.instance.getState('test-url', 1);
+  expect(ErrorHandlerService.instance.displayServerHTTPError).toHaveBeenCalled();
+});
+
+test('can set the state of a simulation', async () => {
+  let returnValuePUT = undefined;
+  jest.spyOn(ErrorHandlerService.instance, 'onErrorSimulationUpdate').mockImplementation();
+  jest.spyOn(SimulationService.instance, 'httpRequestPUT').mockImplementation(() => {
+    if (SimulationService.instance.httpRequestGET.mock.calls.length === 1) {
+      returnValuePUT = {};
+    }
+    else if (SimulationService.instance.httpRequestGET.mock.calls.length === 2) {
+      return Promise.reject();
+    }
+
+    return Promise.resolve(returnValuePUT);
+  });
+
+  // call 1 => proper return
+  let returnValue = await SimulationService.instance.updateState('test-url', 1, EXPERIMENT_STATE.PAUSED);
+  expect(returnValue).toBe(returnValuePUT);
+
+  // call 2 => rejected
+  returnValue = await SimulationService.instance.updateState('test-url', 1, EXPERIMENT_STATE.PAUSED);
+  expect(ErrorHandlerService.instance.onErrorSimulationUpdate).toHaveBeenCalled();
 });
