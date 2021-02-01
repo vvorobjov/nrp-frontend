@@ -86,15 +86,13 @@ class ExperimentStorageService extends HttpService {
    * @returns {Blob} image object
    */
   async getThumbnail(experimentName, thumbnailFilename) {
-    let url = config.api.proxy.url + endpoints.proxy.storage.url +
-      '/' + experimentName + '/' + thumbnailFilename + '?byname=true';
-    let response = await this.httpRequestGET(url);
-    let image = await response.blob();
-    return image;
+    return await this.getBlob(experimentName, thumbnailFilename, true);
   }
 
   /**
-   * Sort the local list of experiments alphabetically.
+   * Sorts the experiment list alphabetically.
+   *
+   * @returns {Array} sorted experiment list
    */
   sortExperiments() {
     this.experiments = this.experiments.sort(
@@ -123,141 +121,121 @@ class ExperimentStorageService extends HttpService {
     });
   }
 
-  async scanStorage() {
-    let response = await this.httpRequestPOST(storageScanStorage);
-    return response
-      .then(this.getScanStorageResponse)
-      .catch(this.createImportErrorPopup);
+  /**
+   * Gets an experiment file from the storage.
+   * @param {string} experimentName - name of the experiment
+   * @param {string} filename - name of the file
+   * @param {Boolean} byName - whether to check for the file by name or not
+   *
+   * @returns the file contents (as a request object)
+   */
+  async getFile(experimentName, filename, byName = false) {
+    const url = `${config.api.proxy.url}${endpoints.proxy.storage.url}/${experimentName}/${filename}?byname=${byName}`;
+    return this.httpRequestGET(url);
   }
 
-  getScanStorageResponse(response) {
-    let scanStorageResponse = {};
-    ['deletedFolders', 'addedFolders'].forEach(name => {
-      scanStorageResponse[`${name}Number`] = response[name].length;
-      scanStorageResponse[name] = response[name].join(', ');
-    });
-    return scanStorageResponse;
+  /**
+   * Gets the list of the experiment files from the storage.
+   * @param {string} experimentName - name of the experiment
+   *
+   * @returns {Array} the list of experiment files
+   */
+  async getExperimentFiles(experimentName) {
+    const url = `${config.api.proxy.url}${endpoints.proxy.storage.url}/${experimentName}`;
+    const files = await (await this.httpRequestGET(url)).json();
+    return files;
   }
 
-  async importExperiment(zipContent){
-    let response = await this.httpRequestPOST(storageImportExperiment, zipContent);
-    return response;
+  /**
+   * Gets a file from the storage as a blob.
+   * @param {string} experimentName - name of the experiment
+   * @param {string} filename - name of the file
+   * @param {Boolean} byName - whether to check for the file by name or not
+   *
+   * @returns {Blob} the contents of the file as a blob
+   */
+  async getBlob(experimentName, filename, byName) {
+    return await (await this.getFile(experimentName, filename, byName)).blob();
   }
 
-  createImportErrorPopup(error) {
-    ErrorHandlingService.instance.displayError({
-      type: 'Import Error.',
-      message: error.data
-    });
+
+  /**
+   * Deletes an experiment entity (folder or file) from the storage.
+   * Called by other functions, not to be called independently.
+   *
+   * @param {string} experimentName - name of the experiment
+   * @param {string} entityName - name of the entity
+   * @param {Boolean} byname - whether to check for the entity by name or not
+   * @param {string} type - folder or file
+   *
+   * @returns the request object containing the status code
+   */
+  async deleteEntity(experimentName, entityName, byname, type) {
+    const url = new URL(`${config.api.proxy.url}${endpoints.proxy.storage.url}/${experimentName}/${entityName}`);
+    url.searchParams.append('byname', byname);
+    url.searchParams.append('type', type);
+
+    return this.httpRequestDELETE(url);
   }
 
-  getImportZipResponses(responses) {
-    let importZipResponses = {};
-    importZipResponses.numberOfZips = responses.length;
-    ['zipBaseFolderName', 'destFolderName'].forEach(name => {
-      importZipResponses[name] = responses
-        .map(response => response[name])
-        .join(', ');
-    });
-    return importZipResponses;
+  /**
+   * Deletes an experiment file from the storage.
+   * @param {string} experimentName - name of the experiment
+   * @param {string} filename - name of the file
+   * @param {Boolean} byname - whether to check for the file by name or not
+   *
+   * @returns the request object containing the status code
+   */
+  async deleteFile(experimentName, filename, byname = false) {
+    return this.deleteEntity(experimentName, filename, byname, 'file');
   }
 
-  zipExperimentFolder(e) {
-    let zip = new JSZip();
-    let files = e.target.files;
-    if (files.length === 0){
-      return; // The folder upload was aborted by user
+  /**
+   * Deletes an experiment folder from the storage.
+   * @param {string} experimentName - name of the experiment
+   * @param {string} folderName - name of the folder
+   * @param {Boolean} byname - whether to check for the folder by name or not
+   *
+   * @returns the request object containing the status code
+   */
+  async deleteFolder(experimentName, folderName, byname = false) {
+    return this.deleteEntity(experimentName, folderName, byname, 'folder');
+  }
+
+  /**
+   * Creates a file in an experiment folder from the storage.
+   * @param {string} experimentName - name of the experiment
+   * @param {string} filename - name of the file
+   * @param data - the file contents in the corresponding
+   * type (i.e. application/json, text/plain, application/octet-stream)
+   * @param {Boolean} byname - whether to create the file by name or not
+   * @param {string} contentType - the conten type of the file
+   *
+   * @returns the request object containing the status code
+   */
+  async setFile(experimentName, filename, data, byname = true, contentType = 'text/plain') {
+    const url = new URL(`${config.api.proxy.url}${endpoints.proxy.storage.url}/${experimentName}/${filename}`);
+    url.searchParams.append('byname', byname);
+
+    let requestOptions = {
+      ...this.POSTOptions, ...{ headers: { 'Content-Type': contentType } }
+    };
+
+    if (contentType === 'text/plain') {
+      return this.httpRequestPOST(url, requestOptions, data);
     }
-    let promises = [];
-    Array.from(files).forEach(file => {
-      promises.push(
-        new Promise((resolve, reject) => {
-          let reader = new FileReader();
-          reader.onerror = err => {
-            reader.abort();
-            return reject(err);
-          };
-          reader.onload = f =>
-            resolve([file.webkitRelativePath, f.target.result]);
-          if (
-            file.type.startsWith('image') ||
-            file.type === 'application/zip' ||
-            file.webkitRelativePath.split('.').pop() === 'h5'
-          ) {
-            reader.readAsArrayBuffer(file);
-          }
-          else {
-            reader.readAsText(file);
-          }
-        })
-          .then(([filepath, filecontent]) =>
-            Promise.resolve(
-              zip.file(filepath, filecontent, { createFolders: true })
-            )
-          )
-          .catch(err => {
-            this.createImportErrorPopup(err);
-            return Promise.reject(err);
-          })
-      );
-    });
-
-    return Promise
-      .all(promises)
-      .then(() => zip.generateAsync({ type: 'blob' }))
-      .catch(err => {
-        this.createImportErrorPopup(err);
-        return Promise.reject(err);
-      });
-  }
-
-  importExperimentFolder(e) {
-    return this.zipExperimentFolder(e).then(zipContent => {
-      return ExperimentStorageService.instance
-        .importExperiment(zipContent)
-        .catch(this.createImportErrorPopup);
-    });
-  }
-
-  readZippedExperimentExperiment(e) {
-    let files = e.target.files;
-    let zipFiles = [];
-    Array.from(files).forEach(file => {
-      if (file.type !== 'application/zip') {
-        this.createImportErrorPopup(
-          `The file ${file.name} cannot be imported because it is not a zip file.`
-        );
-      }
-      else {
-        zipFiles.push(file);
-      }
-    });
-    let promises = zipFiles.map(zipFile => {
-      return new Promise(resolve => {
-        let reader = new FileReader();
-        reader.onload = f => resolve(f.target.result);
-        reader.readAsArrayBuffer(zipFile);
-      });
-    });
-    return Promise.all(promises);
-  }
-
-  importZippedExperiment(e) {
-    let promises = this.readZippedExperimentExperiment(e)
-      .then(zipContents =>
-        zipContents.map(zipContent =>
-          ExperimentStorageService.instance.importExperiment(zipContent).catch(err => {
-            this.createImportErrorPopup(err);
-            return Promise.reject();
-          })
-        )
-      )
-      .then(responses =>
-        Promise
-          .all(responses)
-          .then(responses => this.getImportZipResponses(responses))
-      );
-    return promises;
+    else if (contentType === 'application/json') {
+      return this.httpRequestPOST(url, requestOptions, JSON.stringify(data));
+    }
+    else if (contentType === 'application/octet-stream') {
+      // placeholder for blob files where the data has to be transormed,
+      // possibly to Uint8Array
+      return this.httpRequestPOST(url, requestOptions,/* new Uint8Array(data) */data);
+    }
+    else {
+      return new Error('Content-Type for setFile request not specified,' +
+        'please make sure that the contentType and the body type match.');
+    }
   }
 }
 
