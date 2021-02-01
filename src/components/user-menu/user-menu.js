@@ -17,21 +17,18 @@ export default class UserMenu extends React.Component {
     };
   }
 
-  componentDidMount() {
-    this._userRequest = NrpUserService.instance
-      .getCurrentUser()
-      .then((currentUser) => {
-        this._userRequest = null;
-        this.setState(() => ({
+  async componentDidMount() {
+    NrpUserService.instance.getCurrentUser().then((currentUser) => {
+      if (!this.cancelGetCurrentUser) {
+        this.setState({
           user: currentUser
-        }));
-      });
+        });
+      }
+    });
   }
 
   componentWillUnmount() {
-    if (this._userRequest) {
-      this._userRequest.cancel();
-    }
+    this.cancelGetCurrentUser = true;
   }
 
   onClickLogout() {

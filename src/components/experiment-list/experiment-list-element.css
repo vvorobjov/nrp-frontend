@@ -12,27 +12,15 @@
 }
 
 .flex-container .selected {
-  background: linear-gradient(
-    to right,
-    rgba(255, 255, 255, 0.8) 0%,
-    rgba(245, 245, 245, 0.8) 100%
-  );
+  background: linear-gradient( to right, rgba(255, 255, 255, 0.8) 0%, rgba(245, 245, 245, 0.8) 100%);
 }
 
 .flex-container.hover-wizard {
-  background: linear-gradient(
-    to right,
-    rgba(255, 255, 255, 0.8) 0%,
-    rgba(230, 239, 255, 0.8) 100%
-  );
+  background: linear-gradient( to right, rgba(255, 255, 255, 0.8) 0%, rgba(230, 239, 255, 0.8) 100%);
 }
 
 .flex-container.selected-wizard {
-  background: linear-gradient(
-    to right,
-    rgba(255, 255, 255, 0.8) 0%,
-    rgba(230, 239, 255, 0.8) 100%
-  );
+  background: linear-gradient( to right, rgba(255, 255, 255, 0.8) 0%, rgba(230, 239, 255, 0.8) 100%);
 }
 
 .flex-container.left-right {
@@ -69,12 +57,13 @@
   width: 359px;
 }
 
-.list-entry-left > img {
+.list-entry-left>img {
   width: 100%;
   object-fit: contain;
   object-position: top;
   height: 100%;
 }
+
 .list-entry-middle {
   flex: 1;
 }
@@ -124,4 +113,9 @@
 .exp-title-sim-info {
   padding-left: 20px;
   font-style: italic;
+}
+
+.entity-thumbnail {
+  max-width: 230px;
+  max-height: 160px;
 }
