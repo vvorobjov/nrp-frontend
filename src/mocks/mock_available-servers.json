@@ -25,6 +25,6 @@
             "websocket": "ws://1.2.3.4:8080/rosbridge"
         },
         "serverJobLocation": "1.2.3.4",
-        "id": "1.2.3.4:8080"
+        "id": "1.2.3.4-port-8080"
     }
 ]

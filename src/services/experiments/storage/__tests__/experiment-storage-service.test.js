@@ -15,6 +15,15 @@ const experimentsUrl = `${config.api.proxy.url}${proxyEndpoint.storage.experimen
 
 jest.setTimeout(3 * ExperimentStorageService.CONSTANTS.INTERVAL_POLL_EXPERIMENTS);
 
+let onWindowBeforeUnloadCb = undefined;
+beforeEach(() => {
+  jest.spyOn(window, 'addEventListener').mockImplementation((event, cb) => {
+    if (event === 'beforeunload') {
+      onWindowBeforeUnloadCb = cb;
+    }
+  });
+});
+
 afterEach(() => {
   jest.restoreAllMocks();
 });
@@ -80,6 +89,15 @@ test('does automatic poll updates of experiment list which can be stopped', (don
       done();
     }, ExperimentStorageService.CONSTANTS.INTERVAL_POLL_EXPERIMENTS);
   }, ExperimentStorageService.CONSTANTS.INTERVAL_POLL_EXPERIMENTS);
+});
+
+test('should stop polling updates when window is unloaded', async () => {
+  let service = ExperimentStorageService.instance;
+  expect(onWindowBeforeUnloadCb).toBeDefined();
+
+  jest.spyOn(service, 'stopUpdates');
+  onWindowBeforeUnloadCb({});
+  expect(service.stopUpdates).toHaveBeenCalled();
 });
 
 test('gets a thumbnail image for experiments', async () => {

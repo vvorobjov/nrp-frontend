@@ -53,10 +53,8 @@ export default class ExperimentListElement extends React.Component {
   }
 
   getAvailabilityInfo() {
-    const clusterAvailability = ExperimentServerService.instance.getClusterAvailability();
-
     let status;
-    if (clusterAvailability && clusterAvailability.free > CLUSTER_THRESHOLDS.AVAILABLE) {
+    if (this.props.availableServers && this.props.availableServers.length > CLUSTER_THRESHOLDS.AVAILABLE) {
       status = 'Available';
     }
     else if (!this.props.availableServers || this.props.availableServers.length === 0) {
@@ -66,17 +64,14 @@ export default class ExperimentListElement extends React.Component {
       status = 'Restricted';
     }
 
-    let cluster = `Cluster availability: ${clusterAvailability.free} / ${clusterAvailability.total}`;
     let backends = `Backends: ${this.props.availableServers.length}`;
 
-    return `${status}\n${cluster}\n${backends}`;
+    return `${status}\n${backends}`;
   }
 
   getServerStatusClass() {
-    const clusterAvailability = ExperimentServerService.instance.getClusterAvailability();
-
     let status = '';
-    if (clusterAvailability && clusterAvailability.free > CLUSTER_THRESHOLDS.AVAILABLE) {
+    if (this.props.availableServers && this.props.availableServers.length > CLUSTER_THRESHOLDS.AVAILABLE) {
       status = 'server-status-available';
     }
     else if (!this.props.availableServers || this.props.availableServers.length === 0) {
@@ -171,12 +166,13 @@ export default class ExperimentListElement extends React.Component {
               <div className='btn-group' role='group' >
                 {this.canLaunchExperiment &&
                   exp.configuration.experimentFile && exp.configuration.bibiConfSrc ?
-                  <button onClick={() => {
-                    ExperimentExecutionService.instance.startNewExperiment(exp, false);
-                  }}
-                  disabled={this.isLaunchDisabled()}
-                  className='btn btn-default'
-                  title={this.launchButtonTitle} >
+                  <button
+                    onClick={() => {
+                      ExperimentExecutionService.instance.startNewExperiment(exp, false);
+                    }}
+                    disabled={this.isLaunchDisabled()}
+                    className='btn btn-default'
+                    title={this.launchButtonTitle} >
                     <i className='fa fa-plus'></i> Launch
                   </button>
                   : null}

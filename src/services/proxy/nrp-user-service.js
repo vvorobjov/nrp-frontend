@@ -40,8 +40,7 @@ class NrpUserService extends HttpService {
    * @returns {promise} Request for the user
    */
   async getUser(userID) {
-    let response = await this.httpRequestGET(this.IDENTITY_BASE_URL + '/' + userID);
-    return response.json();
+    return await (await this.httpRequestGET(this.IDENTITY_BASE_URL + '/' + userID)).json();
   }
 
   /**
@@ -62,8 +61,7 @@ class NrpUserService extends HttpService {
    */
   async getCurrentUser() {
     if (!this.currentUser) {
-      let response = await this.httpRequestGET(this.IDENTITY_ME_URL);
-      this.currentUser = response.json();
+      this.currentUser = await (await this.httpRequestGET(this.IDENTITY_ME_URL)).json();
     }
 
     return this.currentUser;

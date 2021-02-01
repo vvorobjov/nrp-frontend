@@ -30,10 +30,10 @@ class NrpAnalyticsService {
       options.value = _.toInteger(options.value);
     }
     return NrpUserService.instance.getCurrentUser().then((user) => {
-      var extendedOptions = _.extend(options, {
+      /*var extendedOptions = _.extend(options, {
         label: user.displayName
       });
-      //$analytics.eventTrack(actionName, extendedOptions);
+      $analytics.eventTrack(actionName, extendedOptions);*/
       console.error('implement $analytics.eventTrack(actionName, extendedOptions)');
     });
   }
