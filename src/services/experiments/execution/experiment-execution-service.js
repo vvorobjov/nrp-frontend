@@ -225,19 +225,6 @@ class ExperimentExecutionService extends HttpService {
               }
 
               return Promise.reject();
-
-              /*switch (data.state) {
-                case EXPERIMENT_STATE.CREATED: //CREATED --(initialize)--> PAUSED --(stop)--> STOPPED
-                  return updateSimulationState(EXPERIMENT_STATE.INITIALIZED).then(
-                    _.partial(updateSimulationState, EXPERIMENT_STATE.STOPPED)
-                  );
-                case EXPERIMENT_STATE.STARTED: //STARTED --(stop)--> STOPPED
-                case EXPERIMENT_STATE.PAUSED: //PAUSED  --(stop)--> STOPPED
-                case EXPERIMENT_STATE.HALTED: //HALTED  --(stop)--> FAILED
-                  return updateSimulationState(EXPERIMENT_STATE.STOPPED);
-                default:
-                  return Promise.reject();
-              }*/
             });
           /*eslint-enable camelcase*/
         })

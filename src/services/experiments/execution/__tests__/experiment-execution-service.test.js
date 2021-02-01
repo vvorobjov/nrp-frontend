@@ -138,11 +138,13 @@ test('respects settings for specific dev server to launch and single brain proce
 test('can launch an experiment given a specific server + configuration', async () => {
   jest.spyOn(ExperimentExecutionService.instance, 'httpRequestPOST').mockImplementation();
   jest.spyOn(SimulationService.instance, 'registerForRosStatusInformation').mockImplementation();
+  let simulationReadyResult = Promise.resolve(MockSimulations[0]);
   jest.spyOn(SimulationService.instance, 'simulationReady').mockImplementation(() => {
-    return Promise.resolve(MockSimulations[0]);
+    return simulationReadyResult;
   });
+  let initConfigFilesResult = Promise.resolve();
   jest.spyOn(SimulationService.instance, 'initConfigFiles').mockImplementation(() => {
-    return Promise.resolve();
+    return initConfigFilesResult;
   });
 
   let experimentID = 'test-experiment-id';
@@ -162,5 +164,17 @@ test('can launch an experiment given a specific server + configuration', async (
     .toHaveBeenLastCalledWith(serverConfiguration.gzweb['nrp-services'] + '/simulation', expect.any(String));
   expect(progressCallback).toHaveBeenCalled();
   expect(result).toBe('esv-private/experiment-view/' + serverID + '/' + experimentID + '/' +
-  privateExperiment + '/' + MockSimulations[0].simulationID);
+    privateExperiment + '/' + MockSimulations[0].simulationID);
+
+  // a failure to init config files should result in a rejection
+  let initConfigError = 'init-config-error';
+  initConfigFilesResult = Promise.reject(initConfigError);
+  await expect(ExperimentExecutionService.instance.launchExperimentOnServer(...callParams))
+    .rejects.toEqual(initConfigError);
+
+  // simulation not being ready should result in a rejection
+  let simulationReadyError = 'simulation not ready';
+  simulationReadyResult = Promise.reject(simulationReadyError);
+  await expect(ExperimentExecutionService.instance.launchExperimentOnServer(...callParams))
+    .rejects.toEqual(simulationReadyError);
 });
