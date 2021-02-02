@@ -164,7 +164,7 @@ class SimulationService extends HttpService {
   async updateState(serverURL, simulationID, state) {
     let url = serverURL + '/simulation/' + simulationID + '/state';
     try {
-      let response = await this.httpRequestPUT(url, undefined, JSON.stringify(state));
+      let response = await this.httpRequestPUT(url, JSON.stringify(state));
       return response;
     }
     catch (error) {
