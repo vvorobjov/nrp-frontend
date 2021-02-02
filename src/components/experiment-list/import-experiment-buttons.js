@@ -1,6 +1,5 @@
 import React from 'react';
 
-import ImportExperimentService from '../../services/experiments/storage/import-experiment-service.js';
 import ExperimentStorageService from '../../services/experiments/storage/experiment-storage-service.js';
 
 import { FaFolder, FaFileArchive, FaAudible } from 'react-icons/fa';
@@ -34,15 +33,14 @@ class ImportExperimentButtons extends React.Component {
     this.setState({
       isImporting : true
     });
-    ImportExperimentService.instance
+    let ExperimentStorage = ExperimentStorageService.instance;
+    ExperimentStorage
       .importExperimentFolder(e)
       .then(response => {
         this.setState({
           importFolderResponse : response
         });
-        let ExperimentStorage = ExperimentStorageService.instance;
-        ExperimentStorage.loadExperiments(true);
-        ExperimentStorage.selectExperiment();
+        ExperimentStorage.getExperiments(true);
       })
       .finally(() => {
         if (this.state.importExperimentFolderInput){
@@ -62,19 +60,14 @@ class ImportExperimentButtons extends React.Component {
     this.setState({
       isImporting : true
     });
-    ImportExperimentService.instance
+    let ExperimentStorage = ExperimentStorageService.instance;
+    ExperimentStorage
       .importZippedExperiment(e)
       .then(responses => {
         this.setState({
           importZipResponses : responses
         });
-        let ExperimentStorage = ExperimentStorageService.instance;
-        ExperimentStorage.loadExperiments(true);
-        const lastImportedExperiment = responses.destFolderName
-          .split(',')
-          .pop()
-          .trim();
-        ExperimentStorage.selectExperiment({ id: lastImportedExperiment });
+        ExperimentStorage.getExperiments(true);
       })
       .finally(() => {
         this.setState({
@@ -87,19 +80,14 @@ class ImportExperimentButtons extends React.Component {
     this.setState({
       isImporting : true
     });
-    ImportExperimentService.instance
+    let ExperimentStorage = ExperimentStorageService.instance;
+    ExperimentStorage
       .scanStorage()
       .then(response => {
         this.setState({
           scanStorageResponse : response
         });
-        let ExperimentStorage = ExperimentStorageService.instance;
-        ExperimentStorage.loadExperiments(true);
-        const lastImportedExperiment = response.addedFolders
-          .split(',')
-          .pop()
-          .trim();
-        ExperimentStorage.selectExperiment({ id: lastImportedExperiment });
+        ExperimentStorage.getExperiments(true);
       })
       .finally(() => {
         this.setState({
@@ -173,7 +161,7 @@ class ImportExperimentButtons extends React.Component {
             multiple directory="" webkitdirectory=""
             onChange={(e) => this.importExperimentFolderChange(e)}/>
           <input id="zip" type="file" style={{display:'none'}}
-            multiple webkitdirectory directory
+            multiple webkitdirectory directory accept='.zip'
             onChange={(e) => this.importZippedExperimentChange(e)}/>
           {!this.state.isImporting
             ? <div className="btn-group" role="group">
