@@ -86,7 +86,7 @@ export class HttpService extends EventEmitter {
    */
   httpRequestPOST = async (url, options, data) => {
     // copy to avoid messing up the options object in case we need to reuse it
-    let { ...postOptions } = this.POSToptions;
+    let { ...postOptions } = this.POSTOptions;
     if (options) {
       postOptions = options;
     }
@@ -100,7 +100,7 @@ export class HttpService extends EventEmitter {
    */
   httpRequestPUT = async (url, options) => {
     // copy to avoid messing up the options object in case we need to reuse it
-    let { ...putOptions } = this.PUToptions;
+    let { ...putOptions } = this.PUTOptions;
     if (options) {
       putOptions = options;
     }
@@ -110,7 +110,7 @@ export class HttpService extends EventEmitter {
 
   httpRequestDELETE = async (url, options) => {
     // copy to avoid messing up the options object in case we need to reuse it
-    let { ...deleteOptions } = this.DELETEoptions;
+    let { ...deleteOptions } = this.DELETEOptions;
     if (options) {
       deleteOptions = options;
     }
