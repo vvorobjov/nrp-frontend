@@ -1,5 +1,5 @@
 
-import {EventEmitter} from 'events';
+import { EventEmitter } from 'events';
 
 import AuthenticationService from './authentication-service.js';
 
@@ -10,13 +10,12 @@ import AuthenticationService from './authentication-service.js';
  */
 export class HttpService extends EventEmitter {
   /**
-   * Create a simple http request object with default options, default method is GET
+   * Create a simple http request object with default options
    */
   constructor() {
     super();
 
     this.options = {
-      method: 'GET', // *GET, POST, PUT, DELETE, etc.
       mode: 'cors', // no-cors, *cors, same-origin
       cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
       credentials: 'same-origin', // include, *same-origin, omit
@@ -31,6 +30,11 @@ export class HttpService extends EventEmitter {
       referrerPolicy: 'no-referrer'
       //body: JSON.stringify(data) // body data type must match "Content-Type" header
     };
+
+    this.GETOptions = { ...this.options, ...{ method: 'GET' } };
+    this.POSTOptions = { ...this.options, ...{ method: 'POST' } };
+    this.PUTOptions = { ...this.options, ...{ method: 'PUT' } };
+    this.DELETEOptions = { ...this.options, ...{ method: 'DELETE' } };
   }
 
   /**
@@ -67,9 +71,12 @@ export class HttpService extends EventEmitter {
    * Perform a GET http request to a url
    * @param url - the url to perform the request
    */
-  httpRequestGET = (url) => {
+  httpRequestGET = async (url, options) => {
     // copy to avoid messing up the options object in case we need to reuse it
-    const { ...getOptions } = this.options;
+    let { ...getOptions } = this.GETOptions;
+    if (options) {
+      getOptions = options;
+    }
     return this.performRequest(url, getOptions);
   };
 
@@ -77,10 +84,12 @@ export class HttpService extends EventEmitter {
    * Perform a POST http request to a url
    * @param url - the url to perform the request
    */
-  httpRequestPOST = (url, data) => {
+  httpRequestPOST = async (url, data, options) => {
     // copy to avoid messing up the options object in case we need to reuse it
-    const { ...postOptions } = this.options;
-    postOptions.method = 'POST';
+    let { ...postOptions } = this.POSTOptions;
+    if (options) {
+      postOptions = options;
+    }
 
     return this.performRequest(url, postOptions, data);
   };
@@ -89,14 +98,25 @@ export class HttpService extends EventEmitter {
    * Perform a PUT http request to a url
    * @param url - the url to perform the request
    */
-  httpRequestPUT = async (url) => {
+  httpRequestPUT = async (url, options, data) => {
     // copy to avoid messing up the options object in case we need to reuse it
-    const { ...putOptions } = this.options;
-    putOptions.method = 'PUT';
+    let { ...putOptions } = this.PUTOptions;
+    if (options) {
+      putOptions = options;
+    }
 
-    return this.performRequest(url, putOptions);
+    return this.performRequest(url, putOptions, data);
   };
 
+  httpRequestDELETE = async (url, options) => {
+    // copy to avoid messing up the options object in case we need to reuse it
+    let { ...deleteOptions } = this.DELETEOptions;
+    if (options) {
+      deleteOptions = options;
+    }
+
+    return this.performRequest(url, deleteOptions);
+  };
   /**
    * Set the options object in case a child wants to redefine it
    * @param options - the new options object
