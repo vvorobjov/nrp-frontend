@@ -48,7 +48,7 @@ test('fetches the list of experiments', async () => {
 
   const experiments = await ExperimentStorageService.instance.getExperiments();
   expect(ExperimentStorageService.instance.performRequest)
-    .toHaveBeenCalledWith(experimentsUrl, ExperimentStorageService.instance.options);
+    .toHaveBeenCalledWith(experimentsUrl, ExperimentStorageService.instance.GETOptions);
   expect(experiments[0].name).toBe('braitenberg_husky_holodeck_1_0_0');
   expect(experiments[1].configuration.maturity).toBe('production');
 
