@@ -73,7 +73,7 @@ export class HttpService extends EventEmitter {
    */
   httpRequestGET = async (url, options) => {
     // copy to avoid messing up the options object in case we need to reuse it
-    let { ...getOptions } = this.GEToptions;
+    let { ...getOptions } = this.GETOptions;
     if (options) {
       getOptions = options;
     }
