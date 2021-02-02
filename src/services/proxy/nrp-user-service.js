@@ -9,6 +9,12 @@ const USERGROUP_NAME_CLUSTER_RESERVATION = 'hbp-sp10-cluster-reservation';
 let _instance = null;
 const SINGLETON_ENFORCER = Symbol();
 
+
+const PROXY_URL = config.api.proxy.url;
+const IDENTITY_BASE_URL = `${PROXY_URL}${endpoints.proxy.identity.url}`;
+const IDENTITY_ME_URL = `${PROXY_URL}${endpoints.proxy.identity.me.url}`;
+const IDENTITY_ME_GROUPS_URL = `${PROXY_URL}${endpoints.proxy.identity.me.groups.url}`;
+
 /**
  * Service managing all data related to NRP users.
  */
@@ -18,12 +24,6 @@ class NrpUserService extends HttpService {
     if (enforcer !== SINGLETON_ENFORCER) {
       throw new Error('Use ' + this.constructor.name + '.instance');
     }
-
-
-    this.PROXY_URL = config.api.proxy.url;
-    this.IDENTITY_BASE_URL = `${this.PROXY_URL}${endpoints.proxy.identity.url}`;
-    this.IDENTITY_ME_URL = `${this.PROXY_URL}${endpoints.proxy.identity.me.url}`;
-    this.IDENTITY_ME_GROUPS_URL = `${this.PROXY_URL}${endpoints.proxy.identity.me.groups.url}`;
   }
 
   static get instance() {
@@ -40,8 +40,7 @@ class NrpUserService extends HttpService {
    * @returns {promise} Request for the user
    */
   async getUser(userID) {
-    let response = await this.httpRequestGET(this.IDENTITY_BASE_URL + '/' + userID);
-    return response.json();
+    return await (await this.httpRequestGET(IDENTITY_BASE_URL + '/' + userID)).json();
   }
 
   /**
@@ -62,8 +61,7 @@ class NrpUserService extends HttpService {
    */
   async getCurrentUser() {
     if (!this.currentUser) {
-      let response = await this.httpRequestGET(this.IDENTITY_ME_URL);
-      this.currentUser = response.json();
+      this.currentUser = await (await this.httpRequestGET(IDENTITY_ME_URL)).json();
     }
 
     return this.currentUser;
@@ -76,7 +74,7 @@ class NrpUserService extends HttpService {
    */
   async getCurrentUserGroups() {
     if (!this.currentUserGroups) {
-      let response = await this.httpRequestGET(this.IDENTITY_ME_GROUPS_URL);
+      let response = await this.httpRequestGET(IDENTITY_ME_GROUPS_URL);
       this.currentUserGroups = response.json();
     }
 

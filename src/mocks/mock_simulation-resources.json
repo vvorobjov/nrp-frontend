@@ -1,0 +1,19 @@
+{
+    "resources": [
+        {
+            "file": "/config-from-cloned-folder/nrp.3._xeg5cqw/ExDXMLExample.ini",
+            "type": "3d-settings",
+            "file_offset": 42
+        },
+        {
+            "file": "/config-from-cloned-folder/nrp.3._xeg5cqw/brainvisualizer.json",
+            "type": "brainvisualizer",
+            "file_offset": 42
+        },
+        {
+            "file": "/config-from-cloned-folder/nrp.3._xeg5cqw/ExDXMLExample.uis",
+            "type": "user-interaction-settings",
+            "file_offset": 42
+        }
+    ]
+}

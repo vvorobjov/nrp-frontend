@@ -1,8 +1,10 @@
 import _ from 'lodash';
 
-import NrpAnalyticsService from '../../nrp-analytics-service.js';
-import ExperimentServerService from './experiment-server-service.js';
+//import NrpAnalyticsService from '../../nrp-analytics-service.js';
+import ServerResourcesService from './server-resources-service.js';
+import SimulationService from './simulation-service.js';
 import { HttpService } from '../../http-service.js';
+import { EXPERIMENT_STATE } from '../experiment-constants.js';
 
 let _instance = null;
 const SINGLETON_ENFORCER = Symbol();
@@ -16,6 +18,8 @@ class ExperimentExecutionService extends HttpService {
     if (enforcer !== SINGLETON_ENFORCER) {
       throw new Error('Use ' + this.constructor.name + '.instance');
     }
+
+    this.stoppingExperiments = [];
   }
 
   static get instance() {
@@ -35,22 +39,23 @@ class ExperimentExecutionService extends HttpService {
    * @param {object} playbackRecording - a recording of a previous execution
    * @param {*} profiler - a profiler option
    */
-  startNewExperiment(
+  async startNewExperiment(
     experiment,
     launchSingleMode,
     reservation,
     playbackRecording,
     profiler
   ) {
-    NrpAnalyticsService.instance.eventTrack('Start', { category: 'Experiment' });
-    NrpAnalyticsService.instance.tickDurationEvent('Server-initialization');
+    //TODO: implement NrpAnalyticsService functionality
+    //NrpAnalyticsService.instance.eventTrack('Start', { category: 'Experiment' });
+    //NrpAnalyticsService.instance.tickDurationEvent('Server-initialization');
 
     ExperimentExecutionService.instance.emit(ExperimentExecutionService.EVENTS.START_EXPERIMENT, experiment);
 
-    let fatalErrorOccurred = false,
-      serversToTry = experiment.devServer
-        ? [experiment.devServer]
-        : ExperimentServerService.instance.getServerAvailability(true).map(s => s.id);
+    let fatalErrorOccurred = false;
+    let serversToTry = experiment.devServer
+      ? [experiment.devServer]
+      : (await ServerResourcesService.instance.getServerAvailability(true)).map(s => s.id);
 
     let brainProcesses = launchSingleMode ? 1 : experiment.configuration.brainProcesses;
 
@@ -59,21 +64,24 @@ class ExperimentExecutionService extends HttpService {
       console.info(msg);
     };
 
-    let launchInNextServer = async () => {
-      let nextServer = serversToTry.splice(0, 1);
-      if (fatalErrorOccurred || !nextServer.length) {
-        //no more servers to retry, we have failed to start experiment
-        return Promise.reject(fatalErrorOccurred);
+    let launchOnNextServer = async () => {
+      if (!serversToTry.length) {
+        //TODO: GUI feedback
+        return Promise.reject(ExperimentExecutionService.ERRORS.LAUNCH_NO_SERVERS_LEFT);
+      }
+      if (fatalErrorOccurred) {
+        //TODO: GUI feedback
+        return Promise.reject(ExperimentExecutionService.ERRORS.LAUNCH_FATAL_ERROR);
       }
 
-      let server = nextServer[0];
-      let serverConfig = await ExperimentServerService.instance.getServerConfig(server);
+      let serverID = serversToTry.splice(0, 1)[0];
+      let serverConfig = await ServerResourcesService.instance.getServerConfig(serverID);
 
       return await this.launchExperimentOnServer(
         experiment.id,
         experiment.private,
         brainProcesses,
-        server,
+        serverID,
         serverConfig,
         reservation,
         playbackRecording,
@@ -81,15 +89,16 @@ class ExperimentExecutionService extends HttpService {
         progressCallback
       ).catch((failure) => {
         if (failure.error && failure.error.data) {
+          //TODO: proper ErrorHandlerService callback
           console.error('Failed to start simulation: ' + JSON.stringify(failure.error.data));
         }
         fatalErrorOccurred = fatalErrorOccurred || failure.isFatal;
 
-        return launchInNextServer();
+        return launchOnNextServer();
       });
     };
 
-    return launchInNextServer();
+    return launchOnNextServer();
   };
 
   /**
@@ -97,7 +106,7 @@ class ExperimentExecutionService extends HttpService {
    * @param {string} experimentID - ID of the experiment to launch
    * @param {boolean} privateExperiment - whether the experiment is private or not
    * @param {number} brainProcesses - number of brain processes to start with
-   * @param {string} server - server ID
+   * @param {string} serverID - server ID
    * @param {object} serverConfiguration - configuration of server
    * @param {object} reservation - server reservation
    * @param {object} playbackRecording - recording
@@ -108,7 +117,7 @@ class ExperimentExecutionService extends HttpService {
     experimentID,
     privateExperiment,
     brainProcesses,
-    server,
+    serverID,
     serverConfiguration,
     reservation,
     playbackRecording,
@@ -145,40 +154,94 @@ class ExperimentExecutionService extends HttpService {
       progressCallback({ main: 'Initialize Simulation...' });
 
       // register for messages during initialization
-      ExperimentServerService.instance.registerForRosStatusInformation(
+      SimulationService.instance.registerForRosStatusInformation(
         serverConfiguration.rosbridge.websocket,
         progressCallback
       );
 
-      ExperimentServerService.instance.simulationReady(serverURL, simInitData.creationUniqueID)
+      SimulationService.instance.simulationReady(serverURL, simInitData.creationUniqueID)
         .then((simulation) => {
-          ExperimentServerService.instance.initConfigFiles(serverURL, simulation.simulationID)
+          SimulationService.instance.initConfigFiles(serverURL, simulation.simulationID)
             .then(() => {
+              let simulationURL = 'esv-private/experiment-view/' + serverID + '/' + experimentID + '/' +
+                privateExperiment + '/' + simulation.simulationID;
+              resolve(simulationURL);
               ExperimentExecutionService.instance.emit(ExperimentExecutionService.EVENTS.START_EXPERIMENT, undefined);
-              resolve(
-                'esv-private/experiment-view/' +
-                  server +
-                  '/' +
-                  experimentID +
-                  '/' +
-                  privateExperiment +
-                  '/' +
-                  simulation.simulationID
-              );
             })
-            .catch((err) => {
-              reject(err);
-            });
+            .catch(reject);
         })
-        .catch((err) => {
-          reject(err);
-        });
+        .catch(reject);
+    });
+  };
+
+  stopExperiment(simulation) {
+    return new Promise((resolve, reject) => {
+      simulation.stopping = true;
+      if (!this.stoppingExperiments[simulation.server]) {
+        this.stoppingExperiments[simulation.server] = {};
+      }
+      this.stoppingExperiments[simulation.server][
+        simulation.runningSimulation.simulationID
+      ] = true;
+
+      //TODO: re-implement
+      /*this.storageServer.logActivity('simulation_stop', {
+        simulationID: simulation.runningSimulation.experimentID
+      });*/
+
+      ServerResourcesService.instance
+        .getServerConfig(simulation.server)
+        .then((serverConfig) => {
+          let serverURL = serverConfig.gzweb['nrp-services'];
+          let simulationID = simulation.runningSimulation.simulationID;
+
+          function updateSimulationState(state) {
+            /*eslint-disable camelcase*/
+            return SimulationService.instance.updateState(
+              serverURL,
+              simulationID,
+              { state: state }
+            );
+          }
+
+          return SimulationService.instance
+            .getState(serverURL, simulationID)
+            .then((data) => {
+              if (!data || !data.state) {
+                return Promise.reject();
+              }
+
+              // CREATED --(initialize)--> PAUSED --(stop)--> STOPPED
+              if (data.state === EXPERIMENT_STATE.CREATED) {
+                return updateSimulationState(EXPERIMENT_STATE.INITIALIZED).then(
+                  _.partial(updateSimulationState, EXPERIMENT_STATE.STOPPED)
+                );
+              }
+              // STARTED/PAUSED/HALTED --(stop)--> STOPPED
+              else if (data.state === EXPERIMENT_STATE.STARTED ||
+                data.state === EXPERIMENT_STATE.PAUSED ||
+                data.state === EXPERIMENT_STATE.HALTED) {
+                return updateSimulationState(EXPERIMENT_STATE.STOPPED);
+              }
+
+              return Promise.reject();
+            });
+          /*eslint-enable camelcase*/
+        })
+        .then(resolve)
+        .catch(reject);
     });
   };
 }
 
 ExperimentExecutionService.EVENTS = Object.freeze({
-  START_EXPERIMENT: 'START_EXPERIMENT'
+  START_EXPERIMENT: 'START_EXPERIMENT',
+  STOP_EXPERIMENT: 'STOP_EXPERIMENT'
+});
+
+ExperimentExecutionService.ERRORS = Object.freeze({
+  LAUNCH_FATAL_ERROR: 'failed to launch experiment, encountered a fatal error',
+  LAUNCH_NO_SERVERS_LEFT: 'failed to launch experiment, no available server could successfully start it'
 });
 
 export default ExperimentExecutionService;

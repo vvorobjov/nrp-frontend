@@ -1,7 +1,7 @@
 import React from 'react';
 import timeDDHHMMSS from '../../utility/time-filter.js';
 import ExperimentStorageService from '../../services/experiments/storage/experiment-storage-service.js';
-import ExperimentServerService from '../../services/experiments/execution/experiment-server-service.js';
+import ExperimentServerService from '../../services/experiments/execution/server-resources-service.js';
 import ExperimentExecutionService from '../../services/experiments/execution/experiment-execution-service.js';
 
 import SimulationDetails from './simulation-details';
@@ -17,8 +17,11 @@ const SHORT_DESCRIPTION_LENGTH = 200;
 export default class ExperimentListElement extends React.Component {
   constructor(props) {
     super(props);
-    this.state = {};
+    this.state = {
+      showSimDetails: true
+    };
 
+    //TODO: put in service?
     this.canLaunchExperiment = (this.props.experiment.private && this.props.experiment.owned) ||
       !this.props.experiment.private;
     this.launchButtonTitle = '';
@@ -50,10 +53,8 @@ export default class ExperimentListElement extends React.Component {
   }
 
   getAvailabilityInfo() {
-    const clusterAvailability = ExperimentServerService.instance.getClusterAvailability();
-
     let status;
-    if (clusterAvailability && clusterAvailability.free > CLUSTER_THRESHOLDS.AVAILABLE) {
+    if (this.props.availableServers && this.props.availableServers.length > CLUSTER_THRESHOLDS.AVAILABLE) {
       status = 'Available';
     }
     else if (!this.props.availableServers || this.props.availableServers.length === 0) {
@@ -63,17 +64,14 @@ export default class ExperimentListElement extends React.Component {
       status = 'Restricted';
     }
 
-    let cluster = `Cluster availability: ${clusterAvailability.free} / ${clusterAvailability.total}`;
     let backends = `Backends: ${this.props.availableServers.length}`;
 
-    return `${status}\n${cluster}\n${backends}`;
+    return `${status}\n${backends}`;
   }
 
   getServerStatusClass() {
-    const clusterAvailability = ExperimentServerService.instance.getClusterAvailability();
-
     let status = '';
-    if (clusterAvailability && clusterAvailability.free > CLUSTER_THRESHOLDS.AVAILABLE) {
+    if (this.props.availableServers && this.props.availableServers.length > CLUSTER_THRESHOLDS.AVAILABLE) {
       status = 'server-status-available';
     }
     else if (!this.props.availableServers || this.props.availableServers.length === 0) {
@@ -128,7 +126,11 @@ export default class ExperimentListElement extends React.Component {
             <div className='h4'>
               {exp.configuration.name}
             </div>
-            <br />
+            {exp.joinableServers.length > 0 ?
+              <div className='exp-title-sim-info'>
+                ({exp.joinableServers.length} simulation{exp.joinableServers.length > 1 ? 's' : ''} running)
+              </div>
+              : null}
           </div>
           <div>
             {!this.state.selected && exp.configuration.description.length > SHORT_DESCRIPTION_LENGTH ?
@@ -163,87 +165,90 @@ export default class ExperimentListElement extends React.Component {
             }}>
               <div className='btn-group' role='group' >
                 {this.canLaunchExperiment &&
-                  exp.configuration.experimentFile && exp.configuration.bibiConfSrc
-                  ? <button onClick={() => {
-                    ExperimentExecutionService.instance.startNewExperiment(exp, false);
-                  }}
-                  disabled={this.isLaunchDisabled()}
-                  className='btn btn-default'
-                  title={this.launchButtonTitle} >
+                  exp.configuration.experimentFile && exp.configuration.bibiConfSrc ?
+                  <button
+                    onClick={() => {
+                      ExperimentExecutionService.instance.startNewExperiment(exp, false);
+                    }}
+                    disabled={this.isLaunchDisabled()}
+                    className='btn btn-default'
+                    title={this.launchButtonTitle} >
                     <i className='fa fa-plus'></i> Launch
                   </button>
                   : null}
 
                 {this.canLaunchExperiment && config.brainProcesses > 1 &&
                   this.props.availableServers.length > 0 &&
-                  exp.configuration.experimentFile && exp.configuration.bibiConfSrc
-
-                  ? <button className='btn btn-default'>
+                  exp.configuration.experimentFile && exp.configuration.bibiConfSrc ?
+                  <button className='btn btn-default'>
                     <i className='fa fa-plus'></i> Launch in Single Process Mode
                   </button>
                   : null}
 
                 {this.canLaunchExperiment && this.props.availableServers.length > 1 &&
-                  exp.configuration.experimentFile && exp.configuration.bibiConfSrc
-
-                  ? <button className='btn btn-default' >
+                  exp.configuration.experimentFile && exp.configuration.bibiConfSrc ?
+                  <button className='btn btn-default' >
                     <i className='fa fa-layer-group'></i> Launch Multiple
                   </button>
                   : null}
 
                 {/* isPrivateExperiment */}
-                {this.canLaunchExperiment
-                  ? <button className='btn btn-default'>
+                {this.canLaunchExperiment ?
+                  <button className='btn btn-default'>
                     <i className='fa fa-times'></i> Delete
                   </button>
                   : null}
 
                 {/* Records button */}
-                {this.canLaunchExperiment
-                  ? <button className='btn btn-default'>
+                {this.canLaunchExperiment ?
+                  <button className='btn btn-default'>
                     <i className='fa fa-sign-in'></i> Recordings »
                   </button>
                   : null}
 
                 {/* Export button */}
-                {this.canLaunchExperiment
-                  ? <button className='btn btn-default'>
+                {this.canLaunchExperiment ?
+                  <button className='btn btn-default'>
                     <i className='fa fa-file-export'></i> Export
                   </button>
                   : null}
 
                 {/* Simulations button */}
-                {this.canLaunchExperiment && exp.joinableServers.length > 0
-                  ? <button className='btn btn-default' >
+                {this.canLaunchExperiment && exp.joinableServers.length > 0 ?
+                  <button className='btn btn-default'
+                    onClick={() => {
+                      this.setState({ showSimDetails: !this.state.showSimDetails });
+                    }}>
                     <i className='fa fa-sign-in'></i> Simulations »
                   </button>
                   : null}
 
                 {/* Clone button */}
                 {config.canCloneExperiments && (!exp.configuration.privateStorage ||
-                  (exp.configuration.experimentFile && exp.configuration.bibiConfSrc))
-                  ? <button className='btn btn-default'>
+                  (exp.configuration.experimentFile && exp.configuration.bibiConfSrc)) ?
+                  <button className='btn btn-default'>
                     <i className='fa fa-pencil-alt'></i> Clone
                   </button>
                   : null}
 
                 {/* Files button */}
-                {this.canLaunchExperiment
-                  ? <button className='btn btn-default' >
+                {this.canLaunchExperiment ?
+                  <button className='btn btn-default' >
                     <i className='fa fa-list-alt'></i> Files
                   </button>
                   : null}
 
                 {/* Shared button */}
-                {this.canLaunchExperiment
-                  ? <button className='btn btn-default'>
+                {this.canLaunchExperiment ?
+                  <button className='btn btn-default'>
                     <i className='fas fa-share-alt'></i> Share
                   </button>
                   : null}
               </div>
             </div>
           }
-          {/*this.state.selected && exp.joinableServers.length > 0*/ true ?
+
+          {this.state.selected && exp.joinableServers.length > 0 && this.state.showSimDetails ?
             <SimulationDetails simulations={exp.joinableServers} />
             : null
           }

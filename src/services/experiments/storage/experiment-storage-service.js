@@ -7,8 +7,6 @@ const storageExperimentsURL = `${config.api.proxy.url}${endpoints.proxy.storage.
 let _instance = null;
 const SINGLETON_ENFORCER = Symbol();
 
-const POLL_INTERVAL_EXPERIMENTS = 3000;
-
 /**
  * Service that fetches the template experiments list from the proxy given
  * that the user has authenticated successfully.
@@ -21,9 +19,10 @@ class ExperimentStorageService extends HttpService {
     }
 
     this.startUpdates();
-    window.onbeforeunload = () => {
+    window.addEventListener('beforeunload', (event) => {
       this.stopUpdates();
-    };
+      event.returnValue = '';
+    });
   }
 
   static get instance() {
@@ -39,11 +38,11 @@ class ExperimentStorageService extends HttpService {
    */
   startUpdates() {
     this.getExperiments(true);
-    this.timerPollExperiments = setInterval(
+    this.intervalPollExperiments = setInterval(
       () => {
         this.getExperiments(true);
       },
-      POLL_INTERVAL_EXPERIMENTS
+      ExperimentStorageService.CONSTANTS.INTERVAL_POLL_EXPERIMENTS
     );
   }
 
@@ -51,7 +50,7 @@ class ExperimentStorageService extends HttpService {
    * Stop polling updates.
    */
   stopUpdates() {
-    this.timerPollExperiments && clearInterval(this.timerPollExperiments);
+    this.intervalPollExperiments && clearInterval(this.intervalPollExperiments);
   }
 
   /**
@@ -59,6 +58,7 @@ class ExperimentStorageService extends HttpService {
    * them in the experiments class property. If the experiments are already
    * there it just returns them, else does an HTTP request.
    *
+   * @param {boolean} forceUpdate forces an update of the list
    * @return experiments - the list of template experiments
    */
   async getExperiments(forceUpdate = false) {
@@ -85,9 +85,7 @@ class ExperimentStorageService extends HttpService {
   }
 
   /**
-   * Sorts the experiment list alphabetically.
-   *
-   * @returns {Array} sorted experiment list
+   * Sort the local list of experiments alphabetically.
    */
   sortExperiments() {
     this.experiments = this.experiments.sort(
@@ -105,6 +103,9 @@ class ExperimentStorageService extends HttpService {
     );
   }
 
+  /**
+   * Fill in some details for the local experiment list that might be missing.
+   */
   async fillExperimentDetails() {
     this.experiments.forEach(exp => {
       if (!exp.configuration.brainProcesses && exp.configuration.bibiConfSrc) {
@@ -233,6 +234,10 @@ class ExperimentStorageService extends HttpService {
 
 ExperimentStorageService.EVENTS = Object.freeze({
   UPDATE_EXPERIMENTS: 'UPDATE_EXPERIMENTS'
+});
+
+ExperimentStorageService.CONSTANTS = Object.freeze({
+  INTERVAL_POLL_EXPERIMENTS: 3000
 });
 
 export default ExperimentStorageService;

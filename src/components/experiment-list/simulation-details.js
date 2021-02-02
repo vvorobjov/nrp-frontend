@@ -1,83 +1,103 @@
 import React from 'react';
 
 import timeDDHHMMSS from '../../utility/time-filter.js';
+import { EXPERIMENT_STATE } from '../../services/experiments/experiment-constants.js';
+import ExperimentExecutionService from '../../services/experiments/execution/experiment-execution-service.js';
+
+import './simulation-details.css';
 
 export default class SimulationDetails extends React.Component {
+  constructor() {
+    super();
+
+    this.state = {
+      simUptimes: [],
+      titleButtonStop: ''
+    };
+  }
+
+  componentDidMount() {
+    this.updateSimUptimes();
+    this.intervalUpdateSimUptimes = setInterval(() => {
+      this.updateSimUptimes();
+    }, 1000);
+  }
+
+  componentWillUnmount() {
+    this.intervalUpdateSimUptimes && clearInterval(this.intervalUpdateSimUptimes);
+  }
+
+  isJoinDisabled(simulation) {
+    return simulation.runningSimulation.state === EXPERIMENT_STATE.CREATED ||
+      simulation.stopping;
+  }
+
+  isStopDisabled(simulation) {
+    let disabled = simulation.stopping;
+    if (disabled) {
+      this.titleButtonStop = 'Sorry, you don\'t have sufficient rights to stop the simulation.';
+    }
+    else {
+      this.titleButtonStop = '';
+    }
+
+    return disabled;
+  }
+
+  updateSimUptimes() {
+    this.setState({
+      simUptimes: this.props.simulations.map(sim => {
+        return (Date.now() - Date.parse(sim.runningSimulation.creationDate)) / 1000;
+      })
+    });
+  }
+
   render() {
+    //console.info(this.props.simulations);
     return (
-      <div className='experiment-list-wrapper'>
-        <div className="table-wrapper"
-          /*uib-collapse="!config.canLaunchExperiments ||
-            (pageState.selected != exp.id)||(!pageState.showJoin && !running) || !exp.joinableServers.length"*/>
-          <table className="table">
-            <thead>
-              <tr>
-                <th>Server</th>
-                <th>Creator</th>
-                <th>Uptime</th>
-                <th>Status</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody>
-              {this.props.simulations.map(simulation => {
-                return (
-                  <tr>
-                    <td>{simulation.server}</td>
-                    <td>{simulation.owner}</td>
-                    <td className="monospace-text">{timeDDHHMMSS(simulation.uptime)}</td>
-                    <td>{simulation.runningSimulation.state}</td>
-                    <td>
-                      {/* Join button enabled provided simulation state is consistent*/}
-                      <button /*analytics-on analytics-event="Join" analytics-category="Experiment"*/
-                        ng-click="(simulation.runningSimulation.state === STATE.CREATED) ||
-                      simulation.stopping || joinExperiment(simulation, exp);"
-                        type="button" className="btn btn-default"
-                        ng-disabled="(simulation.runningSimulation.state === STATE.CREATED) ||
-                      simulation.stopping">
-                        Join »</button>
-                      {/* Stop button enabled provided simulation state is consistent*/}
-                      <button /*analytics-on analytics-event="Stop" analytics-category="Experiment"*/
-                        ng-click="stopSimulation(simulation, exp);"
-                        type="button" className="btn btn-default"
-                        ng-if="canStopSimulation(simulation)"
-                        ng-disabled="simulation.stopping">
-                        <i className="fa fa-spinner fa-spin" ng-if="simulation.stopping"></i> Stop
-                      </button>
-                      {/*No edit rights: stop button disabled */}
-                      <button type="button" className="btn btn-default disabled enable-tooltip"
-                        title="Sorry, you don't have sufficient rights to stop the simulation."
-                        ng-if="!canStopSimulation(simulation)"> Stop
-                      </button>
-                    </td>
-                  </tr>
-                );
-              }
-              )}
-              <tr>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td>
-                  {/* Stop all button enabled provided simulation state is consistent*/}
-                  <button /*analytics-on analytics-event="Stop All" analytics-category="Experiment"*/
-                    ng-click="stopAllthis.props.simulationsations(exp)"
-                    type="button" className="btn btn-default" ng-if="canStopAllSimulations(exp)"
-                    ng-disabled="!canStopAllSimulations(exp)">
-                    <i className="fa fa-spinner fa-spin" ng-if=""></i> Stop All
-                  </button>
-                  {/* No edit rights: stop all button disabled */}
-                  <button type="button" className="btn btn-default disabled enable-tooltip"
-                    title="Sorry, you don't have sufficient rights to stop the this.props.simulationsations."
-                    ng-if="!canStopAllSimulations(exp)"> Stop All
-                  </button>
-                </td>
-              </tr>
-            </tbody>
-          </table>
+      <div className='simulations-details-wrapper'>
+        <div className='table-row table-header'>
+          <div>Server</div>
+          <div>Creator</div>
+          <div>Uptime</div>
+          <div>Status</div>
+          <div>Actions</div>
         </div>
-      </div>
+
+        {this.props.simulations.map((simulation, index) => {
+          return (
+            <div key={simulation.runningSimulation.simulationID} className='table-row'>
+              <div>{simulation.server}</div>
+              <div>{simulation.runningSimulation.owner}</div>
+              <div>{timeDDHHMMSS(this.state.simUptimes[index])}</div>
+              <div>{simulation.runningSimulation.state}</div>
+              <div>
+                {/* Join button enabled provided simulation state is consistent */}
+                <button /*analytics-on analytics-event="Join" analytics-category="Experiment"
+                  ng-click="(simulation.runningSimulation.state === STATE.CREATED) ||
+                    simulation.stopping || joinExperiment(simulation, exp);"*/
+                  type="button" className="btn btn-default"
+                  disabled={this.isJoinDisabled(simulation)}>
+                  Join »
+                </button>
+                {/* Stop button enabled provided simulation state is consistent */}
+                <button /*analytics-on analytics-event="Stop" analytics-category="Experiment"*/
+                  onClick={() => ExperimentExecutionService.instance.stopExperiment(simulation)}
+                  type="button" className="btn btn-default"
+                  disabled={this.isStopDisabled(simulation)}
+                  title={this.state.titleButtonStop}>
+                  <i className="fa fa-spinner fa-spin" ng-if="simulation.stopping"></i> Stop
+                </button>
+              </div>
+            </div>
+          );
+        })
+        }
+
+        <div className='table-row'>
+          <button className='table-column-last'>Stop All</button>
+        </div>
+      </div >
     );
   }
 }
