@@ -13,13 +13,19 @@ jest.mock('../../../authentication-service');
 const proxyEndpoint = endpoints.proxy;
 const experimentsUrl = `${config.api.proxy.url}${proxyEndpoint.storage.experiments.url}`;
 
-test('fetches the list of experiments', async () => {
-  jest.spyOn(ExperimentStorageService.instance, 'performRequest');
-  const experiments = await ExperimentStorageService.instance.getExperiments();
-  expect(ExperimentStorageService.instance.performRequest)
-    .toHaveBeenCalledWith(experimentsUrl, ExperimentStorageService.instance.GETOptions);
-  expect(experiments[0].name).toBe('braitenberg_husky_holodeck_1_0_0');
-  expect(experiments[1].configuration.maturity).toBe('production');
+jest.setTimeout(3 * ExperimentStorageService.CONSTANTS.INTERVAL_POLL_EXPERIMENTS);
+
+let onWindowBeforeUnloadCb = undefined;
+beforeEach(() => {
+  jest.spyOn(window, 'addEventListener').mockImplementation((event, cb) => {
+    if (event === 'beforeunload') {
+      onWindowBeforeUnloadCb = cb;
+    }
+  });
+});
+
+afterEach(() => {
+  jest.restoreAllMocks();
 });
 
 test('makes sure that invoking the constructor fails with the right message', () => {
@@ -42,7 +48,7 @@ test('fetches the list of experiments', async () => {
 
   const experiments = await ExperimentStorageService.instance.getExperiments();
   expect(ExperimentStorageService.instance.performRequest)
-    .toHaveBeenCalledWith(experimentsUrl, ExperimentStorageService.instance.options);
+    .toHaveBeenCalledWith(experimentsUrl, ExperimentStorageService.instance.GETOptions);
   expect(experiments[0].name).toBe('braitenberg_husky_holodeck_1_0_0');
   expect(experiments[1].configuration.maturity).toBe('production');
 

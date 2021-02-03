@@ -8,7 +8,6 @@ li.nostyle {
     grid-template-rows: auto;
     grid-template-columns: auto;
     grid-template-areas:
-        "import-experiments"
         "experiments";
 }
 
@@ -17,10 +16,6 @@ li.nostyle {
     grid-area: experiments;
     color: black;
     background-color: white;
-}
-
-.import-experiments {
-  grid-area: import-experiments;
 }
 
 .no-items-notification {

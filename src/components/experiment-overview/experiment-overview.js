@@ -6,6 +6,7 @@ import ExperimentStorageService from '../../services/experiments/storage/experim
 import ExperimentServerService from '../../services/experiments/execution/server-resources-service.js';
 import ExperimentExecutionService from '../../services/experiments/execution/experiment-execution-service.js';
 
+import ImportExperimentButtons from '../experiment-list/import-experiment-buttons.js';
 import ExperimentList from '../experiment-list/experiment-list.js';
 import NrpHeader from '../nrp-header/nrp-header.js';
 
@@ -104,6 +105,7 @@ export default class ExperimentOverview extends React.Component {
           </TabList>
 
           <TabPanel>
+            <ImportExperimentButtons />
             <ExperimentList experiments={this.state.experiments}
               availableServers={this.state.availableServers}
               startingExperiment={this.state.startingExperiment} />
