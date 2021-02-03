@@ -1,13 +1,8 @@
-import JSZip from 'jszip';
-
 import { HttpService } from '../../http-service.js';
-import ErrorHandlingService from '../../error-handler-service.js';
 
 import endpoints from '../../proxy/data/endpoints.json';
 import config from '../../../config.json';
 const storageExperimentsURL = `${config.api.proxy.url}${endpoints.proxy.storage.experiments.url}`;
-const storageScanStorage = `${config.api.proxy.url}${endpoints.proxy.storage.scanStorage.url}`;
-const storageImportExperiment = `${config.api.proxy.url}${endpoints.proxy.storage.importExperiment.url}`;
 
 let _instance = null;
 const SINGLETON_ENFORCER = Symbol();

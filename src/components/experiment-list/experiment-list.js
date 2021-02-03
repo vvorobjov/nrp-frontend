@@ -1,7 +1,7 @@
 import React from 'react';
 
+import ImportExperimentButtons from '../experiment-list/import-experiment-buttons.js';
 import ExperimentListElement from './experiment-list-element.js';
-import ImportExperimentButtons from './import-experiment-buttons.js';
 
 import './experiment-list.css';
 
@@ -9,6 +9,9 @@ export default class ExperimentList extends React.Component {
   render() {
     return (
       <div className='experiment-list-wrapper'>
+        <div className='import-experiment'>
+          <ImportExperimentButtons />
+        </div>
         <div className='experiment-list'>
           {this.props.experiments.length === 0 ?
             <div className='no-items-notification'>List is currently empty ...</div> :
