@@ -12,11 +12,6 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "@testing-library/jest-dom": "^5.11.5",
-    "@testing-library/react": "^11.1.0",
-    "@testing-library/user-event": "^12.1.10",
-    "@typescript-eslint/parser": "^4.6.0",
-    "eslint": "^7.12.1",
     "jszip": "3.2.0",
     "react": "^17.0.1",
     "react-bootstrap": "1.4.0",
@@ -46,53 +41,6 @@
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "coverage": "npm run test -- --coverage --watchAll=false"
-  },
-  "eslintConfig": {
-    "extends": [
-      "react-app",
-      "react-app/jest"
-    ],
-    "rules": {
-      "semi": [
-        2,
-        "always"
-      ],
-      "quotes": [
-        "error",
-        "single"
-      ],
-      "indent": [
-        "error",
-        2
-      ],
-      "curly": [
-        "error",
-        "all"
-      ],
-      "block-spacing": [
-        "error",
-        "always"
-      ],
-      "brace-style": [
-        "error",
-        "stroustrup"
-      ],
-      "comma-dangle": [
-        "error",
-        "never"
-      ],
-      "no-trailing-spaces": "error",
-      "array-bracket-newline": [
-        "error",
-        "consistent"
-      ],
-      "max-len": [
-        "error",
-        {
-          "code": 120
-        }
-      ]
-    }
   },
   "browserslist": {
     "production": [

@@ -85,9 +85,7 @@ class ExperimentStorageService extends HttpService {
   }
 
   /**
-   * Sorts the experiment list alphabetically.
-   *
-   * @returns {Array} sorted experiment list
+   * Sort the local list of experiments alphabetically.
    */
   sortExperiments() {
     this.experiments = this.experiments.sort(
