@@ -1,4 +1,6 @@
 import React from 'react';
+import { FaStop, FaStopCircle } from 'react-icons/fa';
+import { ImEnter } from 'react-icons/im';
 
 import timeDDHHMMSS from '../../utility/time-filter.js';
 import { EXPERIMENT_STATE } from '../../services/experiments/experiment-constants.js';
@@ -78,7 +80,7 @@ export default class SimulationDetails extends React.Component {
                     simulation.stopping || joinExperiment(simulation, exp);"*/
                   type="button" className="btn btn-default"
                   disabled={this.isJoinDisabled(simulation)}>
-                  Join »
+                  <ImEnter /> Join
                 </button>
                 {/* Stop button enabled provided simulation state is consistent */}
                 <button /*analytics-on analytics-event="Stop" analytics-category="Experiment"*/
@@ -86,7 +88,7 @@ export default class SimulationDetails extends React.Component {
                   type="button" className="btn btn-default"
                   disabled={this.isStopDisabled(simulation)}
                   title={this.state.titleButtonStop}>
-                  <i className="fa fa-spinner fa-spin" ng-if="simulation.stopping"></i> Stop
+                  <FaStop /> Stop
                 </button>
               </div>
             </div>
@@ -95,7 +97,9 @@ export default class SimulationDetails extends React.Component {
         }
 
         <div className='table-row'>
-          <button className='table-column-last'>Stop All</button>
+          <button className='table-column-last'>
+            <FaStopCircle /> Stop All
+          </button>
         </div>
       </div >
     );

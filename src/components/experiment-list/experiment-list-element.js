@@ -1,4 +1,7 @@
 import React from 'react';
+import { FaPlay, FaTrash, FaFileExport, FaShareAlt } from 'react-icons/fa';
+import { IoMdArrowDropdown } from 'react-icons/io';
+
 import timeDDHHMMSS from '../../utility/time-filter.js';
 import ExperimentStorageService from '../../services/experiments/storage/experiment-storage-service.js';
 import ExperimentExecutionService from '../../services/experiments/execution/experiment-execution-service.js';
@@ -172,7 +175,7 @@ export default class ExperimentListElement extends React.Component {
                     disabled={this.isLaunchDisabled()}
                     className='btn btn-default'
                     title={this.launchButtonTitle} >
-                    <i className='fa fa-plus'></i> Launch
+                    <FaPlay /> Launch
                   </button>
                   : null}
 
@@ -180,35 +183,35 @@ export default class ExperimentListElement extends React.Component {
                   this.props.availableServers.length > 0 &&
                   exp.configuration.experimentFile && exp.configuration.bibiConfSrc ?
                   <button className='btn btn-default'>
-                    <i className='fa fa-plus'></i> Launch in Single Process Mode
+                    <FaPlay /> Launch in Single Process Mode
                   </button>
                   : null}
 
                 {this.canLaunchExperiment && this.props.availableServers.length > 1 &&
                   exp.configuration.experimentFile && exp.configuration.bibiConfSrc ?
                   <button className='btn btn-default' >
-                    <i className='fa fa-layer-group'></i> Launch Multiple
+                    <FaPlay /> Launch Multiple
                   </button>
                   : null}
 
                 {/* isPrivateExperiment */}
                 {this.canLaunchExperiment ?
                   <button className='btn btn-default'>
-                    <i className='fa fa-times'></i> Delete
+                    <FaTrash /> Delete
                   </button>
                   : null}
 
                 {/* Records button */}
                 {this.canLaunchExperiment ?
                   <button className='btn btn-default'>
-                    <i className='fa fa-sign-in'></i> Recordings »
+                    <IoMdArrowDropdown /> Recordings
                   </button>
                   : null}
 
                 {/* Export button */}
                 {this.canLaunchExperiment ?
                   <button className='btn btn-default'>
-                    <i className='fa fa-file-export'></i> Export
+                    <FaFileExport /> Export
                   </button>
                   : null}
 
@@ -218,7 +221,7 @@ export default class ExperimentListElement extends React.Component {
                     onClick={() => {
                       this.setState({ showSimDetails: !this.state.showSimDetails });
                     }}>
-                    <i className='fa fa-sign-in'></i> Simulations »
+                    <IoMdArrowDropdown /> Simulations
                   </button>
                   : null}
 
@@ -240,7 +243,7 @@ export default class ExperimentListElement extends React.Component {
                 {/* Shared button */}
                 {this.canLaunchExperiment ?
                   <button className='btn btn-default'>
-                    <i className='fas fa-share-alt'></i> Share
+                    <FaShareAlt /> Share
                   </button>
                   : null}
               </div>
