@@ -80,7 +80,7 @@ export default class SimulationDetails extends React.Component {
                     simulation.stopping || joinExperiment(simulation, exp);"*/
                   type="button" className="btn btn-default"
                   disabled={this.isJoinDisabled(simulation)}>
-                  <ImEnter className='icon' /> Join
+                  <ImEnter className='icon' />Join
                 </button>
                 {/* Stop button enabled provided simulation state is consistent */}
                 <button /*analytics-on analytics-event="Stop" analytics-category="Experiment"*/
@@ -88,7 +88,7 @@ export default class SimulationDetails extends React.Component {
                   type="button" className="btn btn-default"
                   disabled={this.isStopDisabled(simulation)}
                   title={this.state.titleButtonStop}>
-                  <FaStop className='icon' /> Stop
+                  <FaStop className='icon' />Stop
                 </button>
               </div>
             </div>
@@ -98,7 +98,7 @@ export default class SimulationDetails extends React.Component {
 
         <div className='table-row'>
           <button className='table-column-last'>
-            <FaStopCircle className='icon' /> Stop All
+            <FaStopCircle className='icon' />Stop All
           </button>
         </div>
       </div >
