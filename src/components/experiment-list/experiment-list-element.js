@@ -1,6 +1,7 @@
 import React from 'react';
-import { FaPlay, FaTrash, FaFileExport, FaShareAlt } from 'react-icons/fa';
-import { IoMdArrowDropdown } from 'react-icons/io';
+import { FaPlay, FaTrash, FaFileExport, FaShareAlt, FaClone } from 'react-icons/fa';
+import { VscTriangleUp, VscTriangleDown } from 'react-icons/vsc';
+import { GoFileSubmodule } from 'react-icons/go';
 
 import timeDDHHMMSS from '../../utility/time-filter.js';
 import ExperimentStorageService from '../../services/experiments/storage/experiment-storage-service.js';
@@ -142,7 +143,7 @@ export default class ExperimentListElement extends React.Component {
           </div>
 
           {this.state.selected &&
-            <div style={{ position: 'relative' }} >
+            <div className='experiment-details' >
               <i>
                 Timeout:
                 {timeDDHHMMSS(exp.configuration.timeout)}
@@ -175,7 +176,7 @@ export default class ExperimentListElement extends React.Component {
                     disabled={this.isLaunchDisabled()}
                     className='btn btn-default'
                     title={this.launchButtonTitle} >
-                    <FaPlay /> Launch
+                    <FaPlay className='icon' />Launch
                   </button>
                   : null}
 
@@ -183,35 +184,38 @@ export default class ExperimentListElement extends React.Component {
                   this.props.availableServers.length > 0 &&
                   exp.configuration.experimentFile && exp.configuration.bibiConfSrc ?
                   <button className='btn btn-default'>
-                    <FaPlay /> Launch in Single Process Mode
+                    <FaPlay className='icon' />Launch in Single Process Mode
                   </button>
                   : null}
 
                 {this.canLaunchExperiment && this.props.availableServers.length > 1 &&
                   exp.configuration.experimentFile && exp.configuration.bibiConfSrc ?
                   <button className='btn btn-default' >
-                    <FaPlay /> Launch Multiple
+                    <FaPlay className='icon' />Launch Multiple
                   </button>
                   : null}
 
                 {/* isPrivateExperiment */}
                 {this.canLaunchExperiment ?
                   <button className='btn btn-default'>
-                    <FaTrash /> Delete
+                    <FaTrash className='icon' />Delete
                   </button>
                   : null}
 
                 {/* Records button */}
                 {this.canLaunchExperiment ?
                   <button className='btn btn-default'>
-                    <IoMdArrowDropdown /> Recordings
+                    {this.state.showRecordings ?
+                      <VscTriangleUp className='icon' /> : <VscTriangleDown className='icon' />
+                    }
+                    Recordings
                   </button>
                   : null}
 
                 {/* Export button */}
                 {this.canLaunchExperiment ?
                   <button className='btn btn-default'>
-                    <FaFileExport /> Export
+                    <FaFileExport className='icon' />Export
                   </button>
                   : null}
 
@@ -221,7 +225,10 @@ export default class ExperimentListElement extends React.Component {
                     onClick={() => {
                       this.setState({ showSimDetails: !this.state.showSimDetails });
                     }}>
-                    <IoMdArrowDropdown /> Simulations
+                    {this.state.showSimDetails ?
+                      <VscTriangleUp className='icon' /> : <VscTriangleDown className='icon' />
+                    }
+                    Simulations
                   </button>
                   : null}
 
@@ -229,21 +236,21 @@ export default class ExperimentListElement extends React.Component {
                 {config.canCloneExperiments && (!exp.configuration.privateStorage ||
                   (exp.configuration.experimentFile && exp.configuration.bibiConfSrc)) ?
                   <button className='btn btn-default'>
-                    <i className='fa fa-pencil-alt'></i> Clone
+                    <FaClone className='icon' />Clone
                   </button>
                   : null}
 
                 {/* Files button */}
                 {this.canLaunchExperiment ?
                   <button className='btn btn-default' >
-                    <i className='fa fa-list-alt'></i> Files
+                    <GoFileSubmodule className='icon' />Files
                   </button>
                   : null}
 
                 {/* Shared button */}
                 {this.canLaunchExperiment ?
                   <button className='btn btn-default'>
-                    <FaShareAlt /> Share
+                    <FaShareAlt className='icon' />Share
                   </button>
                   : null}
               </div>
