@@ -8,7 +8,6 @@ import ExperimentStorageService from '../experiment-storage-service';
 import endpoints from '../../../proxy/data/endpoints.json';
 import config from '../../../../config.json';
 import MockExperiments from '../../../../mocks/mock_experiments.json';
-jest.mock('../../../authentication-service');
 
 const proxyEndpoint = endpoints.proxy;
 const experimentsUrl = `${config.api.proxy.url}${proxyEndpoint.storage.experiments.url}`;
@@ -22,10 +21,6 @@ beforeEach(() => {
       onWindowBeforeUnloadCb = cb;
     }
   });
-});
-
-afterEach(() => {
-  jest.restoreAllMocks();
 });
 
 test('makes sure that invoking the constructor fails with the right message', () => {

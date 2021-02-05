@@ -60,11 +60,7 @@ class RoslibService {
   };
 
   createStringTopic(connection, topicName) {
-    return new ROSLIB.Topic({
-      ros: connection,
-      name: topicName,
-      messageType: 'std_msgs/String'
-    });
+    return this.createTopic(connection, topicName, 'std_msgs/String');
   };
 
   createService(connection, serviceName, additionalOptions) {

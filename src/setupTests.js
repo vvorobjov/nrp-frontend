@@ -3,6 +3,7 @@
 // expect(element).toHaveTextContent(/react/i)
 // learn more: https://github.com/testing-library/jest-dom
 import '@testing-library/jest-dom/extend-expect';
+import 'jest-localstorage-mock';
 import { server } from './mocks/server';
 
 beforeAll(() => {
@@ -13,6 +14,8 @@ beforeAll(() => {
 afterEach(() => {
   // Reset any runtime handlers tests may use.
   server.resetHandlers();
+
+  jest.restoreAllMocks();
 });
 
 afterAll(() => {
