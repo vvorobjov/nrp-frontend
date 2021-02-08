@@ -4,7 +4,7 @@ import { VscTriangleUp, VscTriangleDown } from 'react-icons/vsc';
 import { GoFileSubmodule } from 'react-icons/go';
 
 import timeDDHHMMSS from '../../utility/time-filter.js';
-import ExperimentStorageService from '../../services/experiments/storage/experiment-storage-service.js';
+import ExperimentStorageService from '../../services/experiments/files/experiment-storage-service.js';
 import ExperimentExecutionService from '../../services/experiments/execution/experiment-execution-service.js';
 
 import SimulationDetails from './simulation-details';

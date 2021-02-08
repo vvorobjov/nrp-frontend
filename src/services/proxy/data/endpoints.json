@@ -6,6 +6,9 @@
         "experimentImage": {
             "url": "/experimentImage"
         },
+        "experiments": {
+            "url": "/experiments"
+        },
         "identity": {
             "url": "/identity",
             "me": {
