@@ -1,7 +1,6 @@
 import React from 'react';
 import Dropdown from 'react-bootstrap/Dropdown';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faUserCircle, faSignOutAlt } from '@fortawesome/free-solid-svg-icons';
+import { FaUserCircle, FaSignOutAlt } from 'react-icons/fa';
 
 import NrpUserService from '../../services/proxy/nrp-user-service.js';
 import AuthenticationService from '../../services/authentication-service.js';
@@ -45,7 +44,7 @@ export default class UserMenu extends React.Component {
             variant='success'
             id='dropdown-basic'
           >
-            <FontAwesomeIcon icon={faUserCircle} className='user-icon' />
+            <FaUserCircle className='user-icon' />
             <div className='user-name'>
               {this.state.user ? this.state.user.displayName : 'pending ...'}
             </div>
@@ -56,7 +55,7 @@ export default class UserMenu extends React.Component {
               className='dropdown-item'
               onClick={this.onClickLogout}
             >
-              <FontAwesomeIcon icon={faSignOutAlt} className='user-icon' />
+              <FaSignOutAlt className='user-icon' />
               Logout
             </Dropdown.Item>
           </Dropdown.Menu>
