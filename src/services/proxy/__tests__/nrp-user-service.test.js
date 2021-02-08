@@ -70,5 +70,5 @@ test('can determine group membership for administrators', async () => {
 });
 
 test('can retrieve cluster reservations', async () => {
-  expect(await NrpUserService.instance.getReservation()).toBe(null);
+  expect(await NrpUserService.instance.getReservation()).toBe(undefined);
 });
