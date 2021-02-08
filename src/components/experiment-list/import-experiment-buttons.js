@@ -1,4 +1,5 @@
 import React from 'react';
+import {Alert} from 'react-bootstrap';
 
 import ImportExperimentService from '../../services/experiments/storage/import-experiment-service.js';
 
@@ -89,12 +90,12 @@ export default class ImportExperimentButtons extends React.Component {
         {/* Import folder pop-up */}
         {this.state.importFolderResponse
           ? <div className="import-popup">
-            <div className="alert alert-success" role="alert">
+            <Alert variant="success">
               <p>The experiment folder
                 <b>{this.state.importFolderResponse.zipBaseFolderName}</b> has been succesfully imported as
                 <b>{this.state.importFolderResponse.destFolderName}</b>.
               </p>
-            </div>
+            </Alert>
             <div className="text-right">
               <button className="btn btn-success" onClick={() => this.importFolderPopupClick()}>Got it!</button>
             </div>
@@ -105,9 +106,9 @@ export default class ImportExperimentButtons extends React.Component {
         {/* Import zip pop-up */}
         {this.state.importZipResponses
           ? <div className="import-popup">
-            <div className="alert alert-success" role="alert">
+            <Alert variant="success">
               <p>{this.state.importZipResponses.numberOfZips} successfully imported zip files.</p>
-            </div>
+            </Alert>
             <p>The following experiments folders</p>
             <p><b>{this.state.importZipResponses.zipBaseFolderName}</b></p>
             <p>have been successfully imported as:</p>
@@ -122,10 +123,10 @@ export default class ImportExperimentButtons extends React.Component {
         {/* Scan pop-up */}
         {this.state.scanStorageResponse
           ? <div className="import-popup">
-            <div className="alert alert-success" role="alert">
+            <Alert variant="success">
               <p>{this.state.scanStorageResponse.addedFoldersNumber} added folders,
                 {this.state.scanStorageResponse.deletedFoldersNumber} deleted folders.</p>
-            </div>
+            </Alert>
             <p>Added:</p>
             <p><b>{this.state.scanStorageResponse.addedFolders !== ''
               ? this.state.scanStorageResponse.addedFolders

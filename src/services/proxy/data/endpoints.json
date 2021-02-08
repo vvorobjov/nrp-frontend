@@ -24,10 +24,10 @@
         "url": "/storage/experiments"
       },
       "importExperiment":{
-        "url": "/importExperiment"
+        "url": "/storage/importExperiment"
       },
       "scanStorage":{
-        "url":"/scanStorage"
+        "url":"/storage/scanStorage"
       }
     }
   }

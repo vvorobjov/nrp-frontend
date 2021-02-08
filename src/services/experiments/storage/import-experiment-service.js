@@ -9,6 +9,22 @@ const scanStorageURL = `${config.api.proxy.url}${endpoints.proxy.storage.scanSto
 
 let _instance = null;
 const SINGLETON_ENFORCER = Symbol();
+const options = {
+  mode: 'cors', // no-cors, *cors, same-origin
+  cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
+  credentials: 'same-origin', // include, *same-origin, omit
+  headers: {
+    'Content-Type': 'application/octet-stream',
+    Referer: 'http://localhost:9000/'
+  },
+  // redirect: manual, *follow, error
+  redirect: 'follow',
+  // referrerPolicy: no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin,
+  // strict-origin, strict-origin-when-cross-origin, unsafe-url
+  referrerPolicy: 'no-referrer',
+  //body: JSON.stringify(data) // body data type must match "Content-Type" header
+  method: 'POST'
+};
 
 export default class ImportExperimentService extends HttpService {
   constructor(enforcer) {
@@ -46,12 +62,10 @@ export default class ImportExperimentService extends HttpService {
     return scanStorageResponse;
   }
 
-  scanStorage() {
+  async scanStorage() {
     return this.httpRequestPOST(scanStorageURL)
-      .then(this.getScanStorageResponse)
-      .catch(ErrorHandlerService.instance.displayError({
-        type: 'Import Error.'
-      }));
+      .then(response => this.getScanStorageResponse(response))
+      .catch(error => ErrorHandlerService.instance.displayError(error));
   }
 
   zipExperimentFolder(event) {
@@ -102,13 +116,11 @@ export default class ImportExperimentService extends HttpService {
       });
   }
 
-  importExperimentFolder(event) {
+  async importExperimentFolder(event) {
     return this.zipExperimentFolder(event).then(zipContent => {
-      return this.httpRequestPOST(importExperimentURL, zipContent)
-        .catch(ErrorHandlerService.instance
-          .displayError({
-            type: 'Import Error.'
-          })
+      return this.httpRequestPOST(importExperimentURL, zipContent, options)
+        .catch(error => ErrorHandlerService.instance
+          .displayError(error)
         );
     });
   }
@@ -119,8 +131,8 @@ export default class ImportExperimentService extends HttpService {
     Array.from(files).forEach(file => {
       if (file.type !== 'application/zip') {
         ErrorHandlerService.instance.displayError({
-          type: 'Import Error.',
-          message:`The file ${file.name} cannot be imported because it is not a zip file.`
+          type : 'Import Error.',
+          message :`The file ${file.name} cannot be imported because it is not a zip file.`
         });
       }
       else {
@@ -137,14 +149,15 @@ export default class ImportExperimentService extends HttpService {
     return Promise.all(promises);
   }
 
-  importZippedExperiment(event) {
+  async importZippedExperiment(event) {
     let promises = this.readZippedExperimentExperiment(event)
       .then(zipContents =>
         zipContents.map(zipContent =>
-          this.httpRequestPOST(importExperimentURL, zipContent).catch(error => {
-            ErrorHandlerService.instance.displayError(error);
-            return Promise.reject(error);
-          })
+          this.httpRequestPOST(importExperimentURL, zipContent, options)
+            .catch(error => {
+              ErrorHandlerService.instance.displayError(error);
+              return Promise.reject(error);
+            })
         )
       )
       .then(responses =>
