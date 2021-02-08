@@ -3,6 +3,7 @@ import { HttpService } from '../../http-service.js';
 import endpoints from '../../proxy/data/endpoints.json';
 import config from '../../../config.json';
 const storageExperimentsURL = `${config.api.proxy.url}${endpoints.proxy.storage.experiments.url}`;
+const cloneURL = `${config.api.proxy.url}${endpoints.proxy.storage.clone.url}`;
 
 let _instance = null;
 const SINGLETON_ENFORCER = Symbol();
@@ -229,6 +230,12 @@ class ExperimentStorageService extends HttpService {
       return new Error('Content-Type for setFile request not specified,' +
         'please make sure that the contentType and the body type match.');
     }
+  }
+
+  async cloneExperiment(experiment) {
+    let expPath = experiment.configuration.experimentConfiguration;
+    let response = await this.httpRequestPOST(cloneURL, { expPath });
+    console.info(response);
   }
 }
 
