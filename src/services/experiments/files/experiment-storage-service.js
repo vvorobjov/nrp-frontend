@@ -1,4 +1,5 @@
 import { HttpService } from '../../http-service.js';
+import { EXPERIMENT_RIGHTS } from '../experiment-constants';
 
 import endpoints from '../../proxy/data/endpoints.json';
 import config from '../../../config.json';
@@ -61,12 +62,14 @@ class ExperimentStorageService extends HttpService {
    * @param {boolean} forceUpdate forces an update of the list
    * @return experiments - the list of template experiments
    */
+  //TODO: between storage experiments and shared experiments, can this be unified?
+  // move to experiment-configuration-service?
   async getExperiments(forceUpdate = false) {
     if (!this.experiments || forceUpdate) {
-      let response = await this.httpRequestGET(storageExperimentsURL);
-      this.experiments = await response.json();
-      this.sortExperiments();
-      await this.fillExperimentDetails();
+      let experimentList = await (await this.httpRequestGET(storageExperimentsURL)).json();
+      this.sortExperiments(experimentList);
+      await this.fillExperimentDetails(experimentList);
+      this.experiments = experimentList;
       this.emit(ExperimentStorageService.EVENTS.UPDATE_EXPERIMENTS, this.experiments);
     }
 
@@ -80,6 +83,8 @@ class ExperimentStorageService extends HttpService {
    *
    * @returns {Blob} image object
    */
+  //TODO: between storage experiments and shared experiments, can this be unified?
+  // move to experiment-configuration-service?
   async getThumbnail(experimentName, thumbnailFilename) {
     return await this.getBlob(experimentName, thumbnailFilename, true);
   }
@@ -87,8 +92,10 @@ class ExperimentStorageService extends HttpService {
   /**
    * Sort the local list of experiments alphabetically.
    */
-  sortExperiments() {
-    this.experiments = this.experiments.sort(
+  //TODO: between storage experiments and shared experiments, can this be unified?
+  // move to experiment-configuration-service?
+  sortExperiments(experimentList) {
+    experimentList = experimentList.sort(
       (a, b) => {
         let nameA = a.configuration.name.toLowerCase();
         let nameB = b.configuration.name.toLowerCase();
@@ -106,12 +113,26 @@ class ExperimentStorageService extends HttpService {
   /**
    * Fill in some details for the local experiment list that might be missing.
    */
-  async fillExperimentDetails() {
-    this.experiments.forEach(exp => {
-      if (!exp.configuration.brainProcesses && exp.configuration.bibiConfSrc) {
-        exp.configuration.brainProcesses = 1;
+  //TODO: between storage experiments and shared experiments, can this be unified?
+  // move to experiment-configuration-service?
+  async fillExperimentDetails(experimentList) {
+    let experimentUpdates = [];
+    experimentList.forEach(experiment => {
+      if (!experiment.configuration.brainProcesses && experiment.configuration.bibiConfSrc) {
+        experiment.configuration.brainProcesses = 1;
       }
+
+      // retrieve the experiment thumbnail
+      experimentUpdates.push(this.getThumbnail(experiment.name, experiment.configuration.thumbnail)
+        .then(thumbnail => {
+          experiment.thumbnailURL = URL.createObjectURL(thumbnail);
+        }));
+
+      experiment.rights = EXPERIMENT_RIGHTS.OWNED;
+      experiment.rights.launch = (experiment.private && experiment.owned) || !experiment.private;
     });
+
+    return Promise.all(experimentUpdates);
   }
 
   /**

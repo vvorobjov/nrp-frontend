@@ -3,7 +3,7 @@ import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
 import 'react-tabs/style/react-tabs.css';
 
 import ExperimentStorageService from '../../services/experiments/files/experiment-storage-service.js';
-import SharedExperimentsService from '../../services/experiments/files/shared-experiments-service.js';
+import PublicExperimentsService from '../../services/experiments/files/public-experiments-service.js';
 import ExperimentServerService from '../../services/experiments/execution/server-resources-service.js';
 import ExperimentExecutionService from '../../services/experiments/execution/experiment-execution-service.js';
 
@@ -17,7 +17,7 @@ export default class ExperimentOverview extends React.Component {
     super(props);
     this.state = {
       storageExperiments: [],
-      templateExperiments: [],
+      publicExperiments: [],
       joinableExperiments: [],
       availableServers: [],
       startingExperiment: undefined
@@ -25,18 +25,6 @@ export default class ExperimentOverview extends React.Component {
   }
 
   async componentDidMount() {
-    try {
-      const storageExperiments = await ExperimentStorageService.instance.getExperiments();
-      const templateExperiments = await SharedExperimentsService.instance.getExperiments();
-      this.setState({
-        storageExperiments: storageExperiments,
-        templateExperiments: templateExperiments
-      });
-    }
-    catch (error) {
-      console.error(`Failed to fetch the list of experiments. Error: ${error}`);
-    }
-
     this.onUpdateServerAvailability = this.onUpdateServerAvailability.bind(this);
     ExperimentServerService.instance.addListener(
       ExperimentServerService.EVENTS.UPDATE_SERVER_AVAILABILITY,
@@ -49,10 +37,16 @@ export default class ExperimentOverview extends React.Component {
       this.onStartExperiment
     );
 
-    this.onUpdateExperiments = this.onUpdateStorageExperiments.bind(this);
+    this.onUpdateStorageExperiments = this.onUpdateStorageExperiments.bind(this);
     ExperimentStorageService.instance.addListener(
       ExperimentStorageService.EVENTS.UPDATE_EXPERIMENTS,
       this.onUpdateStorageExperiments
+    );
+
+    this.onUpdatePublicExperiments = this.onUpdatePublicExperiments.bind(this);
+    PublicExperimentsService.instance.addListener(
+      PublicExperimentsService.EVENTS.UPDATE_EXPERIMENTS,
+      this.onUpdatePublicExperiments
     );
   }
 
@@ -71,6 +65,11 @@ export default class ExperimentOverview extends React.Component {
       ExperimentStorageService.EVENTS.UPDATE_EXPERIMENTS,
       this.onUpdateStorageExperiments
     );
+
+    PublicExperimentsService.instance.removeListener(
+      PublicExperimentsService.EVENTS.UPDATE_EXPERIMENTS,
+      this.onUpdatePublicExperiments
+    );
   }
 
   onUpdateServerAvailability(availableServers) {
@@ -82,11 +81,19 @@ export default class ExperimentOverview extends React.Component {
   };
 
   onUpdateStorageExperiments(storageExperiments) {
+    //console.info(storageExperiments);
     let joinableExperiments = storageExperiments.filter(
       experiment => experiment.joinableServers && experiment.joinableServers.length > 0);
     this.setState({
       storageExperiments: storageExperiments,
       joinableExperiments: joinableExperiments
+    });
+  }
+
+  onUpdatePublicExperiments(publicExperiments) {
+    //console.info(publicExperiments);
+    this.setState({
+      publicExperiments: publicExperiments.filter(exp => exp.configuration.maturity === 'production')
     });
   }
 
@@ -122,7 +129,7 @@ export default class ExperimentOverview extends React.Component {
             <h2>"Experiment Files" tab coming soon ...</h2>
           </TabPanel>
           <TabPanel>
-            <ExperimentList experiments={this.state.templateExperiments}
+            <ExperimentList experiments={this.state.publicExperiments}
               availableServers={this.state.availableServers}
               startingExperiment={this.state.startingExperiment} />
           </TabPanel>

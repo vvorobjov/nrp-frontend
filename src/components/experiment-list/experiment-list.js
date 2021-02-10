@@ -14,7 +14,7 @@ export default class ExperimentList extends React.Component {
             <ol>
               {this.props.experiments.map(experiment => {
                 return (
-                  <li key={experiment.id} className='nostyle'>
+                  <li key={experiment.id || experiment.configuration.id} className='nostyle'>
                     <ExperimentListElement experiment={experiment}
                       availableServers={this.props.availableServers}
                       startingExperiment={this.props.startingExperiment} />
