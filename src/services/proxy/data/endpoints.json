@@ -1,28 +1,31 @@
 {
   "proxy": {
-    "availableServers": {
-      "url": "/availableServers"
-    },
-    "experimentImage": {
-      "url": "/experimentImage"
-    },
-    "identity": {
-      "url": "/identity",
-      "me": {
-        "url": "/identity/me",
-        "groups": {
-          "url": "/identity/me/groups"
-        }
-      }
-    },
-    "server": {
-      "url": "/server"
-    },
-    "storage": {
-      "url": "/storage",
-      "experiments": {
-        "url": "/storage/experiments"
+      "availableServers": {
+          "url": "/availableServers"
       },
+      "experimentImage": {
+          "url": "/experimentImage"
+      },
+      "identity": {
+          "url": "/identity",
+          "me": {
+              "url": "/identity/me",
+              "groups": {
+                  "url": "/identity/me/groups"
+              }
+          }
+      },
+      "server": {
+          "url": "/server"
+      },
+      "storage": {
+          "url": "/storage",
+          "clone": {
+              "url": "/storage/clone"
+          },
+          "experiments": {
+              "url": "/storage/experiments"
+          },
       "importExperiment":{
         "url": "/importExperiment"
       },
