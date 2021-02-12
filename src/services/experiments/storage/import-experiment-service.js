@@ -43,17 +43,21 @@ export default class ImportExperimentService extends HttpService {
   }
 
   getImportZipResponses(responses) {
-    let importZipResponses = {};
+    let importZipResponses = {
+      zipBaseFolderName: [],
+      destFolderName: []
+    };
     importZipResponses.numberOfZips = responses.length;
-    ['zipBaseFolderName', 'destFolderName'].forEach(name => {
-      importZipResponses[name] = responses
-        .map(response => response[name])
-        .join(', ');
+    responses.forEach(async response =>{
+      response = await response.json();
+      importZipResponses['zipBaseFolderName'].push(response['zipBaseFolderName']);
+      importZipResponses['destFolderName'].push(response['destFolderName']);
     });
     return importZipResponses;
   }
 
-  getScanStorageResponse(response) {
+  async getScanStorageResponse(response) {
+    response = await response.json();
     let scanStorageResponse = {};
     ['deletedFolders', 'addedFolders'].forEach(name => {
       scanStorageResponse[`${name}Number`] = response[name].length;
@@ -68,7 +72,7 @@ export default class ImportExperimentService extends HttpService {
       .catch(error => ErrorHandlerService.instance.displayError(error));
   }
 
-  zipExperimentFolder(event) {
+  async zipExperimentFolder(event) {
     let zip = new JSZip();
     let files = event.target.files;
     if (files.length === 0){
@@ -117,7 +121,7 @@ export default class ImportExperimentService extends HttpService {
   }
 
   async importExperimentFolder(event) {
-    return this.zipExperimentFolder(event).then(zipContent => {
+    return this.zipExperimentFolder(event).then(async zipContent => {
       return this.httpRequestPOST(importExperimentURL, zipContent, options)
         .catch(error => ErrorHandlerService.instance
           .displayError(error)
@@ -149,7 +153,7 @@ export default class ImportExperimentService extends HttpService {
     return Promise.all(promises);
   }
 
-  async importZippedExperiment(event) {
+  importZippedExperiment(event) {
     let promises = this.readZippedExperimentExperiment(event)
       .then(zipContents =>
         zipContents.map(zipContent =>
