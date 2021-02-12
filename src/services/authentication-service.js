@@ -77,7 +77,7 @@ class AuthenticationService {
     }
     catch (e) {
       // this token will be rejected by the server and the client will get a proper auth error
-      return 'malformed-token';
+      return AuthenticationService.CONSTANTS.MALFORMED_TOKEN;
     }
   }
 
@@ -99,5 +99,9 @@ class AuthenticationService {
     }&redirect_uri=${encodeURIComponent(window.location.href)}`;
   }
 }
+
+AuthenticationService.CONSTANTS = Object.freeze({
+  MALFORMED_TOKEN: 'malformed-token'
+});
 
 export default AuthenticationService;
