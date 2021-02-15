@@ -144,8 +144,7 @@ class PublicExperimentsService extends HttpService {
    */
   async cloneExperiment(experiment) {
     let experimentConfigFilepath = experiment.configuration.experimentConfiguration;
-    let response = await this.httpRequestPOST(cloneURL, { expPath: experimentConfigFilepath });
-    console.info(response);
+    this.httpRequestPOST(cloneURL, JSON.stringify({ expPath: experimentConfigFilepath }));
   }
 }
 

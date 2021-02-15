@@ -17,7 +17,8 @@ export default class ExperimentList extends React.Component {
                   <li key={experiment.id || experiment.configuration.id} className='nostyle'>
                     <ExperimentListElement experiment={experiment}
                       availableServers={this.props.availableServers}
-                      startingExperiment={this.props.startingExperiment} />
+                      startingExperiment={this.props.startingExperiment}
+                      selectExperimentOverviewTab={this.props.selectExperimentOverviewTab} />
                   </li>
                 );
               })}

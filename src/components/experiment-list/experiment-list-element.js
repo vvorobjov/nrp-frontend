@@ -10,6 +10,8 @@ import ExperimentExecutionService from '../../services/experiments/execution/exp
 import SimulationDetails from './simulation-details';
 
 import './experiment-list-element.css';
+import PublicExperimentsService from '../../services/experiments/files/public-experiments-service.js';
+import ExperimentStorageService from '../../services/experiments/files/experiment-storage-service.js';
 
 const CLUSTER_THRESHOLDS = {
   UNAVAILABLE: 2,
@@ -182,7 +184,10 @@ export default class ExperimentListElement extends React.Component {
 
                 {/* isPrivateExperiment */}
                 {exp.rights.delete ?
-                  <button className='btn btn-default'>
+                  <button className='btn btn-default' onClick={async () => {
+                    await ExperimentStorageService.instance.deleteExperiment(exp.id);
+                    ExperimentStorageService.instance.getExperiments(true);
+                  }}>
                     <FaTrash className='icon' />Delete
                   </button>
                   : null}
@@ -219,7 +224,10 @@ export default class ExperimentListElement extends React.Component {
 
                 {/* Clone button */}
                 {exp.rights.clone ?
-                  <button className='btn btn-default'>
+                  <button className='btn btn-default' onClick={() => {
+                    PublicExperimentsService.instance.cloneExperiment(exp);
+                    this.props.selectExperimentOverviewTab(0);
+                  }}>
                     <FaClone className='icon' />Clone
                   </button>
                   : null}

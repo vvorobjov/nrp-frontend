@@ -55,7 +55,6 @@ export default class SimulationDetails extends React.Component {
   }
 
   render() {
-    //console.info(this.props.simulations);
     return (
       <div className='simulations-details-wrapper'>
         <div className='table-row table-header'>

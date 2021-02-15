@@ -3,6 +3,8 @@ import { EXPERIMENT_RIGHTS } from '../experiment-constants';
 
 import endpoints from '../../proxy/data/endpoints.json';
 import config from '../../../config.json';
+
+const storageURL = `${config.api.proxy.url}${endpoints.proxy.storage.url}`;
 const storageExperimentsURL = `${config.api.proxy.url}${endpoints.proxy.storage.experiments.url}`;
 
 let _instance = null;
@@ -214,6 +216,15 @@ class ExperimentStorageService extends HttpService {
    */
   async deleteFolder(experimentName, folderName, byname = false) {
     return this.deleteEntity(experimentName, folderName, byname, 'folder');
+  }
+
+  /**
+   * Deletes an experiment from storage.
+   * @param {string} experimentID The experiment's ID
+   */
+  async deleteExperiment(experimentID) {
+    let url = storageURL + '/' + experimentID;
+    return this.httpRequestDELETE(url);
   }
 
   /**
