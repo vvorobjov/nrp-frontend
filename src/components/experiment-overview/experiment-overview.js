@@ -1,7 +1,5 @@
 import React from 'react';
 import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
-//import Tabs from 'react-bootstrap/Tabs';
-//import Tab from 'react-bootstrap/Tab';
 import 'react-tabs/style/react-tabs.css';
 
 import ExperimentStorageService from '../../services/experiments/files/experiment-storage-service.js';
@@ -15,6 +13,17 @@ import NrpHeader from '../nrp-header/nrp-header.js';
 import './experiment-overview.css';
 
 export default class ExperimentOverview extends React.Component {
+  static CONSTANTS = {
+    TAB_INDEX: {
+      MY_EXPERIMENTS: 0,
+      NEW_EXPERIMENT: 1,
+      MODEL_LIBRARIES: 2,
+      EXPERIMENT_FILES: 3,
+      TEMPLATES: 4,
+      RUNNING_SIMULATIONS: 5
+    }
+  };
+
   constructor(props) {
     super(props);
     this.state = {
@@ -23,7 +32,7 @@ export default class ExperimentOverview extends React.Component {
       joinableExperiments: [],
       availableServers: [],
       startingExperiment: undefined,
-      selectedTabIndex: 0
+      selectedTabIndex: ExperimentOverview.CONSTANTS.TAB_INDEX.MY_EXPERIMENTS
     };
   }
 
@@ -98,10 +107,6 @@ export default class ExperimentOverview extends React.Component {
     });
   }
 
-  selectTab(index) {
-    this.setState({ selectedTabIndex: index });
-  }
-
   render() {
     return (
       <div className='experiment-overview-wrapper'>
@@ -111,9 +116,7 @@ export default class ExperimentOverview extends React.Component {
 
         <Tabs className="tabs-view" id="tabs-experiment-lists"
           selectedIndex={this.state.selectedTabIndex}
-          onSelect={(index) => this.setState({ selectedTabIndex: index })}
-          /*activeKey={this.state.selectedTabKey}
-          onSelect={(key) => this.setState({ selectedTabKey: key })}*/>
+          onSelect={(index) => this.setState({ selectedTabIndex: index })} >
           <TabList>
             <Tab>My Experiments</Tab>
             <Tab>New Experiment</Tab>
@@ -124,32 +127,32 @@ export default class ExperimentOverview extends React.Component {
           </TabList>
 
           {/* My Experiments */}
-          <TabPanel /*Tab title='My Experiments' eventKey='my-experiments'*/>
+          <TabPanel>
             <ExperimentList experiments={this.state.storageExperiments}
               availableServers={this.state.availableServers}
               startingExperiment={this.state.startingExperiment} />
           </TabPanel>
           {/* New Experiment */}
-          <TabPanel /*Tab title='New Experiment' eventKey='new-experiment'*/>
+          <TabPanel>
             <h2>"New Experiment" tab coming soon ...</h2>
           </TabPanel>
           {/* Model Libraries */}
-          <TabPanel /*Tab title='Model Libraries' eventKey='model-libraries'*/>
+          <TabPanel>
             <h2>"Model Libraries" tab coming soon ...</h2>
           </TabPanel>
           {/* Experiment Files */}
-          <TabPanel /*Tab title='Experiment Files' eventKey='experiment-files'*/>
+          <TabPanel>
             <h2>"Experiment Files" tab coming soon ...</h2>
           </TabPanel>
           {/* Templates */}
-          <TabPanel /*Tab title='Template Experiments' eventKey='template-experiments'*/>
+          <TabPanel>
             <ExperimentList experiments={this.state.publicExperiments}
               availableServers={this.state.availableServers}
               startingExperiment={this.state.startingExperiment}
               selectExperimentOverviewTab={(index) => this.setState({ selectedTabIndex: index })} />
           </TabPanel>
           {/* Running Simulations */}
-          <TabPanel /*Tab title='Running Experiments' eventKey='running-experiments'*/>
+          <TabPanel>
             <ExperimentList
               experiments={this.state.joinableExperiments}
               availableServers={this.state.availableServers}

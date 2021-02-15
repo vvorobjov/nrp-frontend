@@ -1,17 +1,18 @@
 import React from 'react';
-import { FaPlay, FaTrash, FaFileExport, FaShareAlt, FaClone } from 'react-icons/fa';
+import { FaTrash, FaFileExport, FaShareAlt, FaClone } from 'react-icons/fa';
+import { RiPlayFill, RiPlayLine, RiPlayList2Fill } from 'react-icons/ri';
 import { VscTriangleUp, VscTriangleDown } from 'react-icons/vsc';
 import { GoFileSubmodule } from 'react-icons/go';
 
 import timeDDHHMMSS from '../../utility/time-filter.js';
-//import ExperimentStorageService from '../../services/experiments/files/experiment-storage-service.js';
 import ExperimentExecutionService from '../../services/experiments/execution/experiment-execution-service.js';
-
-import SimulationDetails from './simulation-details';
-
-import './experiment-list-element.css';
 import PublicExperimentsService from '../../services/experiments/files/public-experiments-service.js';
 import ExperimentStorageService from '../../services/experiments/files/experiment-storage-service.js';
+
+import SimulationDetails from './simulation-details';
+import ExperimentOverview from '../experiment-overview/experiment-overview.js';
+
+import './experiment-list-element.css';
 
 const CLUSTER_THRESHOLDS = {
   UNAVAILABLE: 2,
@@ -166,19 +167,19 @@ export default class ExperimentListElement extends React.Component {
                     disabled={this.isLaunchDisabled()}
                     className='btn btn-default'
                     title={this.launchButtonTitle} >
-                    <FaPlay className='icon' />Launch
+                    <RiPlayFill className='icon' />Launch
                   </button>
                   : null}
 
                 {exp.rights.launch /*&& config.brainProcesses > 1*/ ?
                   <button className='btn btn-default'>
-                    <FaPlay className='icon' />Launch in Single Process Mode
+                    <RiPlayLine className='icon' />Launch in Single Process Mode
                   </button>
                   : null}
 
                 {exp.rights.launch /*&& this.props.availableServers.length > 1*/ ?
                   <button className='btn btn-default' >
-                    <FaPlay className='icon' />Launch Multiple
+                    <RiPlayList2Fill className='icon' />Launch Multiple
                   </button>
                   : null}
 
@@ -196,7 +197,8 @@ export default class ExperimentListElement extends React.Component {
                 {exp.rights.launch ?
                   <button className='btn btn-default'>
                     {this.state.showRecordings ?
-                      <VscTriangleUp className='icon' /> : <VscTriangleDown className='icon' />
+                      <VscTriangleUp className='icon' /> :
+                      <VscTriangleDown className='icon' />
                     }
                     Recordings
                   </button>
@@ -216,7 +218,8 @@ export default class ExperimentListElement extends React.Component {
                       this.setState({ showSimDetails: !this.state.showSimDetails });
                     }}>
                     {this.state.showSimDetails ?
-                      <VscTriangleUp className='icon' /> : <VscTriangleDown className='icon' />
+                      <VscTriangleUp className='icon' /> :
+                      <VscTriangleDown className='icon' />
                     }
                     Simulations
                   </button>
@@ -226,7 +229,7 @@ export default class ExperimentListElement extends React.Component {
                 {exp.rights.clone ?
                   <button className='btn btn-default' onClick={() => {
                     PublicExperimentsService.instance.cloneExperiment(exp);
-                    this.props.selectExperimentOverviewTab(0);
+                    this.props.selectExperimentOverviewTab(ExperimentOverview.CONSTANTS.TAB_INDEX.MY_EXPERIMENTS);
                   }}>
                     <FaClone className='icon' />Clone
                   </button>
