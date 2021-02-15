@@ -13,6 +13,7 @@ import SimulationDetails from './simulation-details';
 import ExperimentOverview from '../experiment-overview/experiment-overview.js';
 
 import './experiment-list-element.css';
+import '../main.css';
 
 const CLUSTER_THRESHOLDS = {
   UNAVAILABLE: 2,
@@ -104,7 +105,6 @@ export default class ExperimentListElement extends React.Component {
   render() {
     const exp = this.props.experiment;
     const config = this.props.experiment.configuration;
-    //const pageState = this.props.pageState;  //TODO: to be removed, migrate to services
 
     return (
       <div className='list-entry-wrapper flex-container left-right'
