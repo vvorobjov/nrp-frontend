@@ -165,27 +165,27 @@ export default class ExperimentListElement extends React.Component {
                       ExperimentExecutionService.instance.startNewExperiment(exp, false);
                     }}
                     disabled={this.isLaunchDisabled()}
-                    className='btn btn-default'
+                    className='nrp-btn btn-default'
                     title={this.launchButtonTitle} >
                     <RiPlayFill className='icon' />Launch
                   </button>
                   : null}
 
                 {exp.rights.launch /*&& config.brainProcesses > 1*/ ?
-                  <button className='btn btn-default'>
+                  <button className='nrp-btn btn-default'>
                     <RiPlayLine className='icon' />Launch in Single Process Mode
                   </button>
                   : null}
 
                 {exp.rights.launch /*&& this.props.availableServers.length > 1*/ ?
-                  <button className='btn btn-default' >
+                  <button className='nrp-btn btn-default' >
                     <RiPlayList2Fill className='icon' />Launch Multiple
                   </button>
                   : null}
 
                 {/* isPrivateExperiment */}
                 {exp.rights.delete ?
-                  <button className='btn btn-default' onClick={async () => {
+                  <button className='nrp-btn btn-default' onClick={async () => {
                     await ExperimentStorageService.instance.deleteExperiment(exp.id);
                     ExperimentStorageService.instance.getExperiments(true);
                   }}>
@@ -195,7 +195,7 @@ export default class ExperimentListElement extends React.Component {
 
                 {/* Records button */}
                 {exp.rights.launch ?
-                  <button className='btn btn-default'>
+                  <button className='nrp-btn btn-default'>
                     {this.state.showRecordings ?
                       <VscTriangleUp className='icon' /> :
                       <VscTriangleDown className='icon' />
@@ -206,14 +206,14 @@ export default class ExperimentListElement extends React.Component {
 
                 {/* Export button */}
                 {exp.rights.launch ?
-                  <button className='btn btn-default'>
+                  <button className='nrp-btn btn-default'>
                     <FaFileExport className='icon' />Export
                   </button>
                   : null}
 
                 {/* Simulations button */}
                 {exp.rights.launch && exp.joinableServers.length > 0 ?
-                  <button className='btn btn-default'
+                  <button className='nrp-btn btn-default'
                     onClick={() => {
                       this.setState({ showSimDetails: !this.state.showSimDetails });
                     }}>
@@ -227,7 +227,7 @@ export default class ExperimentListElement extends React.Component {
 
                 {/* Clone button */}
                 {exp.rights.clone ?
-                  <button className='btn btn-default' onClick={() => {
+                  <button className='nrp-btn btn-default' onClick={() => {
                     PublicExperimentsService.instance.cloneExperiment(exp);
                     this.props.selectExperimentOverviewTab(ExperimentOverview.CONSTANTS.TAB_INDEX.MY_EXPERIMENTS);
                   }}>
@@ -237,14 +237,14 @@ export default class ExperimentListElement extends React.Component {
 
                 {/* Files button */}
                 {exp.rights.launch ?
-                  <button className='btn btn-default' >
+                  <button className='nrp-btn btn-default' >
                     <GoFileSubmodule className='icon' />Files
                   </button>
                   : null}
 
                 {/* Shared button */}
                 {exp.rights.launch ?
-                  <button className='btn btn-default'>
+                  <button className='nrp-btn btn-default'>
                     <FaShareAlt className='icon' />Share
                   </button>
                   : null}
