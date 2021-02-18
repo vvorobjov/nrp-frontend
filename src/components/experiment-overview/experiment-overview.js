@@ -8,6 +8,7 @@ import ExperimentExecutionService from '../../services/experiments/execution/exp
 
 import ExperimentList from '../experiment-list/experiment-list.js';
 import NrpHeader from '../nrp-header/nrp-header.js';
+import ExperimentFilesViewer from '../experiment-files-viewer/experiment-files-viewer.js';
 
 import './experiment-overview.css';
 
@@ -115,7 +116,7 @@ export default class ExperimentOverview extends React.Component {
             <h2>"Model Libraries" tab coming soon ...</h2>
           </TabPanel>
           <TabPanel>
-            <h2>"Experiment Files" tab coming soon ...</h2>
+            <ExperimentFilesViewer experiments={this.state.storageExperiments}/>
           </TabPanel>
           <TabPanel>
             <h2>"Templates" tab coming soon ...</h2>

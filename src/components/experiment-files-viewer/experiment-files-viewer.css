@@ -1,0 +1,16 @@
+.experiment-files-viewer-wrapper {
+    height: 100vh;
+    display: grid;
+    grid-template-rows: auto;
+    grid-template-columns: 40% auto;
+    grid-template-areas:
+        "experiment-list experiment-files";
+}
+  
+.experiment-list {
+    grid-area: experiment-list;
+}
+  
+.experiment-files {
+    grid-area: experiment-files;
+}
