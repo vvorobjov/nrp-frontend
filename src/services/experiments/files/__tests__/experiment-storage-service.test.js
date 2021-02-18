@@ -21,6 +21,7 @@ beforeEach(() => {
       onWindowBeforeUnloadCb = cb;
     }
   });
+  URL.createObjectURL = jest.fn().mockReturnValue('http://mock.thumbnail.url');
 });
 
 test('makes sure that invoking the constructor fails with the right message', () => {
@@ -54,7 +55,7 @@ test('fetches the list of experiments', async () => {
 
   // forced update should result in new request
   await ExperimentStorageService.instance.getExperiments(true);
-  expect(ExperimentStorageService.instance.performRequest.mock.calls.length).toBe(oldCallCount + 1);
+  expect(ExperimentStorageService.instance.performRequest.mock.calls.length > oldCallCount).toBe(true);
 });
 
 test('emits an event when updating the experiment list', async () => {
@@ -112,7 +113,7 @@ test('sorts the local experiment list by display name', async () => {
     }
   ];
   ExperimentStorageService.instance.experiments = mockExperimentList;
-  ExperimentStorageService.instance.sortExperiments();
+  ExperimentStorageService.instance.sortExperiments(mockExperimentList);
   expect(mockExperimentList[0].configuration.name).toBe('Abc');
   expect(mockExperimentList[1].configuration.name).toBe('bcd');
 });

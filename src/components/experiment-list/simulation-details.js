@@ -55,7 +55,6 @@ export default class SimulationDetails extends React.Component {
   }
 
   render() {
-    //console.info(this.props.simulations);
     return (
       <div className='simulations-details-wrapper'>
         <div className='table-row table-header'>
@@ -78,14 +77,14 @@ export default class SimulationDetails extends React.Component {
                 <button /*analytics-on analytics-event="Join" analytics-category="Experiment"
                   ng-click="(simulation.runningSimulation.state === STATE.CREATED) ||
                     simulation.stopping || joinExperiment(simulation, exp);"*/
-                  type="button" className="btn btn-default"
+                  type="button" className='nrp-btn btn-default'
                   disabled={this.isJoinDisabled(simulation)}>
                   <ImEnter className='icon' />Join
                 </button>
                 {/* Stop button enabled provided simulation state is consistent */}
                 <button /*analytics-on analytics-event="Stop" analytics-category="Experiment"*/
                   onClick={() => ExperimentExecutionService.instance.stopExperiment(simulation)}
-                  type="button" className="btn btn-default"
+                  type="button" className='nrp-btn btn-default'
                   disabled={this.isStopDisabled(simulation)}
                   title={this.state.titleButtonStop}>
                   <FaStop className='icon' />Stop
@@ -97,9 +96,11 @@ export default class SimulationDetails extends React.Component {
         }
 
         <div className='table-row'>
-          <button className='table-column-last'>
-            <FaStopCircle className='icon' />Stop All
-          </button>
+          <div className='table-column-last'>
+            <button className='nrp-btn btn-default'>
+              <FaStopCircle className='icon' />Stop All
+            </button>
+          </div>
         </div>
       </div >
     );

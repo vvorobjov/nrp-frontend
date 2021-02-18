@@ -1,15 +1,17 @@
 import { HttpService } from '../../http-service.js';
+import { EXPERIMENT_RIGHTS } from '../experiment-constants';
 
 import endpoints from '../../proxy/data/endpoints.json';
 import config from '../../../config.json';
+
+const storageURL = `${config.api.proxy.url}${endpoints.proxy.storage.url}`;
 const storageExperimentsURL = `${config.api.proxy.url}${endpoints.proxy.storage.experiments.url}`;
-const cloneURL = `${config.api.proxy.url}${endpoints.proxy.storage.clone.url}`;
 
 let _instance = null;
 const SINGLETON_ENFORCER = Symbol();
 
 /**
- * Service that fetches the template experiments list from the proxy given
+ * Service that handles storage experiment files and configurations given
  * that the user has authenticated successfully.
  */
 class ExperimentStorageService extends HttpService {
@@ -62,12 +64,14 @@ class ExperimentStorageService extends HttpService {
    * @param {boolean} forceUpdate forces an update of the list
    * @return experiments - the list of template experiments
    */
+  //TODO: between storage experiments and shared experiments, can this be unified?
+  // move to experiment-configuration-service?
   async getExperiments(forceUpdate = false) {
     if (!this.experiments || forceUpdate) {
-      let response = await this.httpRequestGET(storageExperimentsURL);
-      this.experiments = await response.json();
-      this.sortExperiments();
-      await this.fillExperimentDetails();
+      let experimentList = await (await this.httpRequestGET(storageExperimentsURL)).json();
+      this.sortExperiments(experimentList);
+      await this.fillExperimentDetails(experimentList);
+      this.experiments = experimentList;
       this.emit(ExperimentStorageService.EVENTS.UPDATE_EXPERIMENTS, this.experiments);
     }
 
@@ -81,6 +85,8 @@ class ExperimentStorageService extends HttpService {
    *
    * @returns {Blob} image object
    */
+  //TODO: between storage experiments and shared experiments, can this be unified?
+  // move to experiment-configuration-service?
   async getThumbnail(experimentName, thumbnailFilename) {
     return await this.getBlob(experimentName, thumbnailFilename, true);
   }
@@ -88,8 +94,10 @@ class ExperimentStorageService extends HttpService {
   /**
    * Sort the local list of experiments alphabetically.
    */
-  sortExperiments() {
-    this.experiments = this.experiments.sort(
+  //TODO: between storage experiments and shared experiments, can this be unified?
+  // move to experiment-configuration-service?
+  sortExperiments(experimentList) {
+    experimentList = experimentList.sort(
       (a, b) => {
         let nameA = a.configuration.name.toLowerCase();
         let nameB = b.configuration.name.toLowerCase();
@@ -107,12 +115,26 @@ class ExperimentStorageService extends HttpService {
   /**
    * Fill in some details for the local experiment list that might be missing.
    */
-  async fillExperimentDetails() {
-    this.experiments.forEach(exp => {
-      if (!exp.configuration.brainProcesses && exp.configuration.bibiConfSrc) {
-        exp.configuration.brainProcesses = 1;
+  //TODO: between storage experiments and shared experiments, can this be unified?
+  // move to experiment-configuration-service?
+  async fillExperimentDetails(experimentList) {
+    let experimentUpdates = [];
+    experimentList.forEach(experiment => {
+      if (!experiment.configuration.brainProcesses && experiment.configuration.bibiConfSrc) {
+        experiment.configuration.brainProcesses = 1;
       }
+
+      // retrieve the experiment thumbnail
+      experimentUpdates.push(this.getThumbnail(experiment.name, experiment.configuration.thumbnail)
+        .then(thumbnail => {
+          experiment.thumbnailURL = URL.createObjectURL(thumbnail);
+        }));
+
+      experiment.rights = EXPERIMENT_RIGHTS.OWNED;
+      experiment.rights.launch = (experiment.private && experiment.owned) || !experiment.private;
     });
+
+    return Promise.all(experimentUpdates);
   }
 
   /**
@@ -197,6 +219,15 @@ class ExperimentStorageService extends HttpService {
   }
 
   /**
+   * Deletes an experiment from storage.
+   * @param {string} experimentID The experiment's ID
+   */
+  async deleteExperiment(experimentID) {
+    let url = storageURL + '/' + experimentID;
+    return this.httpRequestDELETE(url);
+  }
+
+  /**
    * Creates a file in an experiment folder from the storage.
    * @param {string} experimentName - name of the experiment
    * @param {string} filename - name of the file
@@ -230,12 +261,6 @@ class ExperimentStorageService extends HttpService {
       return new Error('Content-Type for setFile request not specified,' +
         'please make sure that the contentType and the body type match.');
     }
-  }
-
-  async cloneExperiment(experiment) {
-    let expPath = experiment.configuration.experimentConfiguration;
-    let response = await this.httpRequestPOST(cloneURL, { expPath });
-    console.info(response);
   }
 }
 
