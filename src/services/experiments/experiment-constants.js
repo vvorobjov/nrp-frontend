@@ -8,4 +8,19 @@ const EXPERIMENT_STATE = {
   STOPPED: 'stopped'
 };
 
-module.exports = {EXPERIMENT_STATE};
+const EXPERIMENT_RIGHTS = {
+  PUBLICLY_SHARED: {
+    launch: false,
+    delete: false,
+    clone: true,
+    share: false
+  },
+  OWNED: {
+    launch: true,
+    delete: true,
+    clone: true,
+    share: true
+  }
+};
+
+module.exports = { EXPERIMENT_STATE, EXPERIMENT_RIGHTS };
