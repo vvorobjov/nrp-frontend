@@ -2,7 +2,8 @@ import React from 'react';
 import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
 import 'react-tabs/style/react-tabs.css';
 
-import ExperimentStorageService from '../../services/experiments/storage/experiment-storage-service.js';
+import ExperimentStorageService from '../../services/experiments/files/experiment-storage-service.js';
+import PublicExperimentsService from '../../services/experiments/files/public-experiments-service.js';
 import ExperimentServerService from '../../services/experiments/execution/server-resources-service.js';
 import ExperimentExecutionService from '../../services/experiments/execution/experiment-execution-service.js';
 
@@ -13,27 +14,30 @@ import NrpHeader from '../nrp-header/nrp-header.js';
 import './experiment-overview.css';
 
 export default class ExperimentOverview extends React.Component {
+  static CONSTANTS = {
+    TAB_INDEX: {
+      MY_EXPERIMENTS: 0,
+      NEW_EXPERIMENT: 1,
+      MODEL_LIBRARIES: 2,
+      EXPERIMENT_FILES: 3,
+      TEMPLATES: 4,
+      RUNNING_SIMULATIONS: 5
+    }
+  };
+
   constructor(props) {
     super(props);
     this.state = {
-      experiments: [],
+      storageExperiments: [],
+      publicExperiments: [],
       joinableExperiments: [],
       availableServers: [],
-      startingExperiment: undefined
+      startingExperiment: undefined,
+      selectedTabIndex: ExperimentOverview.CONSTANTS.TAB_INDEX.MY_EXPERIMENTS
     };
   }
 
   async componentDidMount() {
-    try {
-      const experiments = await ExperimentStorageService.instance.getExperiments();
-      this.setState({
-        experiments: experiments
-      });
-    }
-    catch (error) {
-      console.error(`Failed to fetch the list of experiments. Error: ${error}`);
-    }
-
     this.onUpdateServerAvailability = this.onUpdateServerAvailability.bind(this);
     ExperimentServerService.instance.addListener(
       ExperimentServerService.EVENTS.UPDATE_SERVER_AVAILABILITY,
@@ -46,10 +50,16 @@ export default class ExperimentOverview extends React.Component {
       this.onStartExperiment
     );
 
-    this.onUpdateExperiments = this.onUpdateExperiments.bind(this);
+    this.onUpdateStorageExperiments = this.onUpdateStorageExperiments.bind(this);
     ExperimentStorageService.instance.addListener(
       ExperimentStorageService.EVENTS.UPDATE_EXPERIMENTS,
-      this.onUpdateExperiments
+      this.onUpdateStorageExperiments
+    );
+
+    this.onUpdatePublicExperiments = this.onUpdatePublicExperiments.bind(this);
+    PublicExperimentsService.instance.addListener(
+      PublicExperimentsService.EVENTS.UPDATE_EXPERIMENTS,
+      this.onUpdatePublicExperiments
     );
   }
 
@@ -66,7 +76,12 @@ export default class ExperimentOverview extends React.Component {
 
     ExperimentStorageService.instance.removeListener(
       ExperimentStorageService.EVENTS.UPDATE_EXPERIMENTS,
-      this.onUpdateExperiments
+      this.onUpdateStorageExperiments
+    );
+
+    PublicExperimentsService.instance.removeListener(
+      PublicExperimentsService.EVENTS.UPDATE_EXPERIMENTS,
+      this.onUpdatePublicExperiments
     );
   }
 
@@ -78,12 +93,18 @@ export default class ExperimentOverview extends React.Component {
     this.setState({ startingExperiment: experiment });
   };
 
-  onUpdateExperiments(experiments) {
-    let joinableExperiments = experiments.filter(
+  onUpdateStorageExperiments(storageExperiments) {
+    let joinableExperiments = storageExperiments.filter(
       experiment => experiment.joinableServers && experiment.joinableServers.length > 0);
     this.setState({
-      experiments: experiments,
+      storageExperiments: storageExperiments,
       joinableExperiments: joinableExperiments
+    });
+  }
+
+  onUpdatePublicExperiments(publicExperiments) {
+    this.setState({
+      publicExperiments: publicExperiments.filter(exp => exp.configuration.maturity === 'production')
     });
   }
 
@@ -94,7 +115,9 @@ export default class ExperimentOverview extends React.Component {
           <NrpHeader title1='EXPERIMENT' title2='OVERVIEW' />
         </div>
 
-        <Tabs className="tabs-view">
+        <Tabs className="tabs-view" id="tabs-experiment-lists"
+          selectedIndex={this.state.selectedTabIndex}
+          onSelect={(index) => this.setState({ selectedTabIndex: index })} >
           <TabList>
             <Tab>My Experiments</Tab>
             <Tab>New Experiment</Tab>
@@ -104,24 +127,33 @@ export default class ExperimentOverview extends React.Component {
             <Tab>Running Simulations</Tab>
           </TabList>
 
+          {/* My Experiments */}
           <TabPanel>
             <ImportExperimentButtons />
-            <ExperimentList experiments={this.state.experiments}
+            <ExperimentList experiments={this.state.storageExperiments}
               availableServers={this.state.availableServers}
               startingExperiment={this.state.startingExperiment} />
           </TabPanel>
+          {/* New Experiment */}
           <TabPanel>
             <h2>"New Experiment" tab coming soon ...</h2>
           </TabPanel>
+          {/* Model Libraries */}
           <TabPanel>
             <h2>"Model Libraries" tab coming soon ...</h2>
           </TabPanel>
+          {/* Experiment Files */}
           <TabPanel>
             <h2>"Experiment Files" tab coming soon ...</h2>
           </TabPanel>
+          {/* Templates */}
           <TabPanel>
-            <h2>"Templates" tab coming soon ...</h2>
+            <ExperimentList experiments={this.state.publicExperiments}
+              availableServers={this.state.availableServers}
+              startingExperiment={this.state.startingExperiment}
+              selectExperimentOverviewTab={(index) => this.setState({ selectedTabIndex: index })} />
           </TabPanel>
+          {/* Running Simulations */}
           <TabPanel>
             <ExperimentList
               experiments={this.state.joinableExperiments}

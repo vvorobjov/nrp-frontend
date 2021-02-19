@@ -14,8 +14,7 @@
 .table-row {
   display: grid;
   gap: 10px;
-  grid-template-columns: repeat(4, 120px) auto;
-
+  grid-template-columns: repeat(4, 120px) 200px;
   padding-top: 10px;
 }
 
