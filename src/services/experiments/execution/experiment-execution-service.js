@@ -2,7 +2,7 @@ import _ from 'lodash';
 
 //import NrpAnalyticsService from '../../nrp-analytics-service.js';
 import ServerResourcesService from './server-resources-service.js';
-import SimulationService from './simulation-service.js';
+import SimulationService from './running-simulation-service.js';
 import { HttpService } from '../../http-service.js';
 import { EXPERIMENT_STATE } from '../experiment-constants.js';
 
