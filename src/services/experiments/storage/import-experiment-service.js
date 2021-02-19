@@ -42,6 +42,13 @@ export default class ImportExperimentService extends HttpService {
     return _instance;
   }
 
+  createImportErrorPopup(error) {
+    ErrorHandlerService.instance.nrpErrorDialog({
+      type: 'Import Error.',
+      message: error.data
+    });
+  }
+
   getImportZipResponses(responses) {
     let importZipResponses = {
       zipBaseFolderName: [],
@@ -69,7 +76,7 @@ export default class ImportExperimentService extends HttpService {
   async scanStorage() {
     return this.httpRequestPOST(scanStorageURL)
       .then(response => this.getScanStorageResponse(response))
-      .catch(error => ErrorHandlerService.instance.displayError(error));
+      .catch(error => this.createImportErrorPopup(error));
   }
 
   async zipExperimentFolder(event) {
@@ -106,7 +113,7 @@ export default class ImportExperimentService extends HttpService {
             )
           )
           .catch(error => {
-            ErrorHandlerService.instance.displayError(error);
+            this.createImportErrorPopup(error);
             return Promise.reject(error);
           })
       );
@@ -115,7 +122,7 @@ export default class ImportExperimentService extends HttpService {
     return Promise.all(promises)
       .then(() => zip.generateAsync({ type: 'blob' }))
       .catch(error => {
-        ErrorHandlerService.instance.displayError(error);
+        this.createImportErrorPopup(error);
         return Promise.reject(error);
       });
   }
@@ -123,8 +130,7 @@ export default class ImportExperimentService extends HttpService {
   async importExperimentFolder(event) {
     return this.zipExperimentFolder(event).then(async zipContent => {
       return this.httpRequestPOST(importExperimentURL, zipContent, options)
-        .catch(error => ErrorHandlerService.instance
-          .displayError(error)
+        .catch(error => this.createImportErrorPopup(error)
         );
     });
   }
@@ -134,7 +140,7 @@ export default class ImportExperimentService extends HttpService {
     let zipFiles = [];
     Array.from(files).forEach(file => {
       if (file.type !== 'application/zip') {
-        ErrorHandlerService.instance.displayError({
+        this.createImportErrorPopup.displayError({
           type : 'Import Error.',
           message :`The file ${file.name} cannot be imported because it is not a zip file.`
         });
@@ -159,7 +165,7 @@ export default class ImportExperimentService extends HttpService {
         zipContents.map(zipContent =>
           this.httpRequestPOST(importExperimentURL, zipContent, options)
             .catch(error => {
-              ErrorHandlerService.instance.displayError(error);
+              this.createImportErrorPopup(error);
               return Promise.reject(error);
             })
         )
