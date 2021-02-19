@@ -1,10 +1,15 @@
 .experiment-files-viewer-wrapper {
     height: 100vh;
     display: grid;
-    grid-template-rows: auto;
+    grid-template-rows: 50px auto;
     grid-template-columns: 40% auto;
     grid-template-areas:
+        "sync-dir-picker sync-dir-picker"
         "experiment-list experiment-files";
+}
+
+.sync-dir-picker {
+    grid-area: sync-dir-picker;
 }
   
 .experiment-list {

@@ -14,7 +14,11 @@ class ExperimentsFilesRemoteEditService extends HttpService {
       throw new Error('Use ' + this.constructor.name + '.instance');
     }
 
-    this.localDirectoryHandles = new Map();
+    //this.localDirectoryHandles = new Map();
+    //this.experimentFileStructures = new Map();
+
+    this.localSyncDirectoryHandle = undefined;
+    this.localSetups = new Map();
   }
 
   static get instance() {
@@ -25,24 +29,40 @@ class ExperimentsFilesRemoteEditService extends HttpService {
     return _instance;
   }
 
-  async downloadExperimentToLocalFS(experiment) {
-    console.info(experiment);
+  async chooseLocalSyncDirectory() {
+    this.localSyncDirectoryHandle = await window.showDirectoryPicker();
+  }
 
-    let localDirectoryHandle = await window.showDirectoryPicker();
-    console.info(localDirectoryHandle);
-    if (!localDirectoryHandle) {
+  async downloadExperimentToLocalFS(experiment) {
+    if (!this.localSyncDirectoryHandle) {
       return;
     }
-    this.localDirectoryHandles.set(experiment.id, localDirectoryHandle);
+
+    console.info(experiment);
+    let directoryHandle = await this.localSyncDirectoryHandle.getDirectoryHandle(experiment.id, {create: true});
+    console.info(directoryHandle);
+    if (!directoryHandle) {
+      return;
+    }
+    //this.localDirectoryHandles.set(experiment.id, localDirectoryHandle);
+
+    let localExperimentSetup = {
+      directoryHandle: directoryHandle,
+      fileStructure: []
+    };
 
     let experimentFiles = await ExperimentStorageService.instance.getExperimentFiles(experiment.id);
     console.info(experimentFiles);
+    //let experimentFileStructure = [];
+    //this.experimentFileStructures.set(experiment.id, experimentFileStructure);
+    //TODO: (sub)directory parsing
     experimentFiles.forEach(async (file) => {
       try {
         if (file.type === 'file') {
-          let fileContent = await ExperimentStorageService.instance.getBlob(experiment.id, file.name, true);
+          localExperimentSetup.fileStructure.push(file.name);
 
-          let fileHandle = await localDirectoryHandle.getFileHandle(file.name, {create: true});
+          let fileContent = await ExperimentStorageService.instance.getBlob(experiment.id, file.name, true);
+          let fileHandle = await directoryHandle.getFileHandle(file.name, {create: true});
           //console.info(fileHandle);
           let writable = await fileHandle.createWritable();
           await writable.write(fileContent);
@@ -54,19 +74,18 @@ class ExperimentsFilesRemoteEditService extends HttpService {
       }
     });
 
+    this.localSetups.set(experiment.id, localExperimentSetup);
+
     //TODO: if everything is ok, save localStorage reference to indicate experiment ID has a local FS clone at <dir>
-    // this can be used later during initialization to get earlier setup back
-    localStorage.setItem(experiment.id, localDirectoryHandle);
+    // this would be useful to store local sync directories and setups to be re-initialized in the next session
+    // seems we can't get the full path with current API, try other solutions
   }
 
   async uploadLocalFSExperiment(experiment) {
-    let localDirectoryHandle = this.localDirectoryHandles.get(experiment.id);
-    let iterator = await localDirectoryHandle.keys();
-    console.info(iterator);
-
-    for ( let entry of iterator) {
-      console.info(entry);
-    }
+    let localSetup = this.localSetups.get(experiment.id);
+    console.info(localSetup.fileStructure);
+    localSetup.fileStructure.forEach(file => {
+    });
   }
 }
 
