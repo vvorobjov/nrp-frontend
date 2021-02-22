@@ -3,8 +3,8 @@ import React from 'react';
 import { FaFolder, FaFileArchive, FaAudible } from 'react-icons/fa';
 import { ButtonGroup, Button } from 'react-bootstrap';
 
-import ImportExperimentService from '../../services/experiments/storage/import-experiment-service.js';
-import ExperimentStorageService from '../../services/experiments/storage/experiment-storage-service.js';
+import ImportExperimentService from '../../services/experiments/files/import-experiment-service.js';
+import ExperimentStorageService from '../../services/experiments/files/experiment-storage-service.js';
 import './experiment-list-element.css';
 import './import-experiment-buttons.css';
 export default class ImportExperimentButtons extends React.Component {

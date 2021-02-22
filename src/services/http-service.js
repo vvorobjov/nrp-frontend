@@ -63,7 +63,7 @@ export class HttpService extends EventEmitter {
 
       return response;
     }
-    
+
     return response;
   };
 
