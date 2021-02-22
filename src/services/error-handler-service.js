@@ -4,7 +4,7 @@ const SINGLETON_ENFORCER = Symbol();
 /**
  * Service taking care of OIDC/FS authentication for NRP accounts
  */
-class ErrorHandlerService{
+class ErrorHandlerService {
   constructor(enforcer) {
     if (enforcer !== SINGLETON_ENFORCER) {
       throw new Error('Use ' + this.constructor.name + '.instance');
