@@ -28,6 +28,11 @@ class ErrorHandlerService {
     //TODO: needs proper UI implementation
     console.error(error);
   }
+
+  displayError (error){
+    //TODO: needs proper implementation
+    console.error(error.type + error.message);
+  }
 }
 
 export default ErrorHandlerService;

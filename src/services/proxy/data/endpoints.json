@@ -28,6 +28,12 @@
             },
             "experiments": {
                 "url": "/storage/experiments"
+            },
+            "importExperiment":{
+                "url": "/storage/importExperiment"
+            },
+            "scanStorage":{
+                "url":"/storage/scanStorage"
             }
         }
     }

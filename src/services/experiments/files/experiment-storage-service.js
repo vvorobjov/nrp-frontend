@@ -69,6 +69,8 @@ class ExperimentStorageService extends HttpService {
   async getExperiments(forceUpdate = false) {
     if (!this.experiments || forceUpdate) {
       let experimentList = await (await this.httpRequestGET(storageExperimentsURL)).json();
+      // filter out experiments with incomplete configuration (probably storage corruption)
+      experimentList = experimentList.filter(experiment => experiment.configuration.experimentFile);
       this.sortExperiments(experimentList);
       await this.fillExperimentDetails(experimentList);
       this.experiments = experimentList;
