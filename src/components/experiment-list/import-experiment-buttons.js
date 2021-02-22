@@ -153,7 +153,7 @@ export default class ImportExperimentButtons extends React.Component {
             multiple directory="" webkitdirectory=""
             onChange={(event) => this.importExperimentFolderChange(event)}/>
           <input id="zip" type="file" style={{display:'none'}}
-            multiple webkitdirectory="" directory="" accept='.zip'
+            multiple accept='.zip'
             onChange={(event) => this.importZippedExperimentChange(event)}/>
           {!this.state.isImporting
             ? <ButtonGroup role="group">
