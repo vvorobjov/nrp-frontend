@@ -14,9 +14,6 @@ class ExperimentsFilesRemoteEditService extends HttpService {
       throw new Error('Use ' + this.constructor.name + '.instance');
     }
 
-    //this.localDirectoryHandles = new Map();
-    //this.experimentFileStructures = new Map();
-
     this.localSyncDirectoryHandle = undefined;
     this.localSetups = new Map();
   }
@@ -44,7 +41,6 @@ class ExperimentsFilesRemoteEditService extends HttpService {
     if (!directoryHandle) {
       return;
     }
-    //this.localDirectoryHandles.set(experiment.id, localDirectoryHandle);
 
     let localExperimentSetup = {
       directoryHandle: directoryHandle,
@@ -53,8 +49,6 @@ class ExperimentsFilesRemoteEditService extends HttpService {
 
     let experimentFiles = await ExperimentStorageService.instance.getExperimentFiles(experiment.id);
     console.info(experimentFiles);
-    //let experimentFileStructure = [];
-    //this.experimentFileStructures.set(experiment.id, experimentFileStructure);
     //TODO: (sub)directory parsing
     experimentFiles.forEach(async (file) => {
       try {
