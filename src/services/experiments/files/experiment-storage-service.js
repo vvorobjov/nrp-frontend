@@ -247,17 +247,18 @@ class ExperimentStorageService extends HttpService {
     let requestOptions = {
       ...this.POSTOptions, ...{ headers: { 'Content-Type': contentType } }
     };
+    console.info(requestOptions);
 
     if (contentType === 'text/plain') {
-      return this.httpRequestPOST(url, requestOptions, data);
+      return this.httpRequestPOST(url, data, requestOptions);
     }
     else if (contentType === 'application/json') {
-      return this.httpRequestPOST(url, requestOptions, JSON.stringify(data));
+      return this.httpRequestPOST(url, JSON.stringify(data), requestOptions);
     }
     else if (contentType === 'application/octet-stream') {
       // placeholder for blob files where the data has to be transormed,
       // possibly to Uint8Array
-      return this.httpRequestPOST(url, requestOptions,/* new Uint8Array(data) */data);
+      return this.httpRequestPOST(url,/* new Uint8Array(data) */data, requestOptions);
     }
     else {
       return new Error('Content-Type for setFile request not specified,' +

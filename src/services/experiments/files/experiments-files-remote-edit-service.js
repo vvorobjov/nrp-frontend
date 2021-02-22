@@ -75,10 +75,14 @@ class ExperimentsFilesRemoteEditService extends HttpService {
     // seems we can't get the full path with current API, try other solutions
   }
 
-  async uploadLocalFSExperiment(experiment) {
+  uploadLocalFSExperimentToStorage(experiment) {
+    console.info(experiment);
     let localSetup = this.localSetups.get(experiment.id);
-    console.info(localSetup.fileStructure);
-    localSetup.fileStructure.forEach(file => {
+    console.info(localSetup);
+    localSetup.fileStructure.forEach(async filename => {
+      let fileData = await (await localSetup.directoryHandle.getFileHandle(filename)).getFile();
+      console.info(fileData);
+      await ExperimentStorageService.instance.setFile(experiment.name, filename, fileData);
     });
   }
 }

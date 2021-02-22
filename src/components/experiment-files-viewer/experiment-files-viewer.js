@@ -45,7 +45,7 @@ export default class ExperimentFilesViewer extends React.Component {
                   <button
                     disabled={!ExperimentsFilesRemoteEditService.instance.localSetups.has(experiment.id)}
                     onClick={() => {
-                      ExperimentsFilesRemoteEditService.instance.uploadLocalFSExperiment(experiment);
+                      ExperimentsFilesRemoteEditService.instance.uploadLocalFSExperimentToStorage(experiment);
                     }}
                     title='Clone to local filesystem'
                   >
