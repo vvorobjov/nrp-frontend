@@ -153,15 +153,15 @@ export default class ImportExperimentButtons extends React.Component {
             multiple directory="" webkitdirectory=""
             onChange={(event) => this.importExperimentFolderChange(event)}/>
           <input id="zip" type="file" style={{display:'none'}}
-            multiple webkitdirectory directory accept='.zip'
+            multiple webkitdirectory="" directory="" accept='.zip'
             onChange={(event) => this.importZippedExperimentChange(event)}/>
           {!this.state.isImporting
             ? <ButtonGroup role="group">
               <Button variant="outline-dark">
-                <label for="folder"><FaFolder/> Import folder</label>
+                <label htmlFor="folder"><FaFolder/> Import folder</label>
               </Button>
               <Button variant="outline-dark">
-                <label for="zip"><FaFileArchive/> Import zip</label>
+                <label htmlFor="zip"><FaFileArchive/> Import zip</label>
               </Button >
               <Button variant="outline-dark" onClick={() => this.scanStorageClick()}>
                 <FaAudible/> Scan Storage
