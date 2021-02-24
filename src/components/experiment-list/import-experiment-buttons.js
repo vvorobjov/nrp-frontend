@@ -3,8 +3,8 @@ import React from 'react';
 import { FaFolder, FaFileArchive, FaAudible } from 'react-icons/fa';
 import { ButtonGroup, Button } from 'react-bootstrap';
 
-import ImportExperimentService from '../../services/experiments/storage/import-experiment-service.js';
-import ExperimentStorageService from '../../services/experiments/storage/experiment-storage-service.js';
+import ImportExperimentService from '../../services/experiments/files/import-experiment-service.js';
+import ExperimentStorageService from '../../services/experiments/files/experiment-storage-service.js';
 import './experiment-list-element.css';
 import './import-experiment-buttons.css';
 export default class ImportExperimentButtons extends React.Component {
@@ -153,16 +153,16 @@ export default class ImportExperimentButtons extends React.Component {
             multiple directory="" webkitdirectory=""
             onChange={(event) => this.importExperimentFolderChange(event)}/>
           <input id="zip" type="file" style={{display:'none'}}
-            multiple webkitdirectory directory accept='.zip'
+            multiple accept='.zip'
             onChange={(event) => this.importZippedExperimentChange(event)}/>
           {!this.state.isImporting
             ? <ButtonGroup role="group">
               <Button variant="outline-dark">
-                <label for="folder"><FaFolder/> Import folder</label>
+                <label htmlFor="folder"><FaFolder/> Import folder</label>
               </Button>
               <Button variant="outline-dark">
-                <label for="zip"><FaFileArchive/> Import zip</label>
-              </Button>
+                <label htmlFor="zip"><FaFileArchive/> Import zip</label>
+              </Button >
               <Button variant="outline-dark" onClick={() => this.scanStorageClick()}>
                 <FaAudible/> Scan Storage
               </Button>

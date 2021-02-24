@@ -11,7 +11,7 @@ import MockSimulations from '../../../../mocks/mock_simulations.json';
 
 import ExperimentExecutionService from '../../../../services/experiments/execution/experiment-execution-service';
 import ServerResourcesService from '../../../../services/experiments/execution/server-resources-service';
-import SimulationService from '../../../../services/experiments/execution/simulation-service';
+import RunningSimulationService from '../../../../services/experiments/execution/running-simulation-service';
 import { EXPERIMENT_STATE } from '../../../../services/experiments/experiment-constants.js';
 
 //jest.setTimeout(10000);
@@ -138,13 +138,13 @@ test('respects settings for specific dev server to launch and single brain proce
 
 test('can launch an experiment given a specific server + configuration', async () => {
   jest.spyOn(ExperimentExecutionService.instance, 'httpRequestPOST').mockImplementation();
-  jest.spyOn(SimulationService.instance, 'registerForRosStatusInformation').mockImplementation();
+  jest.spyOn(RunningSimulationService.instance, 'registerForRosStatusInformation').mockImplementation();
   let simulationReadyResult = Promise.resolve(MockSimulations[0]);
-  jest.spyOn(SimulationService.instance, 'simulationReady').mockImplementation(() => {
+  jest.spyOn(RunningSimulationService.instance, 'simulationReady').mockImplementation(() => {
     return simulationReadyResult;
   });
   let initConfigFilesResult = Promise.resolve();
-  jest.spyOn(SimulationService.instance, 'initConfigFiles').mockImplementation(() => {
+  jest.spyOn(RunningSimulationService.instance, 'initConfigFiles').mockImplementation(() => {
     return initConfigFilesResult;
   });
 
@@ -182,11 +182,11 @@ test('can launch an experiment given a specific server + configuration', async (
 
 test('should be able to stop an experiment', async () => {
   let getStateResult = undefined;
-  jest.spyOn(SimulationService.instance, 'getState').mockImplementation(() => {
+  jest.spyOn(RunningSimulationService.instance, 'getState').mockImplementation(() => {
     return getStateResult;
   });
   let updateStateResult = undefined;
-  jest.spyOn(SimulationService.instance, 'updateState').mockImplementation(() => {
+  jest.spyOn(RunningSimulationService.instance, 'updateState').mockImplementation(() => {
     return updateStateResult;
   });
 
@@ -201,45 +201,45 @@ test('should be able to stop an experiment', async () => {
   getStateResult = Promise.resolve({ state: EXPERIMENT_STATE.CREATED });
   updateStateResult = Promise.resolve();
   await ExperimentExecutionService.instance.stopExperiment(simulation);
-  expect(SimulationService.instance.updateState).toHaveBeenCalledTimes(2);
-  expect(SimulationService.instance.updateState).toHaveBeenCalledWith(
+  expect(RunningSimulationService.instance.updateState).toHaveBeenCalledTimes(2);
+  expect(RunningSimulationService.instance.updateState).toHaveBeenCalledWith(
     expect.any(String), expect.any(String), { state: EXPERIMENT_STATE.INITIALIZED });
-  expect(SimulationService.instance.updateState).toHaveBeenCalledWith(
+  expect(RunningSimulationService.instance.updateState).toHaveBeenCalledWith(
     expect.any(String), expect.any(String), { state: EXPERIMENT_STATE.STOPPED });
   expect(simulation.stopping).toBe(true);
 
   // stop a STARTED simulation
-  SimulationService.instance.updateState.mockClear();
+  RunningSimulationService.instance.updateState.mockClear();
   getStateResult = Promise.resolve({ state: EXPERIMENT_STATE.STARTED });
   await ExperimentExecutionService.instance.stopExperiment(simulation);
-  expect(SimulationService.instance.updateState).toHaveBeenCalledTimes(1);
-  expect(SimulationService.instance.updateState).toHaveBeenCalledWith(
+  expect(RunningSimulationService.instance.updateState).toHaveBeenCalledTimes(1);
+  expect(RunningSimulationService.instance.updateState).toHaveBeenCalledWith(
     expect.any(String), expect.any(String), { state: EXPERIMENT_STATE.STOPPED });
 
   // stop a PAUSED simulation
-  SimulationService.instance.updateState.mockClear();
+  RunningSimulationService.instance.updateState.mockClear();
   getStateResult = Promise.resolve({ state: EXPERIMENT_STATE.PAUSED });
   await ExperimentExecutionService.instance.stopExperiment(simulation);
-  expect(SimulationService.instance.updateState).toHaveBeenCalledTimes(1);
-  expect(SimulationService.instance.updateState).toHaveBeenCalledWith(
+  expect(RunningSimulationService.instance.updateState).toHaveBeenCalledTimes(1);
+  expect(RunningSimulationService.instance.updateState).toHaveBeenCalledWith(
     expect.any(String), expect.any(String), { state: EXPERIMENT_STATE.STOPPED });
 
   // stop a HALTED simulation
-  SimulationService.instance.updateState.mockClear();
+  RunningSimulationService.instance.updateState.mockClear();
   getStateResult = Promise.resolve({ state: EXPERIMENT_STATE.HALTED });
   await ExperimentExecutionService.instance.stopExperiment(simulation);
-  expect(SimulationService.instance.updateState).toHaveBeenCalledTimes(1);
-  expect(SimulationService.instance.updateState).toHaveBeenCalledWith(
+  expect(RunningSimulationService.instance.updateState).toHaveBeenCalledTimes(1);
+  expect(RunningSimulationService.instance.updateState).toHaveBeenCalledWith(
     expect.any(String), expect.any(String), { state: EXPERIMENT_STATE.STOPPED });
 
   // stop a simulation in an undefined state, error
-  SimulationService.instance.updateState.mockClear();
+  RunningSimulationService.instance.updateState.mockClear();
   getStateResult = Promise.resolve({ state: undefined });
   await expect(ExperimentExecutionService.instance.stopExperiment(simulation))
     .rejects.toEqual();
 
   // getState return error
-  SimulationService.instance.updateState.mockClear();
+  RunningSimulationService.instance.updateState.mockClear();
   getStateResult = Promise.resolve({});
   await expect(ExperimentExecutionService.instance.stopExperiment(simulation))
     .rejects.toEqual();
