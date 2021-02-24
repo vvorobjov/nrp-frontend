@@ -162,7 +162,7 @@ export default class ImportExperimentButtons extends React.Component {
               </Button>
               <Button variant="outline-dark">
                 <label for="zip"><FaFileArchive/> Import zip</label>
-              </Button >
+              </Button>
               <Button variant="outline-dark" onClick={() => this.scanStorageClick()}>
                 <FaAudible/> Scan Storage
               </Button>
