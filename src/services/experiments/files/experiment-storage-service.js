@@ -141,25 +141,29 @@ class ExperimentStorageService extends HttpService {
 
   /**
    * Gets an experiment file from the storage.
-   * @param {string} experimentName - name of the experiment
-   * @param {string} filename - name of the file
+   * @param {string} experimentID - name of the experiment
+   * @param {string} filepathUUID - name of the file
    * @param {Boolean} byName - whether to check for the file by name or not
    *
    * @returns the file contents (as a request object)
    */
-  async getFile(experimentName, filename, byName = false) {
-    const url = `${config.api.proxy.url}${endpoints.proxy.storage.url}/${experimentName}/${filename}?byname=${byName}`;
+  async getFile(directoryPath, filepath, byName = false) {
+    let directory = directoryPath.replaceAll('/', '%2F');
+    let file = filepath.replaceAll('/', '%2F');
+    const url = `${config.api.proxy.url}${endpoints.proxy.storage.url}/${directory}/${file}?byname=${byName}`;
     return this.httpRequestGET(url);
   }
 
   /**
    * Gets the list of the experiment files from the storage.
-   * @param {string} experimentName - name of the experiment
+   * @param {string} experimentDirectoryUUID - name of the experiment
+   * @param {string} subFolder - relative path to a subfolder from which to get files
    *
    * @returns {Array} the list of experiment files
    */
-  async getExperimentFiles(experimentName) {
-    const url = `${config.api.proxy.url}${endpoints.proxy.storage.url}/${experimentName}`;
+  async getExperimentFiles(directoryPath) {
+    let directory = directoryPath.replaceAll('/', '%2F');
+    let url = `${config.api.proxy.url}${endpoints.proxy.storage.url}/${directory}`;
     const files = await (await this.httpRequestGET(url)).json();
     return files;
   }
