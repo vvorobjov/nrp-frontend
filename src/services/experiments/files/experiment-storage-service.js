@@ -147,9 +147,9 @@ class ExperimentStorageService extends HttpService {
    *
    * @returns the file contents (as a request object)
    */
-  async getFile(directoryPath, filepath, byName = false) {
+  async getFile(directoryPath, filePath, byName = false) {
     let directory = directoryPath.replaceAll('/', '%2F');
-    let file = filepath.replaceAll('/', '%2F');
+    let file = filePath.replaceAll('/', '%2F');
     const url = `${config.api.proxy.url}${endpoints.proxy.storage.url}/${directory}/${file}?byname=${byName}`;
     return this.httpRequestGET(url);
   }
@@ -244,14 +244,16 @@ class ExperimentStorageService extends HttpService {
    *
    * @returns the request object containing the status code
    */
-  async setFile(experimentName, filename, data, byname = true, contentType = 'text/plain') {
-    const url = new URL(`${config.api.proxy.url}${endpoints.proxy.storage.url}/${experimentName}/${filename}`);
+  async setFile(directoryPath, filename, data, byname = true, contentType = 'text/plain') {
+    let directory = directoryPath.replaceAll('/', '%2F');
+    const url = new URL(`${config.api.proxy.url}${endpoints.proxy.storage.url}/${directory}/${filename}`);
+    //console.info(url);
     url.searchParams.append('byname', byname);
 
     let requestOptions = {
       ...this.POSTOptions, ...{ headers: { 'Content-Type': contentType } }
     };
-    console.info(requestOptions);
+    //console.info(requestOptions);
 
     if (contentType === 'text/plain') {
       return this.httpRequestPOST(url, data, requestOptions);

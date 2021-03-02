@@ -1,19 +1,74 @@
 .experiment-files-viewer-wrapper {
     height: 100vh;
+    margin: 20px;
     display: grid;
-    grid-template-rows: 50px auto;
+    gap: 15px;
+    grid-template-rows: 80px auto;
     grid-template-columns: 40% auto;
     grid-template-areas:
-        "sync-dir-picker sync-dir-picker"
+        "local-directory-picker ."
         "experiment-list experiment-files";
 }
 
-.sync-dir-picker {
-    grid-area: sync-dir-picker;
+.grid-element {
+    border: 1px solid lightgray;
+}
+
+.grid-element-header {
+    padding: 5px 5px 5px 15px;
+    margin-bottom: 5px;
+    width: 100%;
+    background-color: #048cb4;
+    color: white;
+}
+
+.local-directory-picker {
+    grid-area: local-directory-picker;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.elements-local-directory {
+    display: flex;
+    flex-direction: row;
+}
+
+.local-directory-name {
+    padding: 0px 10px 0px 10px;
+    margin: 0px 10px 0px 10px;
+    border: 1px solid black;
+    min-width: 250px;
 }
   
 .experiment-list {
     grid-area: experiment-list;
+}
+
+.experiment-files-list {
+    padding-left: 5px;
+}
+
+.experiment-files-list li {
+    list-style-type: none;
+    margin: 2px 5px 2px 5px;
+    padding-left: 10px;
+    border-bottom: 1px solid lightgray;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.experiment-files-list li:hover {
+    background-color: lightblue;
+}
+
+.experiments-li-selected {
+    border-left: 5px solid #048cb4;
+}
+
+.experiment-li-buttons {
+    justify-self: flex-end;
 }
   
 .experiment-files {
