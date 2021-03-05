@@ -16,7 +16,7 @@ class ExperimentsFilesRemoteEditService extends HttpService {
     }
 
     this.localSyncDirectoryHandle = undefined;
-    this.localSetups = new Map();
+    this.localExperiments = new Map();
   }
 
   static get instance() {
@@ -29,6 +29,22 @@ class ExperimentsFilesRemoteEditService extends HttpService {
 
   isSupported() {
     return window.showDirectoryPicker !== undefined && window.showDirectoryPicker !== null;
+  }
+
+  getLocalFileByUUID(fileUUID) {
+    let splitPath = fileUUID.split('/');
+    let experimentID = splitPath[0];
+    splitPath.splice(0, 1);
+    let localExperiment = this.localExperiments.get(experimentID);
+    let currentFolder = localExperiment.files;
+    let file = undefined;
+    while (splitPath.length > 0) {
+      file = currentFolder.find(element => element.name === splitPath[0]);
+      currentFolder = file.files;
+      splitPath.splice(0, 1);
+    }
+
+    return file;
   }
 
   async chooseLocalSyncDirectory() {
@@ -78,7 +94,7 @@ class ExperimentsFilesRemoteEditService extends HttpService {
     };
     downloadFiles(localExperimentSetup);
 
-    this.localSetups.set(experiment.id, localExperimentSetup);
+    this.localExperiments.set(experiment.id, localExperimentSetup);
     console.info(localExperimentSetup);
 
     //TODO: if everything is ok, save localStorage reference to indicate experiment ID has a local FS clone at <dir>
@@ -89,17 +105,17 @@ class ExperimentsFilesRemoteEditService extends HttpService {
   uploadLocalFSExperimentToStorage(experiment) {
     console.info('uploadLocalFSExperimentToStorage');
     console.info(experiment);
-    let localSetup = this.localSetups.get(experiment.id);
-    console.info(localSetup);
+    let localFiles = this.localExperiments.get(experiment.id);
+    console.info(localFiles);
 
-    //TODO: folders and subfolders / files inside
-    //TODO: check modification date on server before uploading
     let uploadFolder = async (folder) => {
+      let serverFiles = await ExperimentStorageService.instance.getExperimentFiles(folder.uuid);
+      //console.info(serverFiles);
       folder.files.forEach(async file => {
         if (file.type === 'file') {
           let fileHandle = file.fileHandle;
           if (!fileHandle) {
-            fileHandle = await localSetup.directoryHandle.getFileHandle(file);
+            fileHandle = await localFiles.directoryHandle.getFileHandle(file);
           }
           let fileExtension = file.name.substring(file.name.lastIndexOf('.') + 1);
           //console.info(fileExtension);
@@ -107,14 +123,26 @@ class ExperimentsFilesRemoteEditService extends HttpService {
           //console.info(contentType);
 
           let fileData = await fileHandle.getFile();
-          await ExperimentStorageService.instance.setFile(folder.uuid, file.name, fileData, true, contentType);
+          //console.info(folder);
+          //console.info(file);
+          let serverFile = serverFiles.find(element => element.uuid === file.uuid);
+          //console.info(serverFile.name + ' : local ' + file.modifiedOn + ' VS server ' + serverFile.modifiedOn);
+          if (file.modifiedOn < serverFile.modifiedOn) {
+            //TODO: error GUI from antoine
+            console.info('WARNING! ' + file.name + ' has a newer version on the server, won\'t upload');
+            file.dirtyOnServer = true;
+            file.info = 'File version on server is newer!';
+          }
+          else {
+            await ExperimentStorageService.instance.setFile(folder.uuid, file.name, fileData, true, contentType);
+          }
         }
         else if (file.type === 'folder') {
           uploadFolder(file);
         }
       });
     };
-    uploadFolder(localSetup);
+    uploadFolder(localFiles);
   }
 }
 

@@ -6,7 +6,7 @@
     grid-template-rows: 80px auto;
     grid-template-columns: 40% auto;
     grid-template-areas:
-        "local-directory-picker ."
+        "local-directory-picker selected-file-info"
         "experiment-list experiment-files";
 }
 
@@ -73,4 +73,18 @@
   
 .experiment-files {
     grid-area: experiment-files;
+}
+
+.selected-file-info {
+    grid-area: selected-file-info;
+}
+
+.treeview {
+    flex-grow: 1;
+    max-width: 400;
+    padding-left: 10px;
+}
+
+.file-dirty {
+    color: red;
 }

@@ -141,15 +141,15 @@ class ExperimentStorageService extends HttpService {
 
   /**
    * Gets an experiment file from the storage.
-   * @param {string} experimentID - name of the experiment
-   * @param {string} filepathUUID - name of the file
+   * @param {string} experimentDirectoryPath - path of experiment folder + possibly subfolders
+   * @param {string} filename - name of the file
    * @param {Boolean} byName - whether to check for the file by name or not
    *
    * @returns the file contents (as a request object)
    */
-  async getFile(directoryPath, filePath, byName = false) {
-    let directory = directoryPath.replaceAll('/', '%2F');
-    let file = filePath.replaceAll('/', '%2F');
+  async getFile(experimentDirectoryPath, filename, byName = false) {
+    let directory = experimentDirectoryPath.replaceAll('/', '%2F');
+    let file = filename.replaceAll('/', '%2F');
     const url = `${config.api.proxy.url}${endpoints.proxy.storage.url}/${directory}/${file}?byname=${byName}`;
     return this.httpRequestGET(url);
   }

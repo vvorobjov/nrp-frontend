@@ -1,8 +1,12 @@
 import React from 'react';
 import { FaDownload, FaUpload, FaSearch } from 'react-icons/fa';
+import TreeView from '@material-ui/lab/TreeView';
+import TreeItem from '@material-ui/lab/TreeItem';
+import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
+import ChevronRightIcon from '@material-ui/icons/ChevronRight';
 
 import ExperimentsFilesRemoteEditService from '../../services/experiments/files/experiments-files-remote-edit-service';
-import ExperimentFilesTree from './experiment-files-tree';
+//import ExperimentFilesTree from './experiment-files-tree';
 
 import './experiment-files-viewer.css';
 
@@ -11,15 +15,45 @@ export default class ExperimentFilesViewer extends React.Component {
     super();
 
     this.state = {
-      selectedExperiment: undefined
+      selectedExperiment: undefined,
+      selectedFile: undefined
     };
   }
 
+  getFileTree(fileList) {
+    return (
+      fileList.map(file => {
+        return (
+          <TreeItem key={file.uuid} nodeId={file.uuid} label={file.name}
+            className={file.dirtyOnServer ? 'file-dirty' : ''}
+            tooltip={file.tooltip}>
+            {file.files ? this.getFileTree(file.files) : null}
+          </TreeItem>);
+      })
+    );
+  }
+
+  handleTreeSelect(event, nodeIds) {
+    //console.info(nodeIds);
+    if (nodeIds.length === 1) {
+      let file = ExperimentsFilesRemoteEditService.instance.getLocalFileByUUID(nodeIds[0]);
+      //console.info(file);
+      this.setState({selectedFile: file});
+    }
+    else {
+      this.setState({selectedFile: undefined});
+    }
+  }
+
   render() {
+    let localExperimentFiles = this.state.selectedExperiment ?
+      ExperimentsFilesRemoteEditService.instance.localExperiments.get(this.state.selectedExperiment.id) : undefined;
+
     return (
       <div>
         {ExperimentsFilesRemoteEditService.instance.isSupported() ?
           <div className='experiment-files-viewer-wrapper'>
+            {/* choose the local parent directory for experiment files */}
             <div className='grid-element local-directory-picker'>
               <div className='grid-element-header'>Local parent directory for experiment files</div>
               <div className='elements-local-directory'>
@@ -42,6 +76,7 @@ export default class ExperimentFilesViewer extends React.Component {
               </div>
             </div>
 
+            {/* list of experiments */}
             <div className='grid-element experiment-list'>
               <div className='grid-element-header'>Experiments</div>
               <ol className='experiment-files-list'>
@@ -51,7 +86,7 @@ export default class ExperimentFilesViewer extends React.Component {
                       className={(this.state.selectedExperiment && this.state.selectedExperiment.id === experiment.id) ?
                         'experiments-li-selected' : ''}
                       onClick={() => {
-                        this.setState({selectedExperiment: experiment});
+                        this.setState({selectedExperiment: experiment, selectedFile: undefined});
                       }}>
                       {experiment.configuration.name}
                       <div className='experiment-li-buttons'>
@@ -65,7 +100,7 @@ export default class ExperimentFilesViewer extends React.Component {
                           <FaDownload />
                         </button>
                         <button className='nrp-btn'
-                          disabled={!ExperimentsFilesRemoteEditService.instance.localSetups.has(experiment.id)}
+                          disabled={!ExperimentsFilesRemoteEditService.instance.localExperiments.has(experiment.id)}
                           onClick={() => {
                             ExperimentsFilesRemoteEditService.instance.uploadLocalFSExperimentToStorage(experiment);
                           }}
@@ -79,9 +114,40 @@ export default class ExperimentFilesViewer extends React.Component {
                 })}
               </ol>
             </div>
+
+            {/* file structure for selected experiment */}
             <div className='grid-element experiment-files'>
               <div className='grid-element-header'>Experiment Files</div>
-              <ExperimentFilesTree experiment={this.state.selectedExperiment} />
+              <div>
+                {localExperimentFiles ?
+                  <TreeView
+                    multiSelect
+                    className="treeview"
+                    defaultCollapseIcon={<ExpandMoreIcon />}
+                    defaultExpandIcon={<ChevronRightIcon />}
+                    onNodeSelect={(event, nodeIds) => {
+                      this.handleTreeSelect(event, nodeIds);
+                    }}
+                  >
+                    {this.getFileTree(localExperimentFiles.files)}
+                  </TreeView>
+                  : <span style={{margin: '20px'}}>No local mirror of experiment files available.</span>
+                }
+              </div>
+            </div>
+
+            {/* info for selected file */}
+            <div className='grid-element selected-file-info'>
+              {this.state.selectedFile ?
+                <div>
+                  {this.state.selectedFile.uuid}
+                  {this.state.selectedFile.info ?
+                    <div>{this.state.selectedFile.info}</div>
+                    : null
+                  }
+                </div>
+                : null
+              }
             </div>
           </div>
           /* error notification for browser other than chrome */
