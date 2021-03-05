@@ -49,6 +49,16 @@ class ExperimentsFilesRemoteEditService extends HttpService {
 
   async chooseLocalSyncDirectory() {
     this.localSyncDirectoryHandle = await window.showDirectoryPicker();
+    //TODO: get experiments list and server file info automatically after parent sync dir has been chosen
+  }
+
+  async downloadExperimentFile(parentDirectory, file) {
+    let fileContent = await ExperimentStorageService.instance.getBlob(parentDirectory.uuid, file.uuid, false);
+    file.fileHandle = await parentDirectory.directoryHandle.getFileHandle(file.name, {create: true});
+    let writable = await file.fileHandle.createWritable();
+    await writable.write(fileContent);
+    await writable.close();
+    file.dateDownload = (await file.fileHandle.getFile()).lastModified;
   }
 
   async downloadExperimentToLocalFS(experiment) {
@@ -71,11 +81,7 @@ class ExperimentsFilesRemoteEditService extends HttpService {
       fileList.forEach(async (file) => {
         try {
           if (file.type === 'file') {
-            let fileContent = await ExperimentStorageService.instance.getBlob(parentDirectory.uuid, file.uuid, false);
-            file.fileHandle = await parentDirectory.directoryHandle.getFileHandle(file.name, {create: true});
-            let writable = await file.fileHandle.createWritable();
-            await writable.write(fileContent);
-            await writable.close();
+            await this.downloadExperimentFile(parentDirectory, file);
           }
           else if (file.type === 'folder') {
             file.directoryHandle = await parentDirectory.directoryHandle.getDirectoryHandle(file.name, {create: true});
@@ -90,6 +96,7 @@ class ExperimentsFilesRemoteEditService extends HttpService {
 
     let localExperimentSetup = {
       uuid: experiment.uuid,
+      name: experiment.configuration.name,
       directoryHandle: rootDirectoryHandle
     };
     downloadFiles(localExperimentSetup);
@@ -122,7 +129,11 @@ class ExperimentsFilesRemoteEditService extends HttpService {
           let contentType = getMimeByExtension(fileExtension);
           //console.info(contentType);
 
-          let fileData = await fileHandle.getFile();
+          let localFileData = await fileHandle.getFile();
+          //console.info(localFileData);
+          if (localFileData.lastModified > file.dateDownload) {
+            console.info(localFileData.name + ' has been modified locally');
+          }
           //console.info(folder);
           //console.info(file);
           let serverFile = serverFiles.find(element => element.uuid === file.uuid);
@@ -134,7 +145,7 @@ class ExperimentsFilesRemoteEditService extends HttpService {
             file.info = 'File version on server is newer!';
           }
           else {
-            await ExperimentStorageService.instance.setFile(folder.uuid, file.name, fileData, true, contentType);
+            await ExperimentStorageService.instance.setFile(folder.uuid, file.name, localFileData, true, contentType);
           }
         }
         else if (file.type === 'folder') {

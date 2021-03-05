@@ -20,17 +20,12 @@ export default class ExperimentFilesViewer extends React.Component {
     };
   }
 
-  getFileTree(fileList) {
+  renderFileTree(file) {
     return (
-      fileList.map(file => {
-        return (
-          <TreeItem key={file.uuid} nodeId={file.uuid} label={file.name}
-            className={file.dirtyOnServer ? 'file-dirty' : ''}
-            tooltip={file.tooltip}>
-            {file.files ? this.getFileTree(file.files) : null}
-          </TreeItem>);
-      })
-    );
+      <TreeItem key={file.uuid} nodeId={file.uuid} label={file.name}
+        className={file.dirtyOnServer ? 'file-dirty' : ''}>
+        {Array.isArray(file.files) ? file.files.map((subfile) => this.renderFileTree(subfile)) : null}
+      </TreeItem>);
   }
 
   handleTreeSelect(event, nodeIds) {
@@ -125,11 +120,12 @@ export default class ExperimentFilesViewer extends React.Component {
                     className="treeview"
                     defaultCollapseIcon={<ExpandMoreIcon />}
                     defaultExpandIcon={<ChevronRightIcon />}
+                    defaultExpanded={[localExperimentFiles.uuid]}
                     onNodeSelect={(event, nodeIds) => {
                       this.handleTreeSelect(event, nodeIds);
                     }}
                   >
-                    {this.getFileTree(localExperimentFiles.files)}
+                    {this.renderFileTree(localExperimentFiles)}
                   </TreeView>
                   : <span style={{margin: '20px'}}>No local mirror of experiment files available.</span>
                 }
@@ -140,8 +136,8 @@ export default class ExperimentFilesViewer extends React.Component {
             <div className='grid-element selected-file-info'>
               {this.state.selectedFile ?
                 <div>
-                  {this.state.selectedFile.uuid}
-                  {this.state.selectedFile.info ?
+                  File: {this.state.selectedFile.uuid}
+                  Info: {this.state.selectedFile.info ?
                     <div>{this.state.selectedFile.info}</div>
                     : null
                   }
