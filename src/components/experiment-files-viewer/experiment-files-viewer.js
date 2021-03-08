@@ -1,11 +1,12 @@
 import React from 'react';
 import { FaDownload, FaUpload, FaSearch } from 'react-icons/fa';
+import { IoSyncCircleOutline, IoSyncCircleSharp } from 'react-icons/io5';
 import TreeView from '@material-ui/lab/TreeView';
 import TreeItem from '@material-ui/lab/TreeItem';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import ChevronRightIcon from '@material-ui/icons/ChevronRight';
 
-import ExperimentsFilesRemoteEditService from '../../services/experiments/files/experiments-files-remote-edit-service';
+import RemoteExperimentFilesService from '../../services/experiments/files/remote-experiment-files-service';
 //import ExperimentFilesTree from './experiment-files-tree';
 
 import './experiment-files-viewer.css';
@@ -16,22 +17,16 @@ export default class ExperimentFilesViewer extends React.Component {
 
     this.state = {
       selectedExperiment: undefined,
+      selectedFileUUIDs: undefined,
       selectedFile: undefined
     };
   }
 
-  renderFileTree(file) {
-    return (
-      <TreeItem key={file.uuid} nodeId={file.uuid} label={file.name}
-        className={file.dirtyOnServer ? 'file-dirty' : ''}>
-        {Array.isArray(file.files) ? file.files.map((subfile) => this.renderFileTree(subfile)) : null}
-      </TreeItem>);
-  }
-
-  handleTreeSelect(event, nodeIds) {
+  handleFileTreeSelect(event, nodeIds) {
     //console.info(nodeIds);
+    this.setState({selectedFileUUIDs: nodeIds});
     if (nodeIds.length === 1) {
-      let file = ExperimentsFilesRemoteEditService.instance.getLocalFileByUUID(nodeIds[0]);
+      let file = RemoteExperimentFilesService.instance.getLocalFileByUUID(nodeIds[0]);
       //console.info(file);
       this.setState({selectedFile: file});
     }
@@ -40,29 +35,59 @@ export default class ExperimentFilesViewer extends React.Component {
     }
   }
 
+  renderFileTree(file) {
+    let className = '';
+    if (file.hasLocalChanges) {
+      className += ' file-local-changes';
+    }
+    if (file.dirtyOnServer) {
+      className += ' file-dirty';
+    }
+    className = className.trim();
+
+    return (
+      <TreeItem key={file.relativePath} nodeId={file.relativePath} label={file.fileSystemHandle.name}
+        className={className}>
+        {Array.isArray(file.children) ? file.children.map((subfile) => this.renderFileTree(subfile)) : null}
+      </TreeItem>);
+  }
+
+  getExperimentsListItemClass(experiment) {
+    let className = 'experiments-li';
+    if (this.state.selectedExperiment && this.state.selectedExperiment.id === experiment.id) {
+      className += ' experiments-li-selected';
+    }
+    if (!RemoteExperimentFilesService.instance.serverExperiments.has(experiment.id)) {
+      className += ' experiments-li-disabled';
+    }
+
+    return className;
+  }
+
   render() {
-    let localExperimentFiles = this.state.selectedExperiment ?
-      ExperimentsFilesRemoteEditService.instance.localExperiments.get(this.state.selectedExperiment.id) : undefined;
+    let selectedExperimentFiles = this.state.selectedExperiment ?
+      RemoteExperimentFilesService.instance.localFiles.get(this.state.selectedExperiment.id) : undefined;
+    //console.info(selectedExperimentFiles);
 
     return (
       <div>
-        {ExperimentsFilesRemoteEditService.instance.isSupported() ?
+        {RemoteExperimentFilesService.instance.isSupported() ?
           <div className='experiment-files-viewer-wrapper'>
             {/* choose the local parent directory for experiment files */}
             <div className='grid-element local-directory-picker'>
               <div className='grid-element-header'>Local parent directory for experiment files</div>
               <div className='elements-local-directory'>
                 <div className='local-directory-name'>
-                  {ExperimentsFilesRemoteEditService.instance.localSyncDirectoryHandle ?
+                  {RemoteExperimentFilesService.instance.localSyncDirectoryHandle ?
                     <span>
-                      {ExperimentsFilesRemoteEditService.instance.localSyncDirectoryHandle.name}
+                      {RemoteExperimentFilesService.instance.localSyncDirectoryHandle.name}
                     </span>
                     : <span style={{color: 'gray'}}>Please choose</span>}
                 </div>
 
                 <button className='nrp-btn'
                   onClick={() => {
-                    ExperimentsFilesRemoteEditService.instance.chooseLocalSyncDirectory();
+                    RemoteExperimentFilesService.instance.chooseLocalSyncDirectory();
                   }}
                   title='Choose sync directory'
                 >
@@ -73,33 +98,50 @@ export default class ExperimentFilesViewer extends React.Component {
 
             {/* list of experiments */}
             <div className='grid-element experiment-list'>
-              <div className='grid-element-header'>Experiments</div>
+              <div className='grid-element-header'>
+                <div>Experiments</div>
+                <div>
+                  <button className='nrp-btn'
+                    onClick={() => {
+                      RemoteExperimentFilesService.instance.toggleAutoSync();
+                    }}
+                    title={'Set auto sync: ' + RemoteExperimentFilesService.instance.autoSync ? 'OFF' : 'ON'}
+                  >
+                    {RemoteExperimentFilesService.instance.autoSync ?
+                      <IoSyncCircleSharp size='1.5em'/> : <IoSyncCircleOutline size='1.5em'/>}
+                  </button>
+                </div>
+              </div>
               <ol className='experiment-files-list'>
                 {this.props.experiments.map(experiment => {
+                  let experimentSetup = RemoteExperimentFilesService.instance
+                    .serverExperiments.get(experiment.id);
+
                   return (
                     <li key={experiment.id || experiment.configuration.id}
-                      className={(this.state.selectedExperiment && this.state.selectedExperiment.id === experiment.id) ?
-                        'experiments-li-selected' : ''}
+                      className={this.getExperimentsListItemClass(experiment)}
                       onClick={() => {
-                        this.setState({selectedExperiment: experiment, selectedFile: undefined});
+                        if (experimentSetup) {
+                          this.setState({selectedExperiment: experiment, selectedFile: undefined});
+                        }
                       }}>
                       {experiment.configuration.name}
                       <div className='experiment-li-buttons'>
                         <button className='nrp-btn'
-                          disabled={!ExperimentsFilesRemoteEditService.instance.localSyncDirectoryHandle}
+                          disabled={!RemoteExperimentFilesService.instance.localSyncDirectoryHandle}
                           onClick={() => {
-                            ExperimentsFilesRemoteEditService.instance.downloadExperimentToLocalFS(experiment);
+                            RemoteExperimentFilesService.instance.downloadExperimentToLocalFS(experiment);
                           }}
-                          title='Download entire experiment to local filesystem'
+                          title='Download all experiment files (will OVERWRITE unsaved local changes)'
                         >
                           <FaDownload />
                         </button>
                         <button className='nrp-btn'
-                          disabled={!ExperimentsFilesRemoteEditService.instance.localExperiments.has(experiment.id)}
+                          disabled={!experimentSetup}
                           onClick={() => {
-                            ExperimentsFilesRemoteEditService.instance.uploadLocalFSExperimentToStorage(experiment);
+                            RemoteExperimentFilesService.instance.uploadLocalFSExperimentToStorage(experiment);
                           }}
-                          title='Upload entire experiment to server'
+                          title='Upload all experiment files'
                         >
                           <FaUpload />
                         </button>
@@ -112,20 +154,28 @@ export default class ExperimentFilesViewer extends React.Component {
 
             {/* file structure for selected experiment */}
             <div className='grid-element experiment-files'>
-              <div className='grid-element-header'>Experiment Files</div>
+              <div className='grid-element-header'>
+                <div>Experiment Files</div>
+                <div>
+                  <button className='nrp-btn' title='Download selected'>
+                    <FaDownload />
+                  </button>
+                  <button className='nrp-btn' title='Upload selected'><FaUpload /></button>
+                </div>
+              </div>
               <div>
-                {localExperimentFiles ?
+                {selectedExperimentFiles ?
                   <TreeView
                     multiSelect
                     className="treeview"
                     defaultCollapseIcon={<ExpandMoreIcon />}
                     defaultExpandIcon={<ChevronRightIcon />}
-                    defaultExpanded={[localExperimentFiles.uuid]}
+                    defaultExpanded={[selectedExperimentFiles.fileSystemHandle.name]}
                     onNodeSelect={(event, nodeIds) => {
-                      this.handleTreeSelect(event, nodeIds);
+                      this.handleFileTreeSelect(event, nodeIds);
                     }}
                   >
-                    {this.renderFileTree(localExperimentFiles)}
+                    {this.renderFileTree(selectedExperimentFiles)}
                   </TreeView>
                   : <span style={{margin: '20px'}}>No local mirror of experiment files available.</span>
                 }
@@ -136,9 +186,10 @@ export default class ExperimentFilesViewer extends React.Component {
             <div className='grid-element selected-file-info'>
               {this.state.selectedFile ?
                 <div>
-                  File: {this.state.selectedFile.uuid}
-                  Info: {this.state.selectedFile.info ?
-                    <div>{this.state.selectedFile.info}</div>
+                  {(this.state.selectedFile.type === 'folder' ? 'Folder: ' : 'File: ') + this.state.selectedFile.uuid}
+                  <br />
+                  {this.state.selectedFile.info ?
+                    'Info: ' + this.state.selectedFile.info
                     : null
                   }
                 </div>

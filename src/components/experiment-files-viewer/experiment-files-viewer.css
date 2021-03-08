@@ -15,6 +15,9 @@
 }
 
 .grid-element-header {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
     padding: 5px 5px 5px 15px;
     margin-bottom: 5px;
     width: 100%;
@@ -67,6 +70,10 @@
     border-left: 5px solid #048cb4;
 }
 
+.experiments-li-disabled {
+    color: gray;
+}
+
 .experiment-li-buttons {
     justify-self: flex-end;
 }
@@ -84,6 +91,10 @@
     flex-grow: 1;
     max-width: 400;
     padding-left: 10px;
+}
+
+.file-local-changes {
+    color: darkorange;
 }
 
 .file-dirty {
