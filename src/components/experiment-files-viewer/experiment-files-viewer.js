@@ -23,11 +23,9 @@ export default class ExperimentFilesViewer extends React.Component {
   }
 
   handleFileTreeSelect(event, nodeIds) {
-    //console.info(nodeIds);
     this.setState({selectedFileUUIDs: nodeIds});
     if (nodeIds.length === 1) {
-      let file = RemoteExperimentFilesService.instance.getLocalFileByUUID(nodeIds[0]);
-      //console.info(file);
+      let file = RemoteExperimentFilesService.instance.localFiles.get(nodeIds[0]);
       this.setState({selectedFile: file});
     }
     else {
@@ -40,8 +38,11 @@ export default class ExperimentFilesViewer extends React.Component {
     if (file.hasLocalChanges) {
       className += ' file-local-changes';
     }
-    if (file.dirtyOnServer) {
+    if (file.isOutOfSync) {
       className += ' file-dirty';
+    }
+    if (file.untracked) {
+      className += ' file-untracked';
     }
     className = className.trim();
 
@@ -53,21 +54,20 @@ export default class ExperimentFilesViewer extends React.Component {
   }
 
   getExperimentsListItemClass(experiment) {
-    let className = 'experiments-li';
+    let className = '';
     if (this.state.selectedExperiment && this.state.selectedExperiment.id === experiment.id) {
       className += ' experiments-li-selected';
     }
-    if (!RemoteExperimentFilesService.instance.serverExperiments.has(experiment.id)) {
+    if (!RemoteExperimentFilesService.instance.localFiles.has(experiment.id)) {
       className += ' experiments-li-disabled';
     }
 
-    return className;
+    return className.trim();
   }
 
   render() {
     let selectedExperimentFiles = this.state.selectedExperiment ?
       RemoteExperimentFilesService.instance.localFiles.get(this.state.selectedExperiment.id) : undefined;
-    //console.info(selectedExperimentFiles);
 
     return (
       <div>
@@ -114,14 +114,15 @@ export default class ExperimentFilesViewer extends React.Component {
               </div>
               <ol className='experiment-files-list'>
                 {this.props.experiments.map(experiment => {
-                  let experimentSetup = RemoteExperimentFilesService.instance
+                  let experimentServerFiles = RemoteExperimentFilesService.instance
                     .serverExperiments.get(experiment.id);
+                  let experimentLocalFiles = RemoteExperimentFilesService.instance.localFiles.get(experiment.uuid);
 
                   return (
                     <li key={experiment.id || experiment.configuration.id}
                       className={this.getExperimentsListItemClass(experiment)}
                       onClick={() => {
-                        if (experimentSetup) {
+                        if (experimentLocalFiles) {
                           this.setState({selectedExperiment: experiment, selectedFile: undefined});
                         }
                       }}>
@@ -137,7 +138,7 @@ export default class ExperimentFilesViewer extends React.Component {
                           <FaDownload />
                         </button>
                         <button className='nrp-btn'
-                          disabled={!experimentSetup}
+                          disabled={!experimentServerFiles}
                           onClick={() => {
                             RemoteExperimentFilesService.instance.uploadLocalFSExperimentToStorage(experiment);
                           }}
@@ -177,7 +178,7 @@ export default class ExperimentFilesViewer extends React.Component {
                   >
                     {this.renderFileTree(selectedExperimentFiles)}
                   </TreeView>
-                  : <span style={{margin: '20px'}}>No local mirror of experiment files available.</span>
+                  : <span style={{margin: '20px'}}>Please select an experiment.</span>
                 }
               </div>
             </div>
@@ -186,10 +187,22 @@ export default class ExperimentFilesViewer extends React.Component {
             <div className='grid-element selected-file-info'>
               {this.state.selectedFile ?
                 <div>
-                  {(this.state.selectedFile.type === 'folder' ? 'Folder: ' : 'File: ') + this.state.selectedFile.uuid}
-                  <br />
-                  {this.state.selectedFile.info ?
-                    'Info: ' + this.state.selectedFile.info
+                  {/*(this.state.selectedFile.type === 'folder' ? 'Folder: ' : 'File: ') + this.state.selectedFile.uuid
+                  <br />*/}
+                  {this.state.selectedFile.msgWarning ?
+                    'Warning: ' + this.state.selectedFile.msgWarning
+                    : null
+                  }
+                  {this.state.selectedFile.msgError ?
+                    'Error: ' + this.state.selectedFile.msgError
+                    : null
+                  }
+                  {this.state.selectedFile.untracked ?
+                    'File is new and has not been uploaded to server.'
+                    : null
+                  }
+                  {this.state.selectedFile.hasLocalChanges ?
+                    'File has local changes not synced with server.'
                     : null
                   }
                 </div>

@@ -93,10 +93,18 @@
     padding-left: 10px;
 }
 
+.experiment-file-local {
+    color: black;
+}
+
 .file-local-changes {
     color: darkorange;
 }
 
 .file-dirty {
     color: red;
+}
+
+.file-untracked {
+    color: green;
 }
