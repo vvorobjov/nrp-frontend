@@ -84,10 +84,6 @@ class RemoteExperimentFilesService extends HttpService {
     let parentDirectoryHandle = parentDirectory ? parentDirectory.fileSystemHandle : this.localSyncDirectoryHandle;
     if (!fileSystemHandle) {
       if (type === 'file') {
-        console.info(relativePath);
-        console.info(parentDirectoryPath);
-        console.info(fileName);
-        console.info(parentDirectoryHandle);
         fileSystemHandle = await parentDirectoryHandle.getFileHandle(fileName, {create: true});
       }
       else if (type === 'folder') {
@@ -249,8 +245,6 @@ class RemoteExperimentFilesService extends HttpService {
   }
 
   async downloadExperimentFileList(fileList) {
-    console.info('downloadExperimentFileList');
-    console.info(fileList);
     for (const filepath of fileList) {
       await this.downloadExperimentFile(filepath);
     }
@@ -260,7 +254,6 @@ class RemoteExperimentFilesService extends HttpService {
     if (!this.localSyncDirectoryHandle) {
       return;
     }
-    console.info('downloadExperimentToLocalFS');
 
     let experimentRootDirectory = this.localFiles.get(experiment.uuid)
       || await this.addLocalFile(experiment.id, 'folder');
@@ -301,7 +294,7 @@ class RemoteExperimentFilesService extends HttpService {
   async uploadExperimentFile(localFile) {
     if (this.isOutOfSync(localFile)) {
       //TODO: error GUI
-      console.info('WARNING! ' + localFile.name + ' has a newer version on the server, won\'t upload');
+      console.warn('WARNING! ' + localFile.name + ' has a newer version on the server, won\'t upload');
       localFile.dirtyOnServer = true;
       localFile.msgError = 'File version on server is newer! Will not upload.';
     }
@@ -317,19 +310,15 @@ class RemoteExperimentFilesService extends HttpService {
       let contentType = getMimeByExtension(fileExtension);
 
       let parentDirectoryPath = localFile.relativePath.substring(0, localFile.relativePath.lastIndexOf('/'));
-      console.info(parentDirectoryPath);
       let response = await ExperimentStorageService.instance.setFile(
         parentDirectoryPath, fileHandle.name, localFileData, true, contentType);
       if (response.status === 200) {
         localFile.dateSync = Date.now().valueOf();
-        console.info(localFile);
       }
     }
   }
 
   async uploadExperimentFileList(fileList) {
-    console.info('uploadExperimentFileList');
-    console.info(fileList);
     for (const filepath of fileList) {
       let localFile = this.localFiles.get(filepath);
       localFile && await this.uploadExperimentFile(localFile);
@@ -348,11 +337,7 @@ class RemoteExperimentFilesService extends HttpService {
       });
     };
 
-    console.info('uploadExperimentFromLocalFS');
-    console.info(experiment);
     let localExperimentFiles = this.localFiles.get(experiment.uuid);
-    console.info(localExperimentFiles);
-
     uploadFolder(localExperimentFiles);
   }
 }

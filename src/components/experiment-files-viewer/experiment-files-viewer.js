@@ -231,7 +231,8 @@ export default class ExperimentFilesViewer extends React.Component {
           </div>
           /* error notification for browser other than chrome */
           : <div>
-            Feature API is not supported by this browser at the moment. Please try Chrome.
+            File System Access API is a working draft and not supported by this browser at the moment.
+            Please try one of the supporting browsers.
             <br />
             <a target='_blank' rel='noreferrer'
               href='https://developer.mozilla.org/en-US/docs/Web/API/File_System_Access_API'>
