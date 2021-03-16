@@ -17,13 +17,18 @@ export default class ExperimentFilesViewer extends React.Component {
 
     this.state = {
       selectedExperiment: undefined,
-      selectedFileUUIDs: undefined,
+      selectedFilepaths: undefined,
       selectedFile: undefined
     };
   }
 
+  /**
+   * Handles select events on the file tree.
+   * @param {Event} event - select event
+   * @param {Array} nodeIds - tree node IDs, in this case we use file relative paths (= server file UUID)
+   */
   handleFileTreeSelect(event, nodeIds) {
-    this.setState({selectedFileUUIDs: nodeIds});
+    this.setState({selectedFilepaths: nodeIds});
     if (nodeIds.length === 1) {
       let file = RemoteExperimentFilesService.instance.localFiles.get(nodeIds[0]);
       this.setState({selectedFile: file});
@@ -123,7 +128,11 @@ export default class ExperimentFilesViewer extends React.Component {
                       className={this.getExperimentsListItemClass(experiment)}
                       onClick={() => {
                         if (experimentLocalFiles) {
-                          this.setState({selectedExperiment: experiment, selectedFile: undefined});
+                          this.setState({
+                            selectedExperiment: experiment,
+                            selectedFile: undefined,
+                            selectedFilepaths: undefined
+                          });
                         }
                       }}>
                       {experiment.configuration.name}
@@ -140,7 +149,7 @@ export default class ExperimentFilesViewer extends React.Component {
                         <button className='nrp-btn'
                           disabled={!experimentServerFiles}
                           onClick={() => {
-                            RemoteExperimentFilesService.instance.uploadLocalFSExperimentToStorage(experiment);
+                            RemoteExperimentFilesService.instance.uploadExperimentFromLocalFS(experiment);
                           }}
                           title='Upload all experiment files'
                         >
@@ -158,10 +167,16 @@ export default class ExperimentFilesViewer extends React.Component {
               <div className='grid-element-header'>
                 <div>Experiment Files</div>
                 <div>
-                  <button className='nrp-btn' title='Download selected'>
+                  <button className='nrp-btn' title='Download selected'
+                    onClick={() =>
+                      RemoteExperimentFilesService.instance.downloadExperimentFileList(this.state.selectedFilepaths)}>
                     <FaDownload />
                   </button>
-                  <button className='nrp-btn' title='Upload selected'><FaUpload /></button>
+                  <button className='nrp-btn' title='Upload selected'
+                    onClick={() =>
+                      RemoteExperimentFilesService.instance.uploadExperimentFileList(this.state.selectedFilepaths)}>
+                    <FaUpload />
+                  </button>
                 </div>
               </div>
               <div>
@@ -198,11 +213,15 @@ export default class ExperimentFilesViewer extends React.Component {
                     : null
                   }
                   {this.state.selectedFile.untracked ?
-                    'File is new and has not been uploaded to server.'
+                    'File exists only locally.'
                     : null
                   }
                   {this.state.selectedFile.hasLocalChanges ?
                     'File has local changes not synced with server.'
+                    : null
+                  }
+                  {this.state.selectedFile.isOutOfSync ?
+                    'File is out of sync - file on server has newer changes.'
                     : null
                   }
                 </div>
