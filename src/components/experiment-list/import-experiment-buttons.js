@@ -39,7 +39,7 @@ export default class ImportExperimentButtons extends React.Component {
       .importExperimentFolder(event)
       .then(async response => {
         this.setState({
-          importFolderResponse : await response.json()
+          importFolderResponse : await response
         });
         ExperimentStorageService.instance.getExperiments(true);
       })

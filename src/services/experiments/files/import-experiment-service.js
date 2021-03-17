@@ -1,5 +1,4 @@
 import { HttpService } from '../../http-service.js';
-import ErrorHandlerService from '../../error-handler-service.js';
 import JSZip from 'jszip';
 
 import endpoints from '../../proxy/data/endpoints.json';
@@ -43,10 +42,6 @@ export default class ImportExperimentService extends HttpService {
   }
 
   createImportErrorPopup(error) {
-    ErrorHandlerService.instance.nrpErrorDialog({
-      type: 'Import Error.',
-      message: error.data
-    });
   }
 
   getImportZipResponses(responses) {
@@ -130,6 +125,7 @@ export default class ImportExperimentService extends HttpService {
   async importExperimentFolder(event) {
     return this.zipExperimentFolder(event).then(async zipContent => {
       return this.httpRequestPOST(importExperimentURL, zipContent, options)
+        .then(response => response.json())
         .catch(error => this.createImportErrorPopup(error)
         );
     });
@@ -139,15 +135,7 @@ export default class ImportExperimentService extends HttpService {
     let files = event.target.files;
     let zipFiles = [];
     Array.from(files).forEach(file => {
-      if (file.type !== 'application/zip') {
-        this.createImportErrorPopup.displayError({
-          type : 'Import Error.',
-          message :`The file ${file.name} cannot be imported because it is not a zip file.`
-        });
-      }
-      else {
-        zipFiles.push(file);
-      }
+      zipFiles.push(file);
     });
     let promises = zipFiles.map(zipFile => {
       return new Promise(resolve => {

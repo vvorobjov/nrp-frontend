@@ -2,9 +2,9 @@ import React from 'react';
 import { Modal, Button } from 'react-bootstrap';
 
 /**
- * Error Handler Service
+ *
  */
-class ErrorHandlerService extends React.Component{
+class ErrorDialog extends React.Component{
   constructor(props) {
     super(props);
     this.state = {
@@ -73,4 +73,4 @@ class ErrorHandlerService extends React.Component{
   }
 }
 
-export default ErrorHandlerService;
+export default ErrorDialog;
