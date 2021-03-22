@@ -8,7 +8,7 @@ const SINGLETON_ENFORCER = Symbol();
 const LOCALSTORAGE_KEY_FILE_INFO = 'NRP-remote-experiment-files_local-files';
 
 /**
- * TODO
+ * Provides functionality to mirror (up-/download) and manage experiment files locally.
  */
 class RemoteExperimentFilesService extends HttpService {
   constructor(enforcer) {
@@ -54,10 +54,19 @@ class RemoteExperimentFilesService extends HttpService {
         async (file) => {
           if (file && file.fileSystemHandle && file.fileSystemHandle.kind === 'file') {
             file.hasLocalChanges = await this.hasLocalChanges(file);
-          }
+            file.untracked = !this.hasServerFile(file.relativePath);
+            file.isOutOfSync = this.isOutOfSync(file);
 
-          file.untracked = !this.hasServerFile(file.relativePath);
-          file.isOutOfSync = this.isOutOfSync(file);
+            if (this.autoSync) {
+              if (file.hasLocalChanges || file.untracked) {
+                this.uploadExperimentFile(file);
+              }
+
+              if (file.isOutOfSync) {
+                this.downloadExperimentFile(file.relativePath);
+              }
+            }
+          }
         }
       );
 

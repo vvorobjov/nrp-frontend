@@ -1,5 +1,5 @@
 import React from 'react';
-import { FaDownload, FaUpload, FaSearch } from 'react-icons/fa';
+import { FaDownload, FaUpload, FaFolderOpen } from 'react-icons/fa';
 import { IoSyncCircleOutline, IoSyncCircleSharp } from 'react-icons/io5';
 import TreeView from '@material-ui/lab/TreeView';
 import TreeItem from '@material-ui/lab/TreeItem';
@@ -38,6 +38,11 @@ export default class ExperimentFilesViewer extends React.Component {
     }
   }
 
+  /**
+   * JSX for the file hierarchie of experiments.
+   * @param {Object} file - A file/folder with children to be displayed
+   * @returns {JSX} The JSX elements
+   */
   renderFileTree(file) {
     let className = '';
     if (file.hasLocalChanges) {
@@ -80,24 +85,30 @@ export default class ExperimentFilesViewer extends React.Component {
           <div className='experiment-files-viewer-wrapper'>
             {/* choose the local parent directory for experiment files */}
             <div className='grid-element local-directory-picker'>
-              <div className='grid-element-header'>Local parent directory for experiment files</div>
+              <div className='grid-element-header'>
+                <div>Local working directory</div>
+                <button className='nrp-btn'
+                  onClick={() => {
+                    RemoteExperimentFilesService.instance.chooseLocalSyncDirectory();
+                  }}
+                  title='This is your local directory to work in. All your experiment files will go here.
+                  Usually, you would want to always pick the same folder.
+                  If you have previously chosen a different folder, any changes made there will not be listed.'
+                >
+                  <FaFolderOpen />
+                </button>
+              </div>
+
               <div className='elements-local-directory'>
+                <div></div>
                 <div className='local-directory-name'>
                   {RemoteExperimentFilesService.instance.localSyncDirectoryHandle ?
                     <span>
                       {RemoteExperimentFilesService.instance.localSyncDirectoryHandle.name}
                     </span>
-                    : <span style={{color: 'gray'}}>Please choose</span>}
+                    : <span style={{color: 'gray'}}>Please choose local folder you want to work in.</span>}
                 </div>
 
-                <button className='nrp-btn'
-                  onClick={() => {
-                    RemoteExperimentFilesService.instance.chooseLocalSyncDirectory();
-                  }}
-                  title='Choose sync directory'
-                >
-                  <FaSearch />
-                </button>
               </div>
             </div>
 
@@ -110,13 +121,14 @@ export default class ExperimentFilesViewer extends React.Component {
                     onClick={() => {
                       RemoteExperimentFilesService.instance.toggleAutoSync();
                     }}
-                    title={'Set auto sync: ' + RemoteExperimentFilesService.instance.autoSync ? 'OFF' : 'ON'}
+                    title={RemoteExperimentFilesService.instance.autoSync ? 'Auto sync: ON' : 'Auto sync: OFF'}
                   >
                     {RemoteExperimentFilesService.instance.autoSync ?
-                      <IoSyncCircleSharp size='1.5em'/> : <IoSyncCircleOutline size='1.5em'/>}
+                      <IoSyncCircleSharp /> : <IoSyncCircleOutline />}
                   </button>
                 </div>
               </div>
+
               <ol className='experiment-files-list'>
                 {this.props.experiments.map(experiment => {
                   let experimentServerFiles = RemoteExperimentFilesService.instance
@@ -147,7 +159,8 @@ export default class ExperimentFilesViewer extends React.Component {
                           <FaDownload />
                         </button>
                         <button className='nrp-btn'
-                          disabled={!experimentServerFiles}
+                          disabled={!experimentServerFiles
+                            || !RemoteExperimentFilesService.instance.localFiles.has(experiment.uuid)}
                           onClick={() => {
                             RemoteExperimentFilesService.instance.uploadExperimentFromLocalFS(experiment);
                           }}
@@ -166,19 +179,22 @@ export default class ExperimentFilesViewer extends React.Component {
             <div className='grid-element experiment-files'>
               <div className='grid-element-header'>
                 <div>Experiment Files</div>
-                <div>
+                <div className='grid-element-header-buttons'>
                   <button className='nrp-btn' title='Download selected'
+                    disabled={!this.state.selectedFilepaths || this.state.selectedFilepaths.length === 0}
                     onClick={() =>
                       RemoteExperimentFilesService.instance.downloadExperimentFileList(this.state.selectedFilepaths)}>
                     <FaDownload />
                   </button>
                   <button className='nrp-btn' title='Upload selected'
+                    disabled={!this.state.selectedFilepaths || this.state.selectedFilepaths.length === 0}
                     onClick={() =>
                       RemoteExperimentFilesService.instance.uploadExperimentFileList(this.state.selectedFilepaths)}>
                     <FaUpload />
                   </button>
                 </div>
               </div>
+
               <div>
                 {selectedExperimentFiles ?
                   <TreeView
@@ -186,14 +202,14 @@ export default class ExperimentFilesViewer extends React.Component {
                     className="treeview"
                     defaultCollapseIcon={<ExpandMoreIcon />}
                     defaultExpandIcon={<ChevronRightIcon />}
-                    defaultExpanded={[selectedExperimentFiles.fileSystemHandle.name]}
+                    defaultExpanded={this.props.experiments.map(experiment => experiment.uuid)}
                     onNodeSelect={(event, nodeIds) => {
                       this.handleFileTreeSelect(event, nodeIds);
                     }}
                   >
                     {this.renderFileTree(selectedExperimentFiles)}
                   </TreeView>
-                  : <span style={{margin: '20px'}}>Please select an experiment.</span>
+                  : <span style={{margin: '20px'}}>Please select an experiment on the left first.</span>
                 }
               </div>
             </div>
@@ -229,6 +245,7 @@ export default class ExperimentFilesViewer extends React.Component {
               }
             </div>
           </div>
+
           /* error notification for browser other than chrome */
           : <div>
             File System Access API is a working draft and not supported by this browser at the moment.
