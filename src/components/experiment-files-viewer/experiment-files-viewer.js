@@ -87,16 +87,19 @@ export default class ExperimentFilesViewer extends React.Component {
             <div className='grid-element local-directory-picker'>
               <div className='grid-element-header'>
                 <div>Local working directory</div>
-                <button className='nrp-btn'
-                  onClick={() => {
-                    RemoteExperimentFilesService.instance.chooseLocalSyncDirectory();
-                  }}
-                  title='This is your local directory to work in. All your experiment files will go here.
-                  Usually, you would want to always pick the same folder.
-                  If you have previously chosen a different folder, any changes made there will not be listed.'
-                >
-                  <FaFolderOpen />
-                </button>
+                <div  className='grid-element-header-buttons'>
+                  <button className='nrp-btn'
+                    onClick={() => {
+                      RemoteExperimentFilesService.instance.chooseLocalSyncDirectory();
+                    }}
+                    title='This is your local directory to work in. All your experiment files will go here.
+                      Usually, you would want to always pick the same folder.
+                      If you have previously chosen a different folder, any changes made there will not be listed.'
+                  >
+                    <FaFolderOpen />
+                  </button>
+                </div>
+
               </div>
 
               <div className='elements-local-directory'>
@@ -116,7 +119,7 @@ export default class ExperimentFilesViewer extends React.Component {
             <div className='grid-element experiment-list'>
               <div className='grid-element-header'>
                 <div>Experiments</div>
-                <div>
+                <div className='grid-element-header-buttons'>
                   <button className='nrp-btn'
                     onClick={() => {
                       RemoteExperimentFilesService.instance.toggleAutoSync();
