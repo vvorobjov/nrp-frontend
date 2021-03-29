@@ -3,6 +3,7 @@ import JSZip from 'jszip';
 
 import endpoints from '../../proxy/data/endpoints.json';
 import config from '../../../config.json';
+import ErrorHandlerService from '../../error-handler-service.js';
 const importExperimentURL = `${config.api.proxy.url}${endpoints.proxy.storage.importExperiment.url}`;
 const scanStorageURL = `${config.api.proxy.url}${endpoints.proxy.storage.scanStorage.url}`;
 
@@ -42,6 +43,7 @@ export default class ImportExperimentService extends HttpService {
   }
 
   createImportErrorPopup(error) {
+    ErrorHandlerService.instance.getError(error);
   }
 
   getImportZipResponses(responses) {
