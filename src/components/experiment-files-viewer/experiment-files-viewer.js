@@ -51,8 +51,8 @@ export default class ExperimentFilesViewer extends React.Component {
     if (file.isOutOfSync) {
       className += ' file-dirty';
     }
-    if (file.untracked) {
-      className += ' file-untracked';
+    if (file.localOnly) {
+      className += ' file-local-only';
     }
     className = className.trim();
 
@@ -135,7 +135,7 @@ export default class ExperimentFilesViewer extends React.Component {
               <ol className='experiment-files-list'>
                 {this.props.experiments.map(experiment => {
                   let experimentServerFiles = RemoteExperimentFilesService.instance
-                    .serverExperiments.get(experiment.id);
+                    .serverFiles.get(experiment.id);
                   let experimentLocalFiles = RemoteExperimentFilesService.instance.localFiles.get(experiment.uuid);
 
                   return (
@@ -231,7 +231,7 @@ export default class ExperimentFilesViewer extends React.Component {
                     'Error: ' + this.state.selectedFile.msgError
                     : null
                   }
-                  {this.state.selectedFile.untracked ?
+                  {this.state.selectedFile.localOnly ?
                     'File exists only locally.'
                     : null
                   }

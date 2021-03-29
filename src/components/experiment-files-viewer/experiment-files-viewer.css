@@ -113,6 +113,6 @@
     color: red;
 }
 
-.file-untracked {
+.file-local-only {
     color: green;
 }

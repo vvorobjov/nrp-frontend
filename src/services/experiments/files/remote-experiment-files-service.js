@@ -6,6 +6,8 @@ let _instance = null;
 const SINGLETON_ENFORCER = Symbol();
 
 const LOCALSTORAGE_KEY_FILE_INFO = 'NRP-remote-experiment-files_local-files';
+const FS_TYPE_FILE = 'file';
+const FS_TYPE_FOLDER = 'folder';
 
 /**
  * Provides functionality to mirror (up-/download) and manage experiment files locally.
@@ -19,7 +21,7 @@ class RemoteExperimentFilesService extends HttpService {
 
     this.localSyncDirectoryHandle = undefined;
     this.localFiles = new Map();
-    this.serverExperiments = new Map();
+    this.serverFiles = new Map();
     this.autoSync = false;
   }
 
@@ -44,139 +46,62 @@ class RemoteExperimentFilesService extends HttpService {
     }
 
     this.intervalCheckLocalFiles = setInterval(async () => {
-      if (!this.localSyncDirectoryHandle) {
-        return;
-      }
-
-      await this.updateServerFiles();
-
-      this.traverseLocalFiles(this.localSyncDirectoryHandle,
-        async (file) => {
-          if (file && file.fileSystemHandle && file.fileSystemHandle.kind === 'file') {
-            file.hasLocalChanges = await this.hasLocalChanges(file);
-            file.untracked = !this.hasServerFile(file.relativePath);
-            file.isOutOfSync = this.isOutOfSync(file);
-
-            if (this.autoSync) {
-              if (file.hasLocalChanges || file.untracked) {
-                this.uploadExperimentFile(file);
-              }
-
-              if (file.isOutOfSync) {
-                this.downloadExperimentFile(file.relativePath);
-              }
-            }
-          }
-        }
-      );
-
-      this.saveLocalFileInfoToLocalStorage();
+      await this.updateFileLists();
     }, RemoteExperimentFilesService.CONSTANTS.INTERVAL_CHECK_LOCAL_FILES);
   }
 
-  toggleAutoSync() {
-    this.autoSync = !this.autoSync;
-  }
-
-  async addLocalFile(relativePath, type, fileSystemHandle) {
-    if (this.localFiles.has(relativePath)) {
-      //console.warn('RemoteExperimentFilesService.addLocalFile() - file ' + relativePath + ' already exists.');
-      return;
-    }
-    let fileName = relativePath.substring(relativePath.lastIndexOf('/') + 1);
-    if (fileName.includes('.crswap')) {
+  async updateFileLists() {
+    if (!this.localSyncDirectoryHandle) {
       return;
     }
 
-    let parentDirectoryPath = relativePath.substring(0, relativePath.lastIndexOf('/'));
-    let parentDirectory = this.localFiles.get(parentDirectoryPath);
-    let parentDirectoryHandle = parentDirectory ? parentDirectory.fileSystemHandle : this.localSyncDirectoryHandle;
-    if (!fileSystemHandle) {
-      if (type === 'file') {
-        fileSystemHandle = await parentDirectoryHandle.getFileHandle(fileName, {create: true});
-      }
-      else if (type === 'folder') {
-        fileSystemHandle = await parentDirectoryHandle.getDirectoryHandle(fileName, {create: true});
-      }
-    }
+    await this.updateServerFiles();
 
-    let localFile = {
-      fileSystemHandle: fileSystemHandle,
-      relativePath: relativePath,
-      parent: parentDirectory
-    };
-    this.localFiles.set(relativePath, localFile);
-    if (parentDirectory) {
-      parentDirectory.children = parentDirectory.children || [];
-      parentDirectory.children.push(localFile);
-    }
+    await this.updateLocalFiles();
 
-    return localFile;
+    this.saveLocalFileInfoToLocalStorage();
   }
 
-  traverseLocalFiles(directoryHandle, callbackFunction, relativePath = '') {
-    if (!directoryHandle) {
-      return;
-    }
+  async updateLocalFiles() {
+    //let fileMap = new Map();
 
-    let traverseFolder = async (directoryHandle, parentDirectoryPath) => {
-      let iterator = directoryHandle.values();
-      let result = await iterator.next();
-      while (!result.done) {
-        let fileSystemHandle = result.value;
-        let fileRelativePath = parentDirectoryPath;
-        fileRelativePath += parentDirectoryPath.length > 0 ? '/' : '';
-        fileRelativePath += fileSystemHandle.name;
-        let localFile = this.localFiles.get(fileRelativePath)
-          || await this.addLocalFile(fileRelativePath, fileSystemHandle.kind, fileSystemHandle);
+    await this.traverseLocalFiles(this.localSyncDirectoryHandle,
+      async (fileSystemHandle, fileRelativePath) => {
+        let file = this.localFiles.get(fileRelativePath)
+          || await this.addLocalFile(fileRelativePath, fileSystemHandle.kind, fileSystemHandle, this.localFiles);
 
-        callbackFunction && await callbackFunction(localFile);
+        if (file && file.fileSystemHandle && file.fileSystemHandle.kind === FS_TYPE_FILE) {
+          file.hasLocalChanges = await this.hasLocalChanges(file);
+          file.isOutOfSync = this.isOutOfSync(file);
+          file.localOnly = !this.hasServerFile(file.relativePath);
 
-        if (fileSystemHandle.kind === 'directory') {
-          await traverseFolder(await directoryHandle.getDirectoryHandle(fileSystemHandle.name), fileRelativePath);
-        }
+          if (this.autoSync) {
+            if (file.hasLocalChanges || file.localOnly) {
+              this.uploadExperimentFile(file);
+            }
 
-        result = await iterator.next();
-      }
-    };
-    traverseFolder(directoryHandle, relativePath);
-  }
-
-  initLocalFileInfoFromLocalStorage() {
-    let localFileInfo = localStorage.getItem(LOCALSTORAGE_KEY_FILE_INFO);
-    let mapFileInfo = new Map(JSON.parse(localFileInfo));
-
-    this.traverseLocalFiles(
-      this.localSyncDirectoryHandle,
-      (file) => {
-        let fileInfo = mapFileInfo.get(file.relativePath);
-        if (fileInfo) {
-          Object.assign(file, fileInfo);
+            if (file.isOutOfSync) {
+              this.downloadExperimentFile(file.relativePath);
+            }
+          }
         }
       }
     );
-  }
 
-  saveLocalFileInfoToLocalStorage() {
-    let mapFileInfo = new Map();
-    this.localFiles.forEach((value, key) => {
-      mapFileInfo.set(key, {
-        dateSync: value.dateSync
-      });
-    });
-
-    localStorage.setItem(LOCALSTORAGE_KEY_FILE_INFO, JSON.stringify(Array.from(mapFileInfo.entries())));
+    //this.localFiles = fileMap;
   }
 
   async updateServerFiles(forceUpdate = false) {
-    let getDirectoryFiles = async (parentDirectory) => {
+    let newServerFilesMap = new Map();
+    let getServerDirectoryFiles = async (parentDirectory) => {
       let serverFileList = await ExperimentStorageService.instance.getExperimentFiles(parentDirectory.uuid);
       parentDirectory.children = serverFileList;
       serverFileList.forEach(async (serverFile) => {
+        newServerFilesMap.set(serverFile.uuid, serverFile);
         try {
           serverFile.parent = parentDirectory;
-          if (serverFile.type === 'folder') {
-            await getDirectoryFiles(serverFile);
+          if (serverFile.type === FS_TYPE_FOLDER) {
+            await getServerDirectoryFiles(serverFile);
           }
         }
         catch (error) {
@@ -191,17 +116,139 @@ class RemoteExperimentFilesService extends HttpService {
         uuid: experiment.uuid,
         name: experiment.configuration.name
       };
-      await getDirectoryFiles(serverExperiment);
+      await getServerDirectoryFiles(serverExperiment);
 
-      this.serverExperiments.set(experiment.id, serverExperiment);
+      this.serverFiles.set(experiment.id, serverExperiment);
     });
+
+    this.serverFiles = newServerFilesMap;
+  }
+
+  /**
+   *
+   * @param {*} directoryHandle
+   * @param {*} callbackFile - callback function called with (fileRelativePath, fileSystemHandle)
+   * @param {*} fileMap
+   * @returns
+   */
+  async traverseLocalFiles(directoryHandle, callbackFile) {
+    if (!directoryHandle) {
+      return;
+    }
+
+    let traverseFolder = async (directoryHandle, parentDirectoryPath) => {
+      let iterator = directoryHandle.values();
+      let result = await iterator.next();
+      while (!result.done) {
+        let fileSystemHandle = result.value;
+        let fileRelativePath = parentDirectoryPath;
+        fileRelativePath += parentDirectoryPath.length > 0 ? '/' : '';
+        fileRelativePath += fileSystemHandle.name;
+
+        callbackFile && await callbackFile(fileSystemHandle, fileRelativePath);
+
+        if (fileSystemHandle.kind === 'directory') {
+          await traverseFolder(await directoryHandle.getDirectoryHandle(fileSystemHandle.name), fileRelativePath);
+        }
+
+        result = await iterator.next();
+      }
+    };
+    await traverseFolder(directoryHandle, '');
+  }
+
+  async addLocalFile(relativePath, type, fileSystemHandle = undefined, fileMap = undefined) {
+    let mapForFiles = fileMap ? fileMap : this.localFiles;
+    if (mapForFiles.has(relativePath)) {
+      //console.warn('RemoteExperimentFilesService.addLocalFile() - file ' + relativePath + ' already exists.');
+      return;
+    }
+    let fileName = relativePath.substring(relativePath.lastIndexOf('/') + 1);
+    if (fileName.includes('.crswap')) {
+      return;
+    }
+
+    let parentDirectoryPath = relativePath.substring(0, relativePath.lastIndexOf('/'));
+    let parentDirectory = mapForFiles.get(parentDirectoryPath);
+    let parentDirectoryHandle = parentDirectory ? parentDirectory.fileSystemHandle : this.localSyncDirectoryHandle;
+    if (!fileSystemHandle) {
+      if (type === FS_TYPE_FILE) {
+        fileSystemHandle = await parentDirectoryHandle.getFileHandle(fileName, {create: true});
+      }
+      else if (type === FS_TYPE_FOLDER) {
+        fileSystemHandle = await parentDirectoryHandle.getDirectoryHandle(fileName, {create: true});
+      }
+    }
+
+    let localFile = {
+      fileSystemHandle: fileSystemHandle,
+      relativePath: relativePath,
+      parent: parentDirectory
+    };
+    mapForFiles.set(relativePath, localFile);
+    if (parentDirectory) {
+      parentDirectory.children = parentDirectory.children || [];
+      parentDirectory.children.push(localFile);
+    }
+
+    return localFile;
+  }
+
+  toggleAutoSync() {
+    this.autoSync = !this.autoSync;
+  }
+
+  traverseServerFiles(serverDirectory, callbackFile) {
+    let traverseFolder = (serverFolder) => {
+      serverFolder.children.forEach(child => {
+        if (child.type === FS_TYPE_FILE) {
+          callbackFile(child);
+        }
+        else if (child.type === FS_TYPE_FOLDER) {
+          traverseFolder(child);
+        }
+      });
+    };
+    traverseFolder(serverDirectory);
+  }
+
+  initLocalFileInfoFromLocalStorage() {
+    let localFileInfo = localStorage.getItem(LOCALSTORAGE_KEY_FILE_INFO);
+    let mapFileInfo = new Map(JSON.parse(localFileInfo));
+
+    //let fileMap = new Map();
+    this.traverseLocalFiles(
+      this.localSyncDirectoryHandle,
+      async (fileSystemHandle, fileRelativePath) => {
+        let file = this.localFiles.get(fileRelativePath)
+          || await this.addLocalFile(fileRelativePath, fileSystemHandle.kind, fileSystemHandle, this.localFiles);
+
+        let fileInfo = mapFileInfo.get(file.relativePath);
+        if (fileInfo) {
+          Object.assign(file, fileInfo);
+        }
+      }
+    );
+
+    //this.localFiles = fileMap;
+  }
+
+  saveLocalFileInfoToLocalStorage() {
+    let mapFileInfo = new Map();
+    this.localFiles.forEach((value, key) => {
+      mapFileInfo.set(key, {
+        dateSync: value.dateSync
+      });
+    });
+
+    localStorage.setItem(LOCALSTORAGE_KEY_FILE_INFO, JSON.stringify(Array.from(mapFileInfo.entries())));
   }
 
   getServerFileByRelativePath(filepath) {
     let splitPath = filepath.split('/');
     let experimentID = splitPath[0];
     splitPath.splice(0, 1);
-    let serverExperiment = this.serverExperiments.get(experimentID);
+    let serverExperiment = this.serverFiles.get(experimentID);
     if (!serverExperiment) {
       return;
     }
@@ -231,19 +278,19 @@ class RemoteExperimentFilesService extends HttpService {
   hasServerFile(relativeFilepath) {
     let splitPath = relativeFilepath.split('/');
     let experimentID = splitPath[0];
-    let hasExperiment = this.serverExperiments.has(experimentID);
-    let hasFile = this.getServerFileByRelativePath(relativeFilepath) !== undefined;
+    let hasExperiment = this.serverFiles.has(experimentID);
+    let hasFile = this.serverFiles.get(relativeFilepath) !== undefined;
 
     return (hasExperiment && hasFile);
   }
 
   isOutOfSync(localFile) {
-    let serverFile = this.getServerFileByRelativePath(localFile.relativePath);
+    let serverFile = this.serverFiles.get(localFile.relativePath);
     return serverFile && localFile.dateSync && Date.parse(serverFile.modifiedOn) > localFile.dateSync;
   }
 
   async downloadExperimentFile(relativeFilepath) {
-    let localFile = this.localFiles.get(relativeFilepath) || await this.addLocalFile(relativeFilepath, 'file');
+    let localFile = this.localFiles.get(relativeFilepath) || await this.addLocalFile(relativeFilepath, FS_TYPE_FILE);
 
     let parentDirectoryPath = relativeFilepath.substring(0, relativeFilepath.lastIndexOf('/'));
     let fileContent = await ExperimentStorageService.instance.getBlob(parentDirectoryPath, relativeFilepath, false);
@@ -265,7 +312,7 @@ class RemoteExperimentFilesService extends HttpService {
     }
 
     let experimentRootDirectory = this.localFiles.get(experiment.uuid)
-      || await this.addLocalFile(experiment.id, 'folder');
+      || await this.addLocalFile(experiment.id, FS_TYPE_FOLDER);
     if (!experimentRootDirectory) {
       return;
     }
@@ -277,10 +324,10 @@ class RemoteExperimentFilesService extends HttpService {
       serverFileList.forEach(async (serverFile) => {
         try {
           serverFile.parent = parentDirectory;
-          if (serverFile.type === 'file') {
+          if (serverFile.type === FS_TYPE_FILE) {
             await this.downloadExperimentFile(serverFile.uuid);
           }
-          else if (serverFile.type === 'folder') {
+          else if (serverFile.type === FS_TYPE_FOLDER) {
             await this.addLocalFile(serverFile.uuid, serverFile.type);
             downloadFiles(serverFile);
           }
@@ -297,7 +344,7 @@ class RemoteExperimentFilesService extends HttpService {
     };
     downloadFiles(serverExperiment);
 
-    this.serverExperiments.set(experiment.id, serverExperiment);
+    this.serverFiles.set(experiment.id, serverExperiment);
   }
 
   async uploadExperimentFile(localFile) {
@@ -337,10 +384,10 @@ class RemoteExperimentFilesService extends HttpService {
   uploadExperimentFromLocalFS(experiment) {
     let uploadFolder = async (folder) => {
       folder.children.forEach(async file => {
-        if (file.fileSystemHandle.kind === 'file') {
+        if (file.fileSystemHandle.kind === FS_TYPE_FILE) {
           await this.uploadExperimentFile(file);
         }
-        else if (file.type === 'folder') {
+        else if (file.type === FS_TYPE_FOLDER) {
           uploadFolder(file);
         }
       });
