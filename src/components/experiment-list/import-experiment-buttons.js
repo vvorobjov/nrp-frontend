@@ -7,6 +7,7 @@ import ImportExperimentService from '../../services/experiments/files/import-exp
 import ExperimentStorageService from '../../services/experiments/files/experiment-storage-service.js';
 import './experiment-list-element.css';
 import './import-experiment-buttons.css';
+import ErrorHandlerService from '../../services/error-handler-service.js';
 export default class ImportExperimentButtons extends React.Component {
   constructor(props) {
     super(props);
@@ -169,6 +170,12 @@ export default class ImportExperimentButtons extends React.Component {
             </ButtonGroup>
             : null}
         </div>
+
+        {/* DEBUG error emitting */}
+        <button
+          onClick={() => ErrorHandlerService.instance.emit(ErrorHandlerService.EVENTS.ERROR, new Error('test'))}>
+          TEST emit error
+        </button>
       </div>
     );
   }

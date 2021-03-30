@@ -43,7 +43,7 @@ export default class ImportExperimentService extends HttpService {
   }
 
   createImportErrorPopup(error) {
-    ErrorHandlerService.instance.getError(error);
+    ErrorHandlerService.instance.emitError(error);
   }
 
   getImportZipResponses(responses) {
