@@ -42,10 +42,6 @@ export default class ImportExperimentService extends HttpService {
     return _instance;
   }
 
-  async createImportErrorPopup(error) {
-    ErrorHandlerService.instance.emitNetworkError(error);
-  }
-
   getImportZipResponses(responses) {
     let importZipResponses = {
       zipBaseFolderName: [],
@@ -73,7 +69,7 @@ export default class ImportExperimentService extends HttpService {
   async scanStorage() {
     return this.httpRequestPOST(scanStorageURL)
       .then(response => this.getScanStorageResponse(response))
-      .catch(error => this.createImportErrorPopup(error));
+      .catch(error => ErrorHandlerService.instance.networkError(error));
   }
 
   async zipExperimentFolder(event) {
@@ -110,7 +106,7 @@ export default class ImportExperimentService extends HttpService {
             )
           )
           .catch(error => {
-            this.createImportErrorPopup(error);
+            ErrorHandlerService.instance.dataError(error);
             return Promise.reject(error);
           })
       );
@@ -119,7 +115,7 @@ export default class ImportExperimentService extends HttpService {
     return Promise.all(promises)
       .then(() => zip.generateAsync({ type: 'blob' }))
       .catch(error => {
-        this.createImportErrorPopup(error);
+        ErrorHandlerService.instance.dataError(error);
         return Promise.reject(error);
       });
   }
@@ -128,7 +124,7 @@ export default class ImportExperimentService extends HttpService {
     return this.zipExperimentFolder(event).then(async zipContent => {
       return this.httpRequestPOST(importExperimentURL, zipContent, options)
         .then(response => response.json())
-        .catch(error => this.createImportErrorPopup(error)
+        .catch(error => ErrorHandlerService.instance.networkError(error)
         );
     });
   }
@@ -155,7 +151,7 @@ export default class ImportExperimentService extends HttpService {
         zipContents.map(zipContent =>
           this.httpRequestPOST(importExperimentURL, zipContent, options)
             .catch(error => {
-              this.createImportErrorPopup(error);
+              ErrorHandlerService.instance.networkError(error);
               return Promise.reject(error);
             })
         )

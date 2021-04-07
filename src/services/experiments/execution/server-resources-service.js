@@ -79,7 +79,7 @@ class ServerResourcesService extends HttpService {
       .then(async (response) => {
         return await response.json();
       })
-      .catch(ErrorHandlerService.instance.displayServerHTTPError);
+      .catch(ErrorHandlerService.instance.networkError);
   }
 }
 

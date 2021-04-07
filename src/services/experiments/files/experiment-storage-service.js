@@ -79,7 +79,7 @@ class ExperimentStorageService extends HttpService {
         this.emit(ExperimentStorageService.EVENTS.UPDATE_EXPERIMENTS, this.experiments);
       }
       catch (error) {
-        ErrorHandlerService.instance.emit(ErrorHandlerService.EVENTS.ERROR, error);
+        ErrorHandlerService.instance.networkError(error);
       }
     }
 

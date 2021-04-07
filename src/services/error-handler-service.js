@@ -28,8 +28,25 @@ class ErrorHandlerService extends EventEmitter {
     return _instance;
   }
 
-  emitNetworkError(error) {
+  // HTTP request error
+  networkError(error) {
     error.type = 'Network Error';
+    this.emit(ErrorHandlerService.EVENTS.ERROR, error);
+  }
+
+  // Handling data error
+  dataError(error){
+    error.type = 'Data Error';
+    this.emit(ErrorHandlerService.EVENTS.ERROR, error);
+  }
+
+  startSimulationError(error) {
+    error.type = 'Start Simulation Error';
+    this.emit(ErrorHandlerService.EVENTS.ERROR, error);
+  }
+
+  updateSimulationError(error) {
+    error.type = 'Update Simulation Error';
     this.emit(ErrorHandlerService.EVENTS.ERROR, error);
   }
 }
