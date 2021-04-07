@@ -5,6 +5,12 @@ const SINGLETON_ENFORCER = Symbol();
 
 /**
  * Service that handles error retrieving from http and opening error dialog in App.js
+ * An Error object has 5 attributes among which 2 are required:
+ *  - type: category (network ...) | required
+ *  - message: details | required
+ *  - code: error line | optional
+ *  - data: related content | optional
+ *  - stack: call stack | optional
  */
 class ErrorHandlerService extends EventEmitter {
   constructor(enforcer) {
@@ -22,8 +28,8 @@ class ErrorHandlerService extends EventEmitter {
     return _instance;
   }
 
-  emitError(message) {
-    let error = new Error(message);
+  emitNetworkError(error) {
+    error.type = 'Network Error';
     this.emit(ErrorHandlerService.EVENTS.ERROR, error);
   }
 }
@@ -31,10 +37,5 @@ class ErrorHandlerService extends EventEmitter {
 ErrorHandlerService.EVENTS = Object.freeze({
   ERROR: 'ERROR'
 });
-
-ErrorHandlerService.CONSTANTS = Object.freeze({
-  INTERVAL_POLL_ERROR: 1000
-});
-
 
 export default ErrorHandlerService;

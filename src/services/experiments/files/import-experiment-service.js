@@ -42,8 +42,8 @@ export default class ImportExperimentService extends HttpService {
     return _instance;
   }
 
-  createImportErrorPopup(error) {
-    ErrorHandlerService.instance.emitError(error);
+  async createImportErrorPopup(error) {
+    ErrorHandlerService.instance.emitNetworkError(error);
   }
 
   getImportZipResponses(responses) {
