@@ -1,5 +1,5 @@
 import React from 'react';
-import { FaDownload, FaUpload, FaFolderOpen } from 'react-icons/fa';
+import { FaDownload, FaUpload, FaFolderOpen, FaTrash } from 'react-icons/fa';
 import { IoSyncCircleOutline, IoSyncCircleSharp } from 'react-icons/io5';
 import TreeView from '@material-ui/lab/TreeView';
 import TreeItem from '@material-ui/lab/TreeItem';
@@ -18,7 +18,7 @@ export default class ExperimentFilesViewer extends React.Component {
     this.state = {
       selectedExperiment: undefined,
       selectedFilepaths: undefined,
-      selectedFile: undefined
+      autoSync: RemoteExperimentFilesService.instance.autoSync
     };
   }
 
@@ -29,13 +29,6 @@ export default class ExperimentFilesViewer extends React.Component {
    */
   handleFileTreeSelect(event, nodeIds) {
     this.setState({selectedFilepaths: nodeIds});
-    if (nodeIds.length === 1) {
-      let file = RemoteExperimentFilesService.instance.localFiles.get(nodeIds[0]);
-      this.setState({selectedFile: file});
-    }
-    else {
-      this.setState({selectedFile: undefined});
-    }
   }
 
   /**
@@ -54,10 +47,13 @@ export default class ExperimentFilesViewer extends React.Component {
     if (file.localOnly) {
       className += ' file-local-only';
     }
+    if (!file.fileSystemHandle) {
+      className += ' file-server-only';
+    }
     className = className.trim();
 
     return (
-      <TreeItem key={file.relativePath} nodeId={file.relativePath} label={file.fileSystemHandle.name}
+      <TreeItem key={file.relativePath} nodeId={file.relativePath} label={file.name}
         className={className}>
         {Array.isArray(file.children) ? file.children.map((subfile) => this.renderFileTree(subfile)) : null}
       </TreeItem>);
@@ -73,6 +69,31 @@ export default class ExperimentFilesViewer extends React.Component {
     }
 
     return className.trim();
+  }
+
+  getInfoText() {
+    return (<div>
+      {this.state.selectedFilepaths && this.state.selectedFilepaths.map(filePath => {
+        let file = RemoteExperimentFilesService.instance.localFiles.get(filePath);
+        if (file) {
+          return (<div key={file.relativePath} className="fileinfo-group">
+            <div className="fileinfo-name">{file.name}</div>
+            {file.msgWarning && <div className="fileinfo-entry">{'Warning: ' + file.msgWarning}</div>}
+            {file.msgError && <div className="fileinfo-entry">{'Error: ' + file.msgError}</div>}
+            {file.localOnly && <div className="fileinfo-entry">{'File exists only locally.'}</div>}
+            {file.hasLocalChanges &&
+            <div className="fileinfo-entry">{'File has local changes not synced with server.'}</div>}
+            {file.isOutOfSync &&
+            <div className="fileinfo-entry">{'File on server has newer changes.'}</div>}
+            {!file.fileSystemHandle &&
+            <div className="fileinfo-entry">{'File exists on server but not locally.'}</div>}
+          </div>);
+        }
+        else {
+          return null;
+        }
+      })}
+    </div>);
   }
 
   render() {
@@ -123,8 +144,9 @@ export default class ExperimentFilesViewer extends React.Component {
                   <button className='nrp-btn'
                     onClick={() => {
                       RemoteExperimentFilesService.instance.toggleAutoSync();
+                      this.setState({autoSync: RemoteExperimentFilesService.instance.autoSync});
                     }}
-                    title={RemoteExperimentFilesService.instance.autoSync ? 'Auto sync: ON' : 'Auto sync: OFF'}
+                    title={this.state.autoSync ? 'Auto sync: ON' : 'Auto sync: OFF'}
                   >
                     {RemoteExperimentFilesService.instance.autoSync ?
                       <IoSyncCircleSharp /> : <IoSyncCircleOutline />}
@@ -145,7 +167,6 @@ export default class ExperimentFilesViewer extends React.Component {
                         if (experimentLocalFiles) {
                           this.setState({
                             selectedExperiment: experiment,
-                            selectedFile: undefined,
                             selectedFilepaths: undefined
                           });
                         }
@@ -195,6 +216,12 @@ export default class ExperimentFilesViewer extends React.Component {
                       RemoteExperimentFilesService.instance.uploadExperimentFileList(this.state.selectedFilepaths)}>
                     <FaUpload />
                   </button>
+                  <button className='nrp-btn' title='Delete selected'
+                    disabled={!this.state.selectedFilepaths || this.state.selectedFilepaths.length === 0}
+                    onClick={() =>
+                      RemoteExperimentFilesService.instance.uploadExperimentFileList(this.state.selectedFilepaths)}>
+                    <FaTrash />
+                  </button>
                 </div>
               </div>
 
@@ -219,33 +246,7 @@ export default class ExperimentFilesViewer extends React.Component {
 
             {/* info for selected file */}
             <div className='grid-element selected-file-info'>
-              {this.state.selectedFile ?
-                <div>
-                  {/*(this.state.selectedFile.type === 'folder' ? 'Folder: ' : 'File: ') + this.state.selectedFile.uuid
-                  <br />*/}
-                  {this.state.selectedFile.msgWarning ?
-                    'Warning: ' + this.state.selectedFile.msgWarning
-                    : null
-                  }
-                  {this.state.selectedFile.msgError ?
-                    'Error: ' + this.state.selectedFile.msgError
-                    : null
-                  }
-                  {this.state.selectedFile.localOnly ?
-                    'File exists only locally.'
-                    : null
-                  }
-                  {this.state.selectedFile.hasLocalChanges ?
-                    'File has local changes not synced with server.'
-                    : null
-                  }
-                  {this.state.selectedFile.isOutOfSync ?
-                    'File is out of sync - file on server has newer changes.'
-                    : null
-                  }
-                </div>
-                : null
-              }
+              {this.getInfoText()}
             </div>
           </div>
 

@@ -93,6 +93,19 @@
 .selected-file-info {
     grid-area: selected-file-info;
     padding: 10px;
+    overflow: auto;
+}
+
+.fileinfo-group {
+    padding-bottom: 5px;
+}
+
+.fileinfo-entry {
+    padding-left: 5px;
+}
+
+.fileinfo-name {
+    font-weight: bold;
 }
 
 .treeview {
@@ -115,4 +128,8 @@
 
 .file-local-only {
     color: green;
+}
+
+.file-server-only {
+    color: lightgray;
 }
