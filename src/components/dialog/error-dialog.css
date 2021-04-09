@@ -6,10 +6,11 @@
   z-index: 999;
 }
 
-.modal-dialog {
-  position: absolute;
-  margin: 50px;
-  left: 50%;
-  -ms-transform: translateX(-50%);
-  transform: translateX(-50%);
+.modal-header{
+  background-color: rgb(241, 185, 185);
+  color: rgb(138, 41, 41);
+}
+
+.details{
+  clear: left;
 }

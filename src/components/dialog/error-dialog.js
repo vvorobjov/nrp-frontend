@@ -49,14 +49,24 @@ class ErrorDialog extends React.Component{
       <div>
         {error?
           <div className="modal-dialog-wrapper">
-            <Modal.Dialog className="modal-dialog">
-              <Modal.Header>
+            <Modal.Dialog>
+              <Modal.Header className="modal-header">
                 <h4>{error.type}</h4>
               </Modal.Header>
               <Modal.Body>
                 <h5>Details</h5><pre>{error.message}</pre>
+              </Modal.Body>
+              <Modal.Footer>
+                <div>
+                  <Button variant="warning" onClick={() => this.handleClose()}>
+                    <span className="glyphicon glyphicon-remove"></span> Close
+                  </Button>
+                  <Button variant="light" onClick={() => this.sourceDisplay()}>
+                    {this.state.isErrorSourceDisplayed ? 'Hide' : 'Show'} scary details <span></span>
+                  </Button>
+                </div>
                 {this.state.isErrorSourceDisplayed
-                  ?<div>
+                  ? <div className="details">
                     {!error.code && !error.data && !error.stack
                       ? <h6>No scary details</h6>
                       : null}
@@ -72,16 +82,6 @@ class ErrorDialog extends React.Component{
                   </div>
                   : null
                 }
-              </Modal.Body>
-              <Modal.Footer>
-                <div>
-                  <Button variant="outline-dark" onClick={() => this.handleClose()}>
-                    <span className="glyphicon glyphicon-remove"></span> Close
-                  </Button>
-                  <Button variant="outline-dark" className="pull-right" onClick={() => this.sourceDisplay()}>
-                    {this.state.isErrorSourceDisplayed ? 'Hide' : 'Show'} scary details <span className="caret"></span>
-                  </Button>
-                </div>
               </Modal.Footer>
             </Modal.Dialog>
           </div>
