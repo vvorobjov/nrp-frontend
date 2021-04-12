@@ -47,7 +47,7 @@ export default class ExperimentFilesViewer extends React.Component {
     if (file.localOnly) {
       className += ' file-local-only';
     }
-    if (!file.fileSystemHandle) {
+    if (!RemoteExperimentFilesService.instance.mapLocalFiles.has(file.relativePath)) {
       className += ' file-server-only';
     }
     className = className.trim();
@@ -64,7 +64,7 @@ export default class ExperimentFilesViewer extends React.Component {
     if (this.state.selectedExperiment && this.state.selectedExperiment.id === experiment.id) {
       className += ' experiments-li-selected';
     }
-    if (!RemoteExperimentFilesService.instance.localFiles.has(experiment.id)) {
+    if (!RemoteExperimentFilesService.instance.mapFileInfos.has(experiment.uuid)) {
       className += ' experiments-li-disabled';
     }
 
@@ -74,19 +74,19 @@ export default class ExperimentFilesViewer extends React.Component {
   getInfoText() {
     return (<div>
       {this.state.selectedFilepaths && this.state.selectedFilepaths.map(filePath => {
-        let file = RemoteExperimentFilesService.instance.localFiles.get(filePath);
-        if (file) {
-          return (<div key={file.relativePath} className="fileinfo-group">
-            <div className="fileinfo-name">{file.name}</div>
-            {file.msgWarning && <div className="fileinfo-entry">{'Warning: ' + file.msgWarning}</div>}
-            {file.msgError && <div className="fileinfo-entry">{'Error: ' + file.msgError}</div>}
-            {file.localOnly && <div className="fileinfo-entry">{'File exists only locally.'}</div>}
-            {file.hasLocalChanges &&
+        let fileInfo = RemoteExperimentFilesService.instance.mapFileInfos.get(filePath);
+        if (fileInfo) {
+          return (<div key={fileInfo.relativePath} className="fileinfo-group">
+            <div className="fileinfo-name">{fileInfo.name}</div>
+            {fileInfo.msgWarning && <div className="fileinfo-entry">{'Warning: ' + fileInfo.msgWarning}</div>}
+            {fileInfo.msgError && <div className="fileinfo-entry">{'Error: ' + fileInfo.msgError}</div>}
+            {fileInfo.localOnly && <div className="fileinfo-entry">{'File exists only locally.'}</div>}
+            {fileInfo.serverOnly &&
+            <div className="fileinfo-entry">{'File exists only on server.'}</div>}
+            {fileInfo.hasLocalChanges &&
             <div className="fileinfo-entry">{'File has local changes not synced with server.'}</div>}
-            {file.isOutOfSync &&
+            {fileInfo.isOutOfSync &&
             <div className="fileinfo-entry">{'File on server has newer changes.'}</div>}
-            {!file.fileSystemHandle &&
-            <div className="fileinfo-entry">{'File exists on server but not locally.'}</div>}
           </div>);
         }
         else {
@@ -98,7 +98,7 @@ export default class ExperimentFilesViewer extends React.Component {
 
   render() {
     let selectedExperimentFiles = this.state.selectedExperiment ?
-      RemoteExperimentFilesService.instance.localFiles.get(this.state.selectedExperiment.id) : undefined;
+      RemoteExperimentFilesService.instance.mapFileInfos.get(this.state.selectedExperiment.uuid) : undefined;
 
     return (
       <div>
@@ -157,8 +157,8 @@ export default class ExperimentFilesViewer extends React.Component {
               <ol className='experiment-files-list'>
                 {this.props.experiments.map(experiment => {
                   let experimentServerFiles = RemoteExperimentFilesService.instance
-                    .serverFiles.get(experiment.id);
-                  let experimentLocalFiles = RemoteExperimentFilesService.instance.localFiles.get(experiment.uuid);
+                    .mapServerFiles.get(experiment.uuid);
+                  let experimentLocalFiles = RemoteExperimentFilesService.instance.mapLocalFiles.get(experiment.uuid);
 
                   return (
                     <li key={experiment.id || experiment.configuration.id}
@@ -184,7 +184,7 @@ export default class ExperimentFilesViewer extends React.Component {
                         </button>
                         <button className='nrp-btn'
                           disabled={!experimentServerFiles
-                            || !RemoteExperimentFilesService.instance.localFiles.has(experiment.uuid)}
+                            || !RemoteExperimentFilesService.instance.mapLocalFiles.has(experiment.uuid)}
                           onClick={() => {
                             RemoteExperimentFilesService.instance.uploadExperimentFromLocalFS(experiment);
                           }}
