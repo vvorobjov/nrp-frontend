@@ -184,7 +184,7 @@ export default class ExperimentFilesViewer extends React.Component {
                         </button>
                         <button className='nrp-btn'
                           disabled={!experimentServerFiles
-                            || !RemoteExperimentFilesService.instance.mapLocalFiles.has(experiment.uuid)}
+                            || !RemoteExperimentFilesService.instance.mapFileInfos.has(experiment.uuid)}
                           onClick={() => {
                             RemoteExperimentFilesService.instance.uploadExperimentFromLocalFS(experiment);
                           }}
@@ -219,7 +219,7 @@ export default class ExperimentFilesViewer extends React.Component {
                   <button className='nrp-btn' title='Delete selected'
                     disabled={!this.state.selectedFilepaths || this.state.selectedFilepaths.length === 0}
                     onClick={() =>
-                      RemoteExperimentFilesService.instance.uploadExperimentFileList(this.state.selectedFilepaths)}>
+                      RemoteExperimentFilesService.instance.deleteExperimentFileList(this.state.selectedFilepaths)}>
                     <FaTrash />
                   </button>
                 </div>
