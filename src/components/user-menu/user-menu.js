@@ -1,5 +1,4 @@
 import React from 'react';
-import Dropdown from 'react-bootstrap/Dropdown';
 import { FaUserCircle, FaSignOutAlt } from 'react-icons/fa';
 
 import NrpUserService from '../../services/proxy/nrp-user-service.js';
@@ -38,8 +37,8 @@ export default class UserMenu extends React.Component {
   render() {
     return (
       <div className='user-menu-wrapper'>
-        <Dropdown>
-          <Dropdown.Toggle
+        <div className='dropdown'>
+          <div
             className='dropdown-toggle'
             variant='success'
             id='dropdown-basic'
@@ -48,18 +47,18 @@ export default class UserMenu extends React.Component {
             <div className='user-name'>
               {this.state.user ? this.state.user.displayName : 'pending ...'}
             </div>
-          </Dropdown.Toggle>
+          </div>
 
-          <Dropdown.Menu className='dropdown-menu'>
-            <Dropdown.Item
+          <div className='dropdown-menu'>
+            <div
               className='dropdown-item'
               onClick={this.onClickLogout}
             >
               <FaSignOutAlt className='user-icon' />
               Logout
-            </Dropdown.Item>
-          </Dropdown.Menu>
-        </Dropdown>
+            </div>
+          </div>
+        </div>
       </div>
     );
   }

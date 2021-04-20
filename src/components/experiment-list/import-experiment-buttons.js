@@ -1,7 +1,6 @@
 import React from 'react';
 
 import { FaFolder, FaFileArchive, FaAudible } from 'react-icons/fa';
-import { ButtonGroup, Button } from 'react-bootstrap';
 
 import ImportExperimentService from '../../services/experiments/files/import-experiment-service.js';
 import ExperimentStorageService from '../../services/experiments/files/experiment-storage-service.js';
@@ -101,7 +100,7 @@ export default class ImportExperimentButtons extends React.Component {
               </p>
             </div>
             <div className="text-right">
-              <Button variant="success" onClick={() => this.importFolderPopupClick()}>Got it!</Button>
+              <button variant="success" onClick={() => this.importFolderPopupClick()}>Got it!</button>
             </div>
           </div>
           : null
@@ -118,7 +117,7 @@ export default class ImportExperimentButtons extends React.Component {
             <p>have been successfully imported as:</p>
             <p><b>{this.state.importZipResponses.destFolderName.join(', ')}.</b></p>
             <div className="text-right">
-              <Button variant="success" onClick={() => this.importZipPopupClick()}>Got it!</Button>
+              <button variant="success" onClick={() => this.importZipPopupClick()}>Got it!</button>
             </div>
           </div>
           : null
@@ -141,7 +140,7 @@ export default class ImportExperimentButtons extends React.Component {
               ? this.state.scanStorageResponse.deletedFolders
               : 'none' }</b></p>
             <div className="text-right">
-              <Button variant="success" onClick={() => this.scanStoragePopupClick()}>Got it!</Button>
+              <button variant="success" onClick={() => this.scanStoragePopupClick()}>Got it!</button>
             </div>
           </div>
           : null
@@ -156,17 +155,17 @@ export default class ImportExperimentButtons extends React.Component {
             multiple accept='.zip'
             onChange={(event) => this.importZippedExperimentChange(event)}/>
           {!this.state.isImporting
-            ? <ButtonGroup role="group">
-              <Button variant="outline-dark">
+            ? <div role="group">
+              <button variant="outline-dark">
                 <label htmlFor="folder"><FaFolder/> Import folder</label>
-              </Button>
-              <Button variant="outline-dark">
+              </button>
+              <button variant="outline-dark">
                 <label htmlFor="zip"><FaFileArchive/> Import zip</label>
-              </Button >
-              <Button variant="outline-dark" onClick={() => this.scanStorageClick()}>
+              </button >
+              <button variant="outline-dark" onClick={() => this.scanStorageClick()}>
                 <FaAudible/> Scan Storage
-              </Button>
-            </ButtonGroup>
+              </button>
+            </div>
             : null}
         </div>
       </div>
