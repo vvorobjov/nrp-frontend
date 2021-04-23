@@ -93,14 +93,14 @@ export default class ImportExperimentButtons extends React.Component {
         {/* Import folder pop-up */}
         {this.state.importFolderResponse
           ? <div className="import-popup">
-            <div variant="success">
+            <div class="alert alert-success" role="alert">
               <p>The experiment folder
                 <b>{' ' + this.state.importFolderResponse.zipBaseFolderName}</b> has been succesfully imported as
                 <b>{' ' + this.state.importFolderResponse.destFolderName}</b>.
               </p>
             </div>
             <div className="text-right">
-              <button variant="success" onClick={() => this.importFolderPopupClick()}>Got it!</button>
+              <button className="btn btn-success" onClick={() => this.importFolderPopupClick()}>Got it!</button>
             </div>
           </div>
           : null
@@ -109,7 +109,7 @@ export default class ImportExperimentButtons extends React.Component {
         {/* Import zip pop-up */}
         {this.state.importZipResponses
           ? <div className="import-popup">
-            <div>
+            <div class="alert alert-success" role="alert">
               <p>{this.state.importZipResponses.numberOfZips} successfully imported zip files.</p>
             </div>
             <p>The following experiments folders</p>
@@ -117,7 +117,7 @@ export default class ImportExperimentButtons extends React.Component {
             <p>have been successfully imported as:</p>
             <p><b>{this.state.importZipResponses.destFolderName.join(', ')}.</b></p>
             <div className="text-right">
-              <button variant="success" onClick={() => this.importZipPopupClick()}>Got it!</button>
+              <button className="btn btn-success" onClick={() => this.importZipPopupClick()}>Got it!</button>
             </div>
           </div>
           : null
@@ -126,7 +126,7 @@ export default class ImportExperimentButtons extends React.Component {
         {/* Scan pop-up */}
         {this.state.scanStorageResponse
           ? <div className="import-popup">
-            <div>
+            <div class="alert alert-success" role="alert">
               <p>{this.state.scanStorageResponse.addedFoldersNumber} added folders,
                 {' ' + this.state.scanStorageResponse.deletedFoldersNumber} deleted folders.</p>
             </div>
@@ -140,7 +140,7 @@ export default class ImportExperimentButtons extends React.Component {
               ? this.state.scanStorageResponse.deletedFolders
               : 'none' }</b></p>
             <div className="text-right">
-              <button variant="success" onClick={() => this.scanStoragePopupClick()}>Got it!</button>
+              <button className="btn btn-success" onClick={() => this.scanStoragePopupClick()}>Got it!</button>
             </div>
           </div>
           : null
