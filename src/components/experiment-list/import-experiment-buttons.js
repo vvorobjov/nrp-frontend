@@ -155,14 +155,16 @@ export default class ImportExperimentButtons extends React.Component {
             multiple accept='.zip'
             onChange={(event) => this.importZippedExperimentChange(event)}/>
           {!this.state.isImporting
-            ? <div role="group">
-              <button variant="outline-dark">
-                <label htmlFor="folder"><FaFolder/> Import folder</label>
+            ? <div className="btn-group" role="group">
+              <button type="button" className="btn btn-outline-dark">
+                <label htmlFor="folder" className="import-button">
+                  <FaFolder/> Import folder
+                </label>
               </button>
-              <button variant="outline-dark">
-                <label htmlFor="zip"><FaFileArchive/> Import zip</label>
+              <button type="button" className="btn btn-outline-dark">
+                <label htmlFor="zip" className="import-button"><FaFileArchive/> Import zip</label>
               </button >
-              <button variant="outline-dark" onClick={() => this.scanStorageClick()}>
+              <button type="button" className="btn btn-outline-dark" onClick={() => this.scanStorageClick()}>
                 <FaAudible/> Scan Storage
               </button>
             </div>

@@ -38,22 +38,16 @@ export default class UserMenu extends React.Component {
     return (
       <div className='user-menu-wrapper'>
         <div className='dropdown'>
-          <div
-            className='dropdown-toggle'
-            variant='success'
-            id='dropdown-basic'
-          >
-            <FaUserCircle className='user-icon' />
+          <button className='dropdown-toggle' id='dropdownMenuButton'
+            data-toggle="dropdown" aria-haspopup='true' aria-expanded='false'>
+            <FaUserCircle className='user-icon'/>
             <div className='user-name'>
               {this.state.user ? this.state.user.displayName : 'pending ...'}
             </div>
-          </div>
+          </button>
 
-          <div className='dropdown-menu'>
-            <div
-              className='dropdown-item'
-              onClick={this.onClickLogout}
-            >
+          <div className='dropdown-menu' aria-labelledby='dropdownMenuButton'>
+            <div className='dropdown-item' href='#' onClick={this.onClickLogout}>
               <FaSignOutAlt className='user-icon' />
               Logout
             </div>
