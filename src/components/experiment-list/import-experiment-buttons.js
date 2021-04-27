@@ -93,7 +93,7 @@ export default class ImportExperimentButtons extends React.Component {
         {/* Import folder pop-up */}
         {this.state.importFolderResponse
           ? <div className="import-popup">
-            <div class="alert alert-success" role="alert">
+            <div className="alert alert-success" role="alert">
               <p>The experiment folder
                 <b>{' ' + this.state.importFolderResponse.zipBaseFolderName}</b> has been succesfully imported as
                 <b>{' ' + this.state.importFolderResponse.destFolderName}</b>.
@@ -109,7 +109,7 @@ export default class ImportExperimentButtons extends React.Component {
         {/* Import zip pop-up */}
         {this.state.importZipResponses
           ? <div className="import-popup">
-            <div class="alert alert-success" role="alert">
+            <div className="alert alert-success" role="alert">
               <p>{this.state.importZipResponses.numberOfZips} successfully imported zip files.</p>
             </div>
             <p>The following experiments folders</p>
@@ -126,7 +126,7 @@ export default class ImportExperimentButtons extends React.Component {
         {/* Scan pop-up */}
         {this.state.scanStorageResponse
           ? <div className="import-popup">
-            <div class="alert alert-success" role="alert">
+            <div className="alert alert-success" role="alert">
               <p>{this.state.scanStorageResponse.addedFoldersNumber} added folders,
                 {' ' + this.state.scanStorageResponse.deletedFoldersNumber} deleted folders.</p>
             </div>
