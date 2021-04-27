@@ -49,14 +49,14 @@ export const handlers = [
   rest.get(`${config.api.proxy.url}${endpoints.proxy.identity.me.groups.url}`, (req, res, ctx) => {
     return res(ctx.json(MockUserGroups));
   }),
-  rest.get(`${config.api.proxy.url}${endpoints.proxy.identity.url}${endpoints.proxy.identity.gdpr}`,
+  rest.get(`${config.api.proxy.url}${endpoints.proxy.identity.url}${endpoints.proxy.identity.gdpr.url}`,
     (req, res, ctx) => {
       return res(ctx.json(MockGDPR));
     }),
   rest.get(`${config.api.proxy.url}${endpoints.proxy.identity.url}/:userID`, (req, res, ctx) => {
     return res(ctx.json(MockUsers[1]));
   }),
-  rest.post(`${config.api.proxy.url}${endpoints.proxy.identity.url}${endpoints.proxy.identity.gdpr}`,
+  rest.post(`${config.api.proxy.url}${endpoints.proxy.identity.url}${endpoints.proxy.identity.gdpr.url}`,
     (req, res, ctx) => {
       return res(ctx.json({"status":"success"}));
     })

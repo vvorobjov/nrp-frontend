@@ -17,7 +17,9 @@
                     "url": "/identity/me/groups"
                 }
             },
-            "gdpr": "/gdpr"
+            "gdpr": {
+                "url": "/gdpr"
+            }
         },
         "server": {
             "url": "/server"
@@ -30,11 +32,11 @@
             "experiments": {
                 "url": "/storage/experiments"
             },
-            "importExperiment":{
+            "importExperiment": {
                 "url": "/storage/importExperiment"
             },
-            "scanStorage":{
-                "url":"/storage/scanStorage"
+            "scanStorage": {
+                "url": "/storage/scanStorage"
             }
         }
     }

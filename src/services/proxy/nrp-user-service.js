@@ -14,7 +14,7 @@ const PROXY_URL = config.api.proxy.url;
 const IDENTITY_BASE_URL = `${PROXY_URL}${endpoints.proxy.identity.url}`;
 const IDENTITY_ME_URL = `${PROXY_URL}${endpoints.proxy.identity.me.url}`;
 const IDENTITY_ME_GROUPS_URL = `${PROXY_URL}${endpoints.proxy.identity.me.groups.url}`;
-const GDPR_URL = `${IDENTITY_BASE_URL}${endpoints.proxy.identity.gdpr}`;
+const GDPR_URL = `${IDENTITY_BASE_URL}${endpoints.proxy.identity.gdpr.url}`;
 /**
  * Service managing all data related to NRP users.
  */
