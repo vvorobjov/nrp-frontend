@@ -72,3 +72,11 @@ test('can determine group membership for administrators', async () => {
 test('can retrieve cluster reservations', async () => {
   expect(await NrpUserService.instance.getReservation()).toBe(undefined);
 });
+
+test('can retrieve false gdpr status', async () => {
+  expect(await NrpUserService.instance.getGdpr()).toEqual({'gdpr': false});
+});
+
+test('can set gdpr status', async () => {
+  expect(await NrpUserService.instance.setGdpr()).toEqual({'status':'success'});
+});
