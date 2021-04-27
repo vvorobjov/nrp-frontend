@@ -9,6 +9,7 @@ import MockServerConfig from './mock_server-config.json';
 import MockUsers from './mock_users.json';
 import MockSimulations from './mock_simulations.json';
 import MockUserGroups from './mock_user-groups.json';
+import MockGDPR from './mock_gdpr.json';
 
 import ImageAI from '../assets/images/Artificial_Intelligence_2.jpg';
 
@@ -48,7 +49,15 @@ export const handlers = [
   rest.get(`${config.api.proxy.url}${endpoints.proxy.identity.me.groups.url}`, (req, res, ctx) => {
     return res(ctx.json(MockUserGroups));
   }),
+  rest.get(`${config.api.proxy.url}${endpoints.proxy.identity.url}${endpoints.proxy.identity.gdpr}`,
+    (req, res, ctx) => {
+      return res(ctx.json(MockGDPR));
+    }),
   rest.get(`${config.api.proxy.url}${endpoints.proxy.identity.url}/:userID`, (req, res, ctx) => {
     return res(ctx.json(MockUsers[1]));
-  })
+  }),
+  rest.post(`${config.api.proxy.url}${endpoints.proxy.identity.url}${endpoints.proxy.identity.gdpr}`,
+    (req, res, ctx) => {
+      return res(ctx.json({"status":"success"}));
+    })
 ];

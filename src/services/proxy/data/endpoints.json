@@ -16,7 +16,8 @@
                 "groups": {
                     "url": "/identity/me/groups"
                 }
-            }
+            },
+            "gdpr": "/gdpr"
         },
         "server": {
             "url": "/server"
