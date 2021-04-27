@@ -58,6 +58,6 @@ export const handlers = [
   }),
   rest.post(`${config.api.proxy.url}${endpoints.proxy.identity.url}${endpoints.proxy.identity.gdpr.url}`,
     (req, res, ctx) => {
-      return res(ctx.json({"status":"success"}));
+      return res(ctx.json({'status':'success'}));
     })
 ];

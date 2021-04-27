@@ -74,9 +74,9 @@ test('can retrieve cluster reservations', async () => {
 });
 
 test('can retrieve false gdpr status', async () => {
-  expect(await NrpUserService.instance.getGdpr()).toEqual({"gdpr": false});
+  expect(await NrpUserService.instance.getGdpr()).toEqual({'gdpr': false});
 });
 
 test('can set gdpr status', async () => {
-  expect(await NrpUserService.instance.setGdpr()).toEqual({"status":"success"});
+  expect(await NrpUserService.instance.setGdpr()).toEqual({'status':'success'});
 });
