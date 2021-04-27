@@ -1,6 +1,7 @@
 import React from 'react';
 import { FaStop, FaStopCircle } from 'react-icons/fa';
 import { ImEnter } from 'react-icons/im';
+import { withRouter } from 'react-router-dom';
 
 import timeDDHHMMSS from '../../utility/time-filter.js';
 import { EXPERIMENT_STATE } from '../../services/experiments/experiment-constants.js';
@@ -8,7 +9,7 @@ import ExperimentExecutionService from '../../services/experiments/execution/exp
 
 import './simulation-details.css';
 
-export default class SimulationDetails extends React.Component {
+class SimulationDetails extends React.Component {
   constructor() {
     super();
 
@@ -78,7 +79,13 @@ export default class SimulationDetails extends React.Component {
                   ng-click="(simulation.runningSimulation.state === STATE.CREATED) ||
                     simulation.stopping || joinExperiment(simulation, exp);"*/
                   type="button" className='nrp-btn btn-default'
-                  disabled={this.isJoinDisabled(simulation)}>
+                  disabled={this.isJoinDisabled(simulation)}
+                  onClick={() => {
+                    console.info(simulation);
+                    this.props.history.push({
+                      pathname: '/simulation-view/' + simulation.runningSimulation.simulationID
+                    });
+                  }}>
                   <ImEnter className='icon' />Join
                 </button>
                 {/* Stop button enabled provided simulation state is consistent */}
@@ -106,3 +113,4 @@ export default class SimulationDetails extends React.Component {
     );
   }
 }
+export default withRouter(SimulationDetails);
