@@ -56,10 +56,11 @@ export default class UserMenu extends React.Component {
               onClick={this.onClickLogout}
             >
               <FaSignOutAlt className='user-icon' />
-              Logout
+               Logout
             </Dropdown.Item>
           </Dropdown.Menu>
         </Dropdown>
+
       </div>
     );
   }
