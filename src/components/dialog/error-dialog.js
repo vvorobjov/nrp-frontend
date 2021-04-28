@@ -54,17 +54,7 @@ class ErrorDialog extends React.Component{
                 <h4>{error.type}</h4>
               </Modal.Header>
               <Modal.Body>
-                <h5>Details</h5><pre>{error.message}</pre>
-              </Modal.Body>
-              <Modal.Footer>
-                <div>
-                  <Button variant="warning" onClick={() => this.handleClose()}>
-                    <span className="glyphicon glyphicon-remove"></span> Close
-                  </Button>
-                  <Button variant="light" onClick={() => this.sourceDisplay()}>
-                    {this.state.isErrorSourceDisplayed ? 'Hide' : 'Show'} scary details <span></span>
-                  </Button>
-                </div>
+                {error.message}
                 {this.state.isErrorSourceDisplayed
                   ? <div className="details">
                     {!error.code && !error.data && !error.stack
@@ -82,6 +72,16 @@ class ErrorDialog extends React.Component{
                   </div>
                   : null
                 }
+              </Modal.Body>
+              <Modal.Footer>
+                <div>
+                  <Button variant="warning" onClick={() => this.handleClose()}>
+                    <span className="glyphicon glyphicon-remove"></span> Close
+                  </Button>
+                  <Button variant="light" onClick={() => this.sourceDisplay()}>
+                    {this.state.isErrorSourceDisplayed ? 'Hide' : 'Show'} scary details <span></span>
+                  </Button>
+                </div>
               </Modal.Footer>
             </Modal.Dialog>
           </div>
