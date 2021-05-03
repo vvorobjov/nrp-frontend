@@ -5,9 +5,6 @@ import ErrorHandlerService from '../../services/error-handler-service.js';
 
 import './error-dialog.css';
 
-/**
- *
- */
 class ErrorDialog extends React.Component{
   constructor(props) {
     super(props);
