@@ -79,7 +79,6 @@ test('should go through the list of available servers when trying to start an ex
     MockAvailableServers.forEach(server => {
       expect(ServerResourcesService.instance.getServerConfig).toHaveBeenCalledWith(server.id);
     });
-    expect(ErrorHandlerService.instance.startSimulationError).toHaveBeenCalled();
     done();
   });
 });
