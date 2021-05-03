@@ -3,6 +3,7 @@ import _ from 'lodash';
 //import NrpAnalyticsService from '../../nrp-analytics-service.js';
 import ServerResourcesService from './server-resources-service.js';
 import SimulationService from './running-simulation-service.js';
+import ErrorHandlerService from '../../error-handler-service';
 import { HttpService } from '../../http-service.js';
 import { EXPERIMENT_STATE } from '../experiment-constants.js';
 
@@ -88,9 +89,8 @@ class ExperimentExecutionService extends HttpService {
         profiler,
         progressCallback
       ).catch((failure) => {
-        if (failure.error && failure.error.data) {
-          //TODO: proper ErrorHandlerService callback
-          console.error('Failed to start simulation: ' + JSON.stringify(failure.error.data));
+        if (failure.error) {
+          ErrorHandlerService.instance.startSimulationError(failure.error);
         }
         fatalErrorOccurred = fatalErrorOccurred || failure.isFatal;
 

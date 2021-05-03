@@ -44,7 +44,7 @@ class SimulationService extends HttpService {
       cachedConfigFiles = response.resources;
     }
     catch (error) {
-      ErrorHandlerService.instance.displayServerHTTPError(error);
+      ErrorHandlerService.instance.networkError(error);
     }
 
     return cachedConfigFiles;
@@ -151,7 +151,7 @@ class SimulationService extends HttpService {
       return response;
     }
     catch (error) {
-      ErrorHandlerService.instance.displayServerHTTPError(error);
+      ErrorHandlerService.instance.networkError(error);
     }
   }
 
@@ -168,7 +168,7 @@ class SimulationService extends HttpService {
       return response;
     }
     catch (error) {
-      ErrorHandlerService.instance.onErrorSimulationUpdate(error);
+      ErrorHandlerService.instance.updateSimulationError(error);
     }
   }
 }
