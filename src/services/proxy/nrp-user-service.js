@@ -14,7 +14,7 @@ const PROXY_URL = config.api.proxy.url;
 const IDENTITY_BASE_URL = `${PROXY_URL}${endpoints.proxy.identity.url}`;
 const IDENTITY_ME_URL = `${PROXY_URL}${endpoints.proxy.identity.me.url}`;
 const IDENTITY_ME_GROUPS_URL = `${PROXY_URL}${endpoints.proxy.identity.me.groups.url}`;
-
+const GDPR_URL = `${IDENTITY_BASE_URL}${endpoints.proxy.identity.gdpr.url}`;
 /**
  * Service managing all data related to NRP users.
  */
@@ -111,6 +111,22 @@ class NrpUserService extends HttpService {
    */
   getReservation() {
     return window.sessionStorage.getItem('clusterReservation');
+  }
+
+  /**
+   * Get the GDPR status for current user.
+   * @returns {promise} Contains the GDPR status for the current user
+   */
+  async getGdpr() {
+    return await (await this.httpRequestGET(GDPR_URL)).json();
+  }
+
+  /**
+   * Set the accepted GDPR status for current user.
+   * @returns {promise} Response for the current user
+   */
+  async setGdpr() {
+    return await (await this.httpRequestPOST(GDPR_URL)).json();
   }
 }
 

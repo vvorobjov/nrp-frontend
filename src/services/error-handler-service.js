@@ -1,11 +1,20 @@
+import { EventEmitter } from 'events';
+
 let _instance = null;
 const SINGLETON_ENFORCER = Symbol();
 
 /**
- * Service taking care of OIDC/FS authentication for NRP accounts
+ * Service that handles error retrieving from http and opening error dialog in App.js
+ * An Error object has 5 attributes among which 2 are required:
+ *  - type: category (network ...) | required
+ *  - message: details | required
+ *  - code: error line | optional
+ *  - data: related content | optional
+ *  - stack: call stack | optional
  */
-class ErrorHandlerService {
+class ErrorHandlerService extends EventEmitter {
   constructor(enforcer) {
+    super();
     if (enforcer !== SINGLETON_ENFORCER) {
       throw new Error('Use ' + this.constructor.name + '.instance');
     }
@@ -19,20 +28,31 @@ class ErrorHandlerService {
     return _instance;
   }
 
-  displayServerHTTPError(error) {
-    //TODO: needs proper UI implementation
-    console.error(error);
+  // HTTP request error
+  networkError(error) {
+    error.type = 'Network Error';
+    this.emit(ErrorHandlerService.EVENTS.ERROR, error);
   }
 
-  onErrorSimulationUpdate(error) {
-    //TODO: needs proper UI implementation
-    console.error(error);
+  // Handling data error
+  dataError(error){
+    error.type = 'Data Error';
+    this.emit(ErrorHandlerService.EVENTS.ERROR, error);
   }
 
-  displayError (error){
-    //TODO: needs proper implementation
-    console.error(error.type + error.message);
+  startSimulationError(error) {
+    error.type = 'Start Simulation Error';
+    this.emit(ErrorHandlerService.EVENTS.ERROR, error);
+  }
+
+  updateSimulationError(error) {
+    error.type = 'Update Simulation Error';
+    this.emit(ErrorHandlerService.EVENTS.ERROR, error);
   }
 }
+
+ErrorHandlerService.EVENTS = Object.freeze({
+  ERROR: 'ERROR'
+});
 
 export default ErrorHandlerService;
