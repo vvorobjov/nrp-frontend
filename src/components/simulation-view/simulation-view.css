@@ -1,6 +1,6 @@
 .simulation-view-wrapper {
   display: grid;
-  grid-template-rows: 100px auto;
+  grid-template-rows: auto auto;
   grid-template-columns: 100px auto;
   grid-template-areas: 
       "simulation-view-header simulation-view-header"
@@ -9,8 +9,12 @@
 
 .simulation-view-header {
   grid-area: simulation-view-header;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
   background-color: yellow;
-  min-height: 100px;
+  padding: 3px;
 }
 
 .simulation-view-sidebar {
@@ -26,5 +30,31 @@
 
 .simulation-view-flexlayout {
   position: relative;
-  height: 100%;
+  height: 100vh;
+}
+
+.simulation-view-controls {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+.simulation-view-control-buttons {
+  padding: 0px 10px 0px 10px;
+}
+
+.simulation-view-time-info {
+  display: grid;
+  gap: 3px;
+  grid-template-rows: repeat(3, 1fr);
+  grid-template-columns: repeat(2, 1fr);
+
+  padding: 0px 10px 0px 10px;
+
+  font-size: 0.7em;
+}
+
+.simulation-view-experiment-title {
+  padding: 0px 10px 0px 10px;
+  font-weight: bold;
 }

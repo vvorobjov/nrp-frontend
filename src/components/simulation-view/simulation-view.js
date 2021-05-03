@@ -1,5 +1,9 @@
 import React from 'react';
 import FlexLayout from 'flexlayout-react';
+import { RiPlayFill, RiLayout6Line } from 'react-icons/ri';
+import { GiExitDoor } from 'react-icons/gi';
+import { TiMediaRecord } from 'react-icons/ti';
+import { VscDebugRestart } from 'react-icons/vsc';
 
 import '../../../node_modules/flexlayout-react/style/light.css';
 import './simulation-view.css';
@@ -69,7 +73,26 @@ export default class SimulationView extends React.Component {
     return (
       <div className='simulation-view-wrapper'>
         <div className='simulation-view-header'>
-          header
+          <div className='simulation-view-controls'>
+            <div className='simulation-view-control-buttons'>
+              <button className='nrp-btn btn-default'><GiExitDoor className='icon' /></button>
+              <button className='nrp-btn btn-default'><VscDebugRestart className='icon' /></button>
+              <button className='nrp-btn btn-default'><RiPlayFill className='icon' /></button>
+              <button className='nrp-btn btn-default'><TiMediaRecord className='icon' /></button>
+            </div>
+
+            <div className='simulation-view-time-info'>
+              <div>Simulation time:</div>
+              <div>{'00 00:00:00'}</div>
+              <div>Real time:</div>
+              <div>{'11 11:11:11'}</div>
+              <div>Real timeout:</div>
+              <div>{'22 22:22:22'}</div>
+            </div>
+          </div>
+
+          <div className='simulation-view-experiment-title'>experiment title placeholder</div>
+          <button className='nrp-btn btn-default'><RiLayout6Line className='icon' /></button>
         </div>
         <div className='simulation-view-sidebar'>
           sidebar
