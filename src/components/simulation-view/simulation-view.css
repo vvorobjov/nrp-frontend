@@ -1,0 +1,30 @@
+.simulation-view-wrapper {
+  display: grid;
+  grid-template-rows: 100px auto;
+  grid-template-columns: 100px auto;
+  grid-template-areas: 
+      "simulation-view-header simulation-view-header"
+      "simulation-view-sidebar simulation-view-mainview";
+}
+
+.simulation-view-header {
+  grid-area: simulation-view-header;
+  background-color: yellow;
+  min-height: 100px;
+}
+
+.simulation-view-sidebar {
+  grid-area: simulation-view-sidebar;
+  background-color: green;
+  height: 100vh;
+}
+
+.simulation-view-mainview {
+  grid-area: simulation-view-mainview;
+  background-color: red;
+}
+
+.simulation-view-flexlayout {
+  position: relative;
+  height: 100%;
+}

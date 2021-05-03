@@ -2,6 +2,7 @@ import React from 'react';
 import FlexLayout from 'flexlayout-react';
 
 import '../../../node_modules/flexlayout-react/style/light.css';
+import './simulation-view.css';
 
 const jsonBaseLayout = {
   global: {},
@@ -38,6 +39,15 @@ const jsonBaseLayout = {
   }
 };
 
+const classNameMapper = (className) => {
+  if (className === 'flexlayout__layout') {
+    return 'simulation-view-flexlayout';
+  }
+  else {
+    return className;
+  }
+};
+
 export default class SimulationView extends React.Component {
   constructor(props) {
     super(props);
@@ -57,8 +67,17 @@ export default class SimulationView extends React.Component {
 
   render() {
     return (
-      <div>
-        <FlexLayout.Layout model={this.state.model} factory={this.factory}/>
+      <div className='simulation-view-wrapper'>
+        <div className='simulation-view-header'>
+          header
+        </div>
+        <div className='simulation-view-sidebar'>
+          sidebar
+        </div>
+        <div className='simulation-view-mainview'>
+          <FlexLayout.Layout model={this.state.model} factory={this.factory}
+            classNameMapper={classNameMapper}/>
+        </div>
       </div>
     );
   }
