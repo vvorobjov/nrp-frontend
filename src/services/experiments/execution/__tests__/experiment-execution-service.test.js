@@ -13,6 +13,7 @@ import ExperimentExecutionService from '../../../../services/experiments/executi
 import ServerResourcesService from '../../../../services/experiments/execution/server-resources-service';
 import RunningSimulationService from '../../../../services/experiments/execution/running-simulation-service';
 import { EXPERIMENT_STATE } from '../../../../services/experiments/experiment-constants.js';
+import ErrorHandlerService from '../../../../services/error-handler-service';
 
 //jest.setTimeout(10000);
 
@@ -78,7 +79,7 @@ test('should go through the list of available servers when trying to start an ex
     MockAvailableServers.forEach(server => {
       expect(ServerResourcesService.instance.getServerConfig).toHaveBeenCalledWith(server.id);
     });
-    expect(console.error).toHaveBeenCalled();
+    expect(ErrorHandlerService.instance.startSimulationError).toHaveBeenCalled();
     done();
   });
 });
