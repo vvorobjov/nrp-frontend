@@ -13,7 +13,6 @@ import ExperimentExecutionService from '../../../../services/experiments/executi
 import ServerResourcesService from '../../../../services/experiments/execution/server-resources-service';
 import RunningSimulationService from '../../../../services/experiments/execution/running-simulation-service';
 import { EXPERIMENT_STATE } from '../../../../services/experiments/experiment-constants.js';
-import ErrorHandlerService from '../../../../services/error-handler-service';
 
 //jest.setTimeout(10000);
 
