@@ -84,6 +84,7 @@
 
 .experiment-li-buttons {
     justify-self: flex-end;
+    min-width: 76px;
 }
   
 .experiment-files {

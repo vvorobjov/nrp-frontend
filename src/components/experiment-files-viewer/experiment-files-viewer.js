@@ -174,7 +174,8 @@ export default class ExperimentFilesViewer extends React.Component {
                       {experiment.configuration.name}
                       <div className='experiment-li-buttons'>
                         <button className='nrp-btn'
-                          disabled={!RemoteExperimentFilesService.instance.localSyncDirectoryHandle}
+                          disabled={!RemoteExperimentFilesService.instance.localSyncDirectoryHandle
+                            || RemoteExperimentFilesService.instance.autoSync}
                           onClick={() => {
                             RemoteExperimentFilesService.instance.downloadExperimentToLocalFS(experiment);
                           }}
@@ -184,7 +185,8 @@ export default class ExperimentFilesViewer extends React.Component {
                         </button>
                         <button className='nrp-btn'
                           disabled={!experimentServerFiles
-                            || !RemoteExperimentFilesService.instance.mapFileInfos.has(experiment.uuid)}
+                            || !RemoteExperimentFilesService.instance.mapFileInfos.has(experiment.uuid)
+                            || RemoteExperimentFilesService.instance.autoSync}
                           onClick={() => {
                             RemoteExperimentFilesService.instance.uploadExperimentFromLocalFS(experiment);
                           }}
@@ -205,19 +207,22 @@ export default class ExperimentFilesViewer extends React.Component {
                 <div>Experiment Files</div>
                 <div className='grid-element-header-buttons'>
                   <button className='nrp-btn' title='Download selected'
-                    disabled={!this.state.selectedFilepaths || this.state.selectedFilepaths.length === 0}
+                    disabled={!this.state.selectedFilepaths || this.state.selectedFilepaths.length === 0
+                      || RemoteExperimentFilesService.instance.autoSync}
                     onClick={() =>
                       RemoteExperimentFilesService.instance.downloadExperimentFileList(this.state.selectedFilepaths)}>
                     <FaDownload />
                   </button>
                   <button className='nrp-btn' title='Upload selected'
-                    disabled={!this.state.selectedFilepaths || this.state.selectedFilepaths.length === 0}
+                    disabled={!this.state.selectedFilepaths || this.state.selectedFilepaths.length === 0
+                      || RemoteExperimentFilesService.instance.autoSync}
                     onClick={() =>
                       RemoteExperimentFilesService.instance.uploadExperimentFileList(this.state.selectedFilepaths)}>
                     <FaUpload />
                   </button>
                   <button className='nrp-btn' title='Delete selected'
-                    disabled={!this.state.selectedFilepaths || this.state.selectedFilepaths.length === 0}
+                    disabled={!this.state.selectedFilepaths || this.state.selectedFilepaths.length === 0
+                      || RemoteExperimentFilesService.instance.autoSync}
                     onClick={() =>
                       RemoteExperimentFilesService.instance.deleteExperimentFileList(this.state.selectedFilepaths)}>
                     <FaTrash />
