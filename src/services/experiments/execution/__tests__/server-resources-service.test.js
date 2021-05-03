@@ -67,9 +67,9 @@ test('can get a server config', async () => {
   jest.spyOn(ServerResourcesService.instance, 'httpRequestGET').mockImplementation(() => {
     return Promise.reject();
   });
-  jest.spyOn(ErrorHandlerService.instance, 'displayServerHTTPError').mockImplementation();
+  jest.spyOn(ErrorHandlerService.instance, 'networkError').mockImplementation();
   config = await ServerResourcesService.instance.getServerConfig('test-server-id');
-  expect(ErrorHandlerService.instance.displayServerHTTPError).toHaveBeenCalled();
+  expect(ErrorHandlerService.instance.networkError).toHaveBeenCalled();
 });
 
 test('should stop polling updates when window is unloaded', async () => {

@@ -4,18 +4,6 @@ li.nostyle {
 
 .experiment-list-wrapper {
     height: 100vh;
-    display: grid;
-    grid-template-rows: auto;
-    grid-template-columns: auto;
-    grid-template-areas:
-        "experiments";
-}
-
-.experiment-list {
-    text-align: left;
-    grid-area: experiments;
-    color: black;
-    background-color: white;
 }
 
 .no-items-notification {

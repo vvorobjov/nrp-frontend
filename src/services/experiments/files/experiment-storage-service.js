@@ -3,6 +3,7 @@ import { EXPERIMENT_RIGHTS } from '../experiment-constants';
 
 import endpoints from '../../proxy/data/endpoints.json';
 import config from '../../../config.json';
+import ErrorHandlerService from '../../error-handler-service.js';
 
 const storageURL = `${config.api.proxy.url}${endpoints.proxy.storage.url}`;
 const storageExperimentsURL = `${config.api.proxy.url}${endpoints.proxy.storage.experiments.url}`;
@@ -68,13 +69,18 @@ class ExperimentStorageService extends HttpService {
   // move to experiment-configuration-service?
   async getExperiments(forceUpdate = false) {
     if (!this.experiments || forceUpdate) {
-      let experimentList = await (await this.httpRequestGET(storageExperimentsURL)).json();
-      // filter out experiments with incomplete configuration (probably storage corruption)
-      experimentList = experimentList.filter(experiment => experiment.configuration.experimentFile);
-      this.sortExperiments(experimentList);
-      await this.fillExperimentDetails(experimentList);
-      this.experiments = experimentList;
-      this.emit(ExperimentStorageService.EVENTS.UPDATE_EXPERIMENTS, this.experiments);
+      try {
+        let experimentList = await (await this.httpRequestGET(storageExperimentsURL)).json();
+        // filter out experiments with incomplete configuration (probably storage corruption)
+        experimentList = experimentList.filter(experiment => experiment.configuration.experimentFile);
+        this.sortExperiments(experimentList);
+        await this.fillExperimentDetails(experimentList);
+        this.experiments = experimentList;
+        this.emit(ExperimentStorageService.EVENTS.UPDATE_EXPERIMENTS, this.experiments);
+      }
+      catch (error) {
+        ErrorHandlerService.instance.networkError(error);
+      }
     }
 
     return this.experiments;
