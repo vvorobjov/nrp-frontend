@@ -53,9 +53,9 @@ class ErrorDialog extends React.Component{
               <Modal.Body>
                 {error.message}
                 {this.state.isErrorSourceDisplayed
-                  ? <div className="details">
+                  ? <div>
                     {!error.code && !error.data && !error.stack
-                      ? <h6>No scary details</h6>
+                      ? <h6>{error.message</h6>
                       : null}
                     {this.state.error.code
                       ? <div><h6>Code</h6><pre>{this.state.error.code}</pre></div>
