@@ -166,7 +166,7 @@ test('can retrieve the state of a simulation', async () => {
 
 test('can set the state of a simulation', async () => {
   let returnValuePUT = undefined;
-  jest.spyOn(ErrorHandlerService.instance, 'updateSimuationError').mockImplementation();
+  jest.spyOn(ErrorHandlerService.instance, 'updateSimulationError').mockImplementation();
   jest.spyOn(RunningSimulationService.instance, 'httpRequestPUT').mockImplementation(() => {
     if (RunningSimulationService.instance.httpRequestGET.mock.calls.length === 1) {
       returnValuePUT = {};

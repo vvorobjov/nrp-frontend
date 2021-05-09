@@ -147,25 +147,29 @@ class ExperimentStorageService extends HttpService {
 
   /**
    * Gets an experiment file from the storage.
-   * @param {string} experimentName - name of the experiment
+   * @param {string} experimentDirectoryPath - path of experiment folder + possibly subfolders
    * @param {string} filename - name of the file
    * @param {Boolean} byName - whether to check for the file by name or not
    *
    * @returns the file contents (as a request object)
    */
-  async getFile(experimentName, filename, byName = false) {
-    const url = `${config.api.proxy.url}${endpoints.proxy.storage.url}/${experimentName}/${filename}?byname=${byName}`;
+  async getFile(experimentDirectoryPath, filename, byName = false) {
+    let directory = experimentDirectoryPath.replaceAll('/', '%2F');
+    let file = filename.replaceAll('/', '%2F');
+    const url = `${config.api.proxy.url}${endpoints.proxy.storage.url}/${directory}/${file}?byname=${byName}`;
     return this.httpRequestGET(url);
   }
 
   /**
    * Gets the list of the experiment files from the storage.
-   * @param {string} experimentName - name of the experiment
+   * @param {string} experimentDirectoryUUID - name of the experiment
+   * @param {string} subFolder - relative path to a subfolder from which to get files
    *
    * @returns {Array} the list of experiment files
    */
-  async getExperimentFiles(experimentName) {
-    const url = `${config.api.proxy.url}${endpoints.proxy.storage.url}/${experimentName}`;
+  async getExperimentFiles(directoryPath) {
+    let directory = directoryPath.replaceAll('/', '%2F');
+    let url = `${config.api.proxy.url}${endpoints.proxy.storage.url}/${directory}`;
     const files = await (await this.httpRequestGET(url)).json();
     return files;
   }
@@ -246,24 +250,27 @@ class ExperimentStorageService extends HttpService {
    *
    * @returns the request object containing the status code
    */
-  async setFile(experimentName, filename, data, byname = true, contentType = 'text/plain') {
-    const url = new URL(`${config.api.proxy.url}${endpoints.proxy.storage.url}/${experimentName}/${filename}`);
+  async setFile(directoryPath, filename, data, byname = true, contentType = 'text/plain') {
+    let directory = directoryPath.replaceAll('/', '%2F');
+    const url = new URL(`${config.api.proxy.url}${endpoints.proxy.storage.url}/${directory}/${filename}`);
+    //console.info(url);
     url.searchParams.append('byname', byname);
 
     let requestOptions = {
       ...this.POSTOptions, ...{ headers: { 'Content-Type': contentType } }
     };
+    //console.info(requestOptions);
 
     if (contentType === 'text/plain') {
-      return this.httpRequestPOST(url, requestOptions, data);
+      return this.httpRequestPOST(url, data, requestOptions);
     }
     else if (contentType === 'application/json') {
-      return this.httpRequestPOST(url, requestOptions, JSON.stringify(data));
+      return this.httpRequestPOST(url, JSON.stringify(data), requestOptions);
     }
     else if (contentType === 'application/octet-stream') {
       // placeholder for blob files where the data has to be transormed,
       // possibly to Uint8Array
-      return this.httpRequestPOST(url, requestOptions,/* new Uint8Array(data) */data);
+      return this.httpRequestPOST(url,/* new Uint8Array(data) */data, requestOptions);
     }
     else {
       return new Error('Content-Type for setFile request not specified,' +
