@@ -34,8 +34,8 @@ const jsonBaseLayout = {
         'children': [
           {
             'type': 'tab',
-            'name': 'FI',
-            'component':'grid'
+            'name': 'NEST wiki page',
+            'component':'nest_wiki'
           }
         ]
       }
@@ -66,6 +66,10 @@ export default class SimulationView extends React.Component {
     var component = node.getComponent();
     if (component === 'button') {
       return <button>{node.getName()}</button>;
+    }
+    else if (component === 'nest_wiki') {
+      return <iframe src='https://en.wikipedia.org/wiki/NEST_(software)' title='nest_wiki'
+        className='flexlayout-iframe'></iframe>;
     }
   }
 
