@@ -41,7 +41,7 @@ class ErrorDialog extends React.Component{
   }
 
   render(){
-    const error = this.state.error;
+    let error = this.state.error;
     return (
       <div>
         {error?
@@ -55,16 +55,16 @@ class ErrorDialog extends React.Component{
                 {this.state.isErrorSourceDisplayed
                   ? <div>
                     {!error.code && !error.data && !error.stack
-                      ? <h6>{error.message</h6>
+                      ? <h6>No scary details</h6>
                       : null}
-                    {this.state.error.code
-                      ? <div><h6>Code</h6><pre>{this.state.error.code}</pre></div>
+                    {error.code
+                      ? <div><h6>Code</h6><pre>{error.code}</pre></div>
                       : null}
-                    {this.state.error.data
-                      ? <div><h6>Data</h6><pre>{this.state.error.data}</pre></div>
+                    {error.data
+                      ? <div><h6>Data</h6><pre>{error.data}</pre></div>
                       : null}
-                    {this.state.error.stack
-                      ? <div><h6>Stack Trace</h6><pre>{this.state.error.stack}</pre></div>
+                    {error.stack
+                      ? <div><h6>Stack Trace</h6><pre>{error.stack}</pre></div>
                       : null}
                   </div>
                   : null
