@@ -1,0 +1,92 @@
+let _instance = null;
+const SINGLETON_ENFORCER = Symbol();
+
+/**
+ * Service handling server resources for simulating experiments.
+ */
+class SimulationToolsService {
+  constructor(enforcer) {
+    if (enforcer !== SINGLETON_ENFORCER) {
+      throw new Error('Use ' + this.constructor.name + '.instance');
+    }
+
+    this.tools = new Map();
+    for (const toolEntry in SimulationToolsService.TOOLS) {
+      this.registerToolConfig(SimulationToolsService.TOOLS[toolEntry]);
+    }
+  }
+
+  static get instance() {
+    if (_instance == null) {
+      _instance = new SimulationToolsService(SINGLETON_ENFORCER);
+    }
+
+    return _instance;
+  }
+
+  registerToolConfig(toolConfig) {
+    let id = toolConfig.flexlayoutNode.component;
+    if (this.tools.has(id)) {
+      console.warn('SimulationToolsService.registerToolConfig() - tool with ID ' + id + ' already exists');
+      return;
+    }
+
+    this.tools.set(id, toolConfig);
+  }
+
+  flexlayoutNodeFactory(node) {
+    var component = node.getComponent();
+
+    let toolConfig = this.tools.get(component);
+    if (toolConfig && toolConfig.flexlayoutFactoryCb) {
+      return toolConfig.flexlayoutFactoryCb();
+    }
+
+    if (component === 'button') {
+      return <button>{node.getName()}</button>;
+    }
+    else if (component === 'nest_wiki') {
+      return <iframe src='https://en.wikipedia.org/wiki/NEST_(software)' title='nest_wiki'
+        className='flexlayout-iframe'></iframe>;
+    }
+  }
+
+  startToolDrag(flexlayoutNode, layoutReference) {
+    layoutReference.current.addTabWithDragAndDrop(flexlayoutNode.name, flexlayoutNode);
+  }
+}
+
+SimulationToolsService.TOOLS = Object.freeze({
+  NEST_DESKTOP: {
+    singleton: true,
+    flexlayoutNode: {
+      'type': 'tab',
+      'name': 'NEST Desktop',
+      'component': 'nest-desktop'
+    },
+    flexlayoutFactoryCb: () =>  {
+      return <iframe src='http://localhost:8000' title='NEST Desktop' />;
+    }
+  },
+  TEST_NEST_SERVER_DOCU: {
+    singleton: true,
+    flexlayoutNode: {
+      'type': 'tab',
+      'name': 'NRP-Core Documentation',
+      'component': 'nrp-core-docu'
+    },
+    flexlayoutFactoryCb: () =>  {
+      return <iframe src='https://hbpneurorobotics.bitbucket.io/index.html'
+        title='NRP-Core Documentation' />;
+    }
+  }
+});
+
+SimulationToolsService.CONSTANTS = Object.freeze({
+  CATEGORY: {
+    EXTERNAL_IFRAME: 'EXTERNAL_IFRAME',
+    REACT_COMPONENT: 'REACT_COMPONENT'
+  }
+});
+
+export default SimulationToolsService;

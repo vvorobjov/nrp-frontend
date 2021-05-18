@@ -1,6 +1,6 @@
 .simulation-view-wrapper {
   display: grid;
-  grid-template-rows: auto auto;
+  grid-template-rows: 63px auto;
   grid-template-columns: 100px auto;
   grid-template-areas: 
       "simulation-view-header simulation-view-header"
@@ -18,9 +18,9 @@
 }
 
 .simulation-view-sidebar {
+  padding: 2px;
   grid-area: simulation-view-sidebar;
   background-color: green;
-  height: 100vh;
 }
 
 .simulation-view-mainview {
@@ -30,7 +30,11 @@
 
 .simulation-view-flexlayout {
   position: relative;
-  height: 100vh;
+  height: calc(100vh - 63px);
+}
+
+.flexlayout__tab {
+  overflow: hidden;
 }
 
 .simulation-view-controls {
@@ -59,7 +63,7 @@
   font-weight: bold;
 }
 
-.flexlayout-iframe {
+iframe {
   width: 100%;
   height: 100%;
 }

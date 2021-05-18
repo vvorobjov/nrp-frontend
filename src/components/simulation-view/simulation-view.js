@@ -5,6 +5,8 @@ import { GiExitDoor } from 'react-icons/gi';
 import { TiMediaRecord } from 'react-icons/ti';
 import { VscDebugRestart } from 'react-icons/vsc';
 
+import SimulationToolsService from './simulation-tools-service';
+
 import '../../../node_modules/flexlayout-react/style/light.css';
 import './simulation-view.css';
 
@@ -15,18 +17,6 @@ const jsonBaseLayout = {
     'type': 'row',
     'weight': 100,
     'children': [
-      {
-        'type': 'tabset',
-        'weight': 50,
-        'selected': 0,
-        'children': [
-          {
-            'type': 'tab',
-            'name': 'FX',
-            'component':'grid'
-          }
-        ]
-      },
       {
         'type': 'tabset',
         'weight': 50,
@@ -60,17 +50,12 @@ export default class SimulationView extends React.Component {
 
     this.state = {model: FlexLayout.Model.fromJson(jsonBaseLayout)};
     console.info(this.state);
+
+    this.refLayout = React.createRef();
   }
 
   factory = (node) => {
-    var component = node.getComponent();
-    if (component === 'button') {
-      return <button>{node.getName()}</button>;
-    }
-    else if (component === 'nest_wiki') {
-      return <iframe src='https://en.wikipedia.org/wiki/NEST_(software)' title='nest_wiki'
-        className='flexlayout-iframe'></iframe>;
-    }
+    return SimulationToolsService.instance.flexlayoutNodeFactory(node);
   }
 
   render() {
@@ -99,10 +84,16 @@ export default class SimulationView extends React.Component {
           <button className='nrp-btn btn-default'><RiLayout6Line className='icon' /></button>
         </div>
         <div className='simulation-view-sidebar'>
-          sidebar
+          {Array.from(SimulationToolsService.instance.tools.values()).map(tool => {
+            return (<button onMouseDown={() => {
+              SimulationToolsService.instance.startToolDrag(
+                tool.flexlayoutNode,
+                this.refLayout);
+            }}>{tool.flexlayoutNode.name}</button>);
+          })}
         </div>
         <div className='simulation-view-mainview'>
-          <FlexLayout.Layout model={this.state.model} factory={this.factory}
+          <FlexLayout.Layout ref={this.refLayout} model={this.state.model} factory={this.factory}
             classNameMapper={classNameMapper}/>
         </div>
       </div>
