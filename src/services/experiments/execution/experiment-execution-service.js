@@ -3,7 +3,7 @@ import _ from 'lodash';
 //import NrpAnalyticsService from '../../nrp-analytics-service.js';
 import ServerResourcesService from './server-resources-service.js';
 import SimulationService from './running-simulation-service.js';
-import ErrorHandlerService from '../../error-handler-service';
+import DialogService from '../../dialog-service';
 import { HttpService } from '../../http-service.js';
 import { EXPERIMENT_STATE } from '../experiment-constants.js';
 
@@ -61,8 +61,8 @@ class ExperimentExecutionService extends HttpService {
     let brainProcesses = launchSingleMode ? 1 : experiment.configuration.brainProcesses;
 
     //TODO: placeholder, register actual progress callback later
-    let progressCallback = (msg) => {
-      console.info(msg);
+    let progressCallback = (notification) => {
+      DialogService.instance.progressNotification(notification);
     };
 
     let launchOnNextServer = async () => {
@@ -90,7 +90,7 @@ class ExperimentExecutionService extends HttpService {
         progressCallback
       ).catch((failure) => {
         if (failure.error) {
-          ErrorHandlerService.instance.startSimulationError(failure.error);
+          DialogService.instance.simulationError(failure.error);
         }
         fatalErrorOccurred = fatalErrorOccurred || failure.isFatal;
 

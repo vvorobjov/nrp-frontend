@@ -4,6 +4,7 @@ import { HashRouter, Switch, Route } from 'react-router-dom';
 
 import EntryPage from './components/entry-page/entry-page.js';
 import ErrorDialog from './components/dialog/error-dialog.js';
+import ToastNotification from './components/dialog/toast-notification.js';
 import ExperimentOverview from './components/experiment-overview/experiment-overview.js';
 
 class App extends React.Component {
@@ -11,6 +12,7 @@ class App extends React.Component {
     return(
       <div>
         <ErrorDialog />
+        <ToastNotification/>
         <HashRouter>
           <Switch>
             <Route path='/experiments-overview'>

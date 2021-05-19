@@ -8,7 +8,7 @@ import MockAvailableServers from '../../../../mocks/mock_available-servers.json'
 import MockSimulations from '../../../../mocks/mock_simulations.json';
 
 import RunningSimulationService from '../running-simulation-service.js';
-import ErrorHandlerService from '../../../error-handler-service';
+import DialogService from '../../../error-handler-service';
 import RoslibService from '../../../roslib-service';
 import { EXPERIMENT_STATE } from '../../experiment-constants.js';
 
@@ -41,11 +41,11 @@ test('initializes and gets the simulation resources', async () => {
   expect(resources).toBeDefined();
 
   // failure case
-  jest.spyOn(ErrorHandlerService.instance, 'networkError').mockImplementation(() => { });
+  jest.spyOn(DialogService.instance, 'networkError').mockImplementation(() => { });
   let simIDFailure = 0;
-  expect(ErrorHandlerService.instance.networkError).not.toHaveBeenCalled();
+  expect(DialogService.instance.networkError).not.toHaveBeenCalled();
   resources = await RunningSimulationService.instance.initConfigFiles(serverBaseURL, simIDFailure);
-  expect(ErrorHandlerService.instance.networkError).toHaveBeenCalled();
+  expect(DialogService.instance.networkError).toHaveBeenCalled();
 });
 
 test('verifies whether a simulation is ready', async () => {
@@ -139,7 +139,7 @@ test('register for ROS status information', () => {
 
 test('can retrieve the state of a simulation', async () => {
   let returnValueGET = undefined;
-  jest.spyOn(ErrorHandlerService.instance, 'networkError').mockImplementation();
+  jest.spyOn(DialogService.instance, 'networkError').mockImplementation();
   jest.spyOn(RunningSimulationService.instance, 'httpRequestGET').mockImplementation(() => {
     if (RunningSimulationService.instance.httpRequestGET.mock.calls.length === 1) {
       returnValueGET = { state: EXPERIMENT_STATE.PAUSED }; // proper state msg
@@ -161,12 +161,12 @@ test('can retrieve the state of a simulation', async () => {
 
   // call 2 => rejected
   simSate = await RunningSimulationService.instance.getState('test-url', 1);
-  expect(ErrorHandlerService.instance.networkError).toHaveBeenCalled();
+  expect(DialogService.instance.networkError).toHaveBeenCalled();
 });
 
 test('can set the state of a simulation', async () => {
   let returnValuePUT = undefined;
-  jest.spyOn(ErrorHandlerService.instance, 'updateSimulationError').mockImplementation();
+  jest.spyOn(DialogService.instance, 'simulationError').mockImplementation();
   jest.spyOn(RunningSimulationService.instance, 'httpRequestPUT').mockImplementation(() => {
     if (RunningSimulationService.instance.httpRequestGET.mock.calls.length === 1) {
       returnValuePUT = {};
@@ -184,5 +184,5 @@ test('can set the state of a simulation', async () => {
 
   // call 2 => rejected
   returnValue = await RunningSimulationService.instance.updateState('test-url', 1, EXPERIMENT_STATE.PAUSED);
-  expect(ErrorHandlerService.instance.updateSimulationError).toHaveBeenCalled();
+  expect(DialogService.instance.simulationError).toHaveBeenCalled();
 });
