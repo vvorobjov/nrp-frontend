@@ -1,60 +1,71 @@
-import { Toast } from 'bootstrap';
-import React from 'react'
+import React from 'react';
+import { Toast } from 'react-bootstrap';
 
-import DialogService from '../../services/dialog-service.js'
+import DialogService from '../../services/dialog-service.js';
+
+import './toast-notification.css';
 
 class NotificationDialog extends React.Component{
   constructor(props){
     super(props);
     this.state = {
-      notifications: [],
+      notifications: []
     };
   }
 
   async componentDidMount() {
+    this.onNotification = this.onNotification.bind(this);
     DialogService.instance.addListener(
-      DialogService.EVENTS.NOTIFICATION, (notification) => {
-        this.onNotification(notification);
-      }
+      DialogService.EVENTS.NOTIFICATION, this.onNotification
+    );
+  }
+
+  componentWillUnmount() {
+    DialogService.instance.removeListener(
+      DialogService.EVENTS.NOTIFICATION, this.onNotification
     );
   }
 
   onNotification(notification) {
     this.setState({
-      notifications: this.state.notifications.append(notification)
+      notifications: [...this.state.notifications, notification]
     });
   }
 
-  onClose(index) {
+  handleClose(index) {
+    var copy = [...this.state.notifications];
+    copy.splice(index, 1);
     this.setState({
-      notifications: notifications.splice(index, 1)
+      notifications: copy
     });
   }
 
   render(){
+    let notifications = this.state.notifications;
     return(
-        <div>
-          {this.state.notifications?
-            <ol>
-              {this.state.notifications.map(notification => {
-                return (
-                  <div className="toast-dialog-wrapper">
-                    <Toast.Dialog onClose={this.onClose(index)}>
-                      <Toast.Header>
-                        <h4>{notification.type}</h4>
-                      </Toast.Header>
-                      <Toast.Body>
-                        {notification.message}
-                      </Toast.Body>
-                    </Toast.Dialog>
-                  </div>
-                  );
-                })
-              }
-            </ol>
-            : null
-          }
-        </div>
-    )
+      <div className='toast-notification-wrapper'>
+        {!notifications.length==0?
+          <ol>
+            {notifications.map((notification, index) => {
+              return (
+                <li key={index} className='no-style'>
+                  <Toast onClose={(index) => this.handleClose(index)}>
+                    <Toast.Header>
+                      <h4>{notification.type}</h4>
+                    </Toast.Header>
+                    <Toast.Body>
+                      {notification.message}
+                    </Toast.Body>
+                  </Toast>
+                </li>
+              );
+            })}
+          </ol>
+          : null
+        }
+      </div>
+    );
   }
 }
+
+export default NotificationDialog;

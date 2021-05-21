@@ -47,14 +47,13 @@ class DialogService extends EventEmitter {
 
   progressNotification(notification) {
     notification.type = 'Progress Status';
-    this.emit(DialogService.EVENTS.NOTIFICATION, notification)
+    this.emit(DialogService.EVENTS.NOTIFICATION, notification);
   }
 
   warningNotification(notification) {
-    notification.type = 'Warning'
-    this.emit(DialogService.EVENTS.NOTIFICATION, notification)
+    notification.type = 'Warning';
+    this.emit(DialogService.EVENTS.NOTIFICATION, notification);
   }
-  
 }
 
 DialogService.EVENTS = Object.freeze({
@@ -63,6 +62,6 @@ DialogService.EVENTS = Object.freeze({
 
 DialogService.EVENTS = Object.freeze({
   NOTIFICATION: 'NOTIFICATION'
-})
+});
 
 export default DialogService;

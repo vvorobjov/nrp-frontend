@@ -15,10 +15,15 @@ class ErrorDialog extends React.Component{
   }
 
   async componentDidMount() {
+    this.onError = this.onError.bind(this);
     DialogService.instance.addListener(
-      DialogService.EVENTS.ERROR, (error) => {
-        this.onError(error);
-      }
+      DialogService.EVENTS.ERROR, this.onError
+    );
+  }
+
+  componentWillUnmount() {
+    DialogService.instance.removeListener(
+      DialogService.EVENTS.ERROR, this.onError
     );
   }
 
