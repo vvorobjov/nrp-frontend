@@ -1,5 +1,6 @@
 import React from 'react';
 import FlexLayout from 'flexlayout-react';
+import { OverlayTrigger, Tooltip, Button } from 'react-bootstrap';
 import { RiPlayFill, RiLayout6Line } from 'react-icons/ri';
 import { GiExitDoor } from 'react-icons/gi';
 import { TiMediaRecord } from 'react-icons/ti';
@@ -85,11 +86,25 @@ export default class SimulationView extends React.Component {
         </div>
         <div className='simulation-view-sidebar'>
           {Array.from(SimulationToolsService.instance.tools.values()).map(tool => {
-            return (<button onMouseDown={() => {
-              SimulationToolsService.instance.startToolDrag(
-                tool.flexlayoutNode,
-                this.refLayout);
-            }}>{tool.flexlayoutNode.name}</button>);
+            return (
+              <OverlayTrigger
+                key={`overlaytrigger-${tool.flexlayoutNode.component}`}
+                placement={'right'}
+                overlay={
+                  <Tooltip id={`tooltip-${tool.flexlayoutNode.component}`}>
+                    {tool.flexlayoutNode.name}
+                  </Tooltip>
+                }
+              >
+                <Button key={tool.flexlayoutNode.component}
+                  className="simulation-tool-button"
+                  onMouseDown={() => {
+                    SimulationToolsService.instance.startToolDrag(
+                      tool.flexlayoutNode,
+                      this.refLayout);
+                  }}>{tool.getIcon && tool.getIcon()}</Button>
+              </OverlayTrigger>
+            );
           })}
         </div>
         <div className='simulation-view-mainview'>

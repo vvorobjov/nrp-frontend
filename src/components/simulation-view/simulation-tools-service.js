@@ -66,18 +66,29 @@ SimulationToolsService.TOOLS = Object.freeze({
     },
     flexlayoutFactoryCb: () =>  {
       return <iframe src='http://localhost:8000' title='NEST Desktop' />;
+    },
+    getIcon: () => {
+      return <div>
+        <img src={'https://www.nest-simulator.org/wp-content/uploads/2015/03/nest_logo.png'}
+          alt="NEST Desktop"
+          style={{width: 40+ 'px', height: 20 + 'px'}} />
+        <span>Desktop</span>
+      </div>;
     }
   },
-  TEST_NEST_SERVER_DOCU: {
+  TEST_NRP_CORE_DOCU: {
     singleton: true,
     flexlayoutNode: {
       'type': 'tab',
-      'name': 'NRP-Core Documentation',
+      'name': 'NRP-Core Docs',
       'component': 'nrp-core-docu'
     },
     flexlayoutFactoryCb: () =>  {
       return <iframe src='https://hbpneurorobotics.bitbucket.io/index.html'
         title='NRP-Core Documentation' />;
+    },
+    getIcon: () => {
+      return <span>NRP-Core Docs</span>;
     }
   }
 });
