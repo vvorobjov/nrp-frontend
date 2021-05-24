@@ -8,6 +8,7 @@ import { VscDebugRestart } from 'react-icons/vsc';
 
 import SimulationToolsService from './simulation-tools-service';
 import RunningSimulationService from '../../services/experiments/execution/running-simulation-service';
+import ExperimentStorageService from '../../services/experiments/files/experiment-storage-service';
 import { EXPERIMENT_STATE } from '../../services/experiments/experiment-constants';
 
 import '../../../node_modules/flexlayout-react/style/light.css';
@@ -44,7 +45,7 @@ export default class SimulationView extends React.Component {
     //console.info('SimulationView ' + serverIP + ' ' + simulationID);
     this.serverIP = serverIP;
     this.simulationID = simulationID;
-    this.serverURL = 'http://' + this.serverIP + ':8080';
+    this.serverURL = 'http://' + this.serverIP + ':8080'; // this should probably be part of some config
 
     this.state = {model: FlexLayout.Model.fromJson(jsonBaseLayout)};
     this.updateSimulationInfo();
@@ -54,7 +55,12 @@ export default class SimulationView extends React.Component {
 
   async updateSimulationInfo() {
     let simInfo = await RunningSimulationService.instance.getInfo(this.serverURL, this.simulationID);
-    this.setState({simulationInfo: simInfo});
+    console.info(simInfo);
+    let experiments = await ExperimentStorageService.instance.getExperiments();
+    let experimentName = experiments.find(experiment => experiment.id === simInfo.experimentID).configuration.name;
+    console.info(experimentName);
+
+    this.setState({simulationInfo: simInfo, experimentName: experimentName});
   }
 
   async onButtonStartPause() {
@@ -94,7 +100,7 @@ export default class SimulationView extends React.Component {
             </div>
           </div>
 
-          <div className='simulation-view-experiment-title'>experiment title placeholder</div>
+          <div className='simulation-view-experiment-title'>{this.state.experimentName}</div>
           <button className='nrp-btn btn-default'><RiLayout6Line className='icon' /></button>
         </div>
         <div className='simulation-view-sidebar'>

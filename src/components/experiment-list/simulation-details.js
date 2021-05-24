@@ -56,7 +56,6 @@ class SimulationDetails extends React.Component {
   }
 
   joinSimulation(simulationInfo) {
-    console.info(simulationInfo);
     this.props.history.push({
       pathname: '/simulation-view/' + simulationInfo.server + '/' + simulationInfo.runningSimulation.simulationID
     });
