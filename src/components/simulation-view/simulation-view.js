@@ -1,12 +1,14 @@
 import React from 'react';
 import FlexLayout from 'flexlayout-react';
 import { OverlayTrigger, Tooltip, Button } from 'react-bootstrap';
-import { RiPlayFill, RiLayout6Line } from 'react-icons/ri';
+import { RiPlayFill, RiPauseFill, RiLayout6Line } from 'react-icons/ri';
 import { GiExitDoor } from 'react-icons/gi';
 import { TiMediaRecord } from 'react-icons/ti';
 import { VscDebugRestart } from 'react-icons/vsc';
 
 import SimulationToolsService from './simulation-tools-service';
+import RunningSimulationService from '../../services/experiments/execution/running-simulation-service';
+import { EXPERIMENT_STATE } from '../../services/experiments/experiment-constants';
 
 import '../../../node_modules/flexlayout-react/style/light.css';
 import './simulation-view.css';
@@ -34,29 +36,34 @@ const jsonBaseLayout = {
   }
 };
 
-const classNameMapper = (className) => {
-  if (className === 'flexlayout__layout') {
-    return 'simulation-view-flexlayout';
-  }
-  else {
-    return className;
-  }
-};
-
 export default class SimulationView extends React.Component {
   constructor(props) {
     super(props);
-    console.info(this.state);
-    console.info(this.props);
+
+    const {serverIP, simulationID} = props.match.params;
+    //console.info('SimulationView ' + serverIP + ' ' + simulationID);
+    this.serverIP = serverIP;
+    this.simulationID = simulationID;
+    this.serverURL = 'http://' + this.serverIP + ':8080';
 
     this.state = {model: FlexLayout.Model.fromJson(jsonBaseLayout)};
-    console.info(this.state);
+    this.updateSimulationInfo();
 
     this.refLayout = React.createRef();
   }
 
-  factory = (node) => {
-    return SimulationToolsService.instance.flexlayoutNodeFactory(node);
+  async updateSimulationInfo() {
+    let simInfo = await RunningSimulationService.instance.getInfo(this.serverURL, this.simulationID);
+    this.setState({simulationInfo: simInfo});
+  }
+
+  async onButtonStartPause() {
+    let newState = this.state.simulationInfo.state === EXPERIMENT_STATE.PAUSED
+      ? EXPERIMENT_STATE.STARTED
+      : EXPERIMENT_STATE.PAUSED;
+    await RunningSimulationService.instance.updateState(this.serverURL, this.simulationID, newState);
+
+    this.updateSimulationInfo();
   }
 
   render() {
@@ -67,7 +74,13 @@ export default class SimulationView extends React.Component {
             <div className='simulation-view-control-buttons'>
               <button className='nrp-btn btn-default'><GiExitDoor className='icon' /></button>
               <button className='nrp-btn btn-default'><VscDebugRestart className='icon' /></button>
-              <button className='nrp-btn btn-default'><RiPlayFill className='icon' /></button>
+              <button className='nrp-btn btn-default' onClick={() => {
+                this.onButtonStartPause();
+              }}>
+                {this.state.simulationInfo && this.state.simulationInfo.state === EXPERIMENT_STATE.PAUSED
+                  ? <RiPlayFill className='icon' />
+                  : <RiPauseFill className='icon' />}
+              </button>
               <button className='nrp-btn btn-default'><TiMediaRecord className='icon' /></button>
             </div>
 
@@ -108,8 +121,10 @@ export default class SimulationView extends React.Component {
           })}
         </div>
         <div className='simulation-view-mainview'>
-          <FlexLayout.Layout ref={this.refLayout} model={this.state.model} factory={this.factory}
-            classNameMapper={classNameMapper}/>
+          <FlexLayout.Layout ref={this.refLayout} model={this.state.model}
+            factory={(node) => {
+              return SimulationToolsService.instance.flexlayoutNodeFactory(node);
+            }} />
         </div>
       </div>
     );

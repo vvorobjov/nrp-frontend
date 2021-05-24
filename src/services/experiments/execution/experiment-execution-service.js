@@ -200,7 +200,7 @@ class ExperimentExecutionService extends HttpService {
             return SimulationService.instance.updateState(
               serverURL,
               simulationID,
-              { state: state }
+              state
             );
           }
 

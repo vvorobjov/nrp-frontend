@@ -14,8 +14,8 @@ class App extends React.Component {
         <ErrorDialog />
         <HashRouter>
           <Switch>
-            <Route path='/experiments-overview'  component={ExperimentOverview} />
-            <Route path='/simulation-view/:simID' component={SimulationView} />
+            <Route path='/experiments-overview' component={ExperimentOverview} />
+            <Route path='/simulation-view/:serverIP/:simulationID' component={SimulationView} />
             <Route path='/' component={EntryPage} />
           </Switch>
         </HashRouter>

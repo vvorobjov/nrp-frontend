@@ -55,6 +55,13 @@ class SimulationDetails extends React.Component {
     });
   }
 
+  joinSimulation(simulationInfo) {
+    console.info(simulationInfo);
+    this.props.history.push({
+      pathname: '/simulation-view/' + simulationInfo.server + '/' + simulationInfo.runningSimulation.simulationID
+    });
+  }
+
   render() {
     return (
       <div className='simulations-details-wrapper'>
@@ -81,10 +88,7 @@ class SimulationDetails extends React.Component {
                   type="button" className='nrp-btn btn-default'
                   disabled={this.isJoinDisabled(simulation)}
                   onClick={() => {
-                    console.info(simulation);
-                    this.props.history.push({
-                      pathname: '/simulation-view/' + simulation.runningSimulation.simulationID
-                    });
+                    this.joinSimulation(simulation);
                   }}>
                   <ImEnter className='icon' />Join
                 </button>
