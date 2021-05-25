@@ -3,7 +3,7 @@ import { Toast } from 'react-bootstrap';
 
 import DialogService from '../../services/dialog-service.js';
 
-import './toast-notification.css';
+import './notification-dialog.css';
 
 class NotificationDialog extends React.Component{
   constructor(props){
@@ -27,9 +27,18 @@ class NotificationDialog extends React.Component{
   }
 
   onNotification(notification) {
-    this.setState({
-      notifications: [...this.state.notifications, notification]
+    // avoid duplicates
+    var isIn = false;
+    this.state.notifications.forEach((notif) =>{
+      if (notification.type===notif.type && notification.message===notif.message){
+        isIn = true;
+      }
     });
+    if (!isIn){
+      this.setState({
+        notifications: [...this.state.notifications, notification]
+      });
+    }
   }
 
   handleClose(index) {
@@ -44,14 +53,14 @@ class NotificationDialog extends React.Component{
     let notifications = this.state.notifications;
     return(
       <div className='toast-notification-wrapper'>
-        {!notifications.length==0?
+        {notifications.length!==0?
           <ol>
             {notifications.map((notification, index) => {
               return (
                 <li key={index} className='no-style'>
-                  <Toast onClose={(index) => this.handleClose(index)}>
-                    <Toast.Header>
-                      <h4>{notification.type}</h4>
+                  <Toast className='toast-width' onClose={(index) => this.handleClose(index)}>
+                    <Toast.Header className={notification.type==='Warning'? 'warning': 'info'} >
+                      <strong className='mr-auto'>{notification.type}</strong>
                     </Toast.Header>
                     <Toast.Body>
                       {notification.message}

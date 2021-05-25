@@ -37,14 +37,14 @@ class RemoteExperimentFilesService extends HttpService {
     return _instance;
   }
 
-  isSupported (){
+  isSupported() {
     return window.showDirectoryPicker !== undefined && window.showDirectoryPicker !== null;
   }
 
   notifyNotSupported() {
     if (!this.isSupported()){
       DialogService.instance.warningNotification({
-        message : 'The remote experiment files is not supported on ' + browserName()
+        message : 'The remote experiment file system is not supported on ' + browserName()
       });
     }
   }

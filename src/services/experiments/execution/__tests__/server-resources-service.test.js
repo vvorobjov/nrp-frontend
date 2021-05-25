@@ -7,7 +7,7 @@ import 'jest-fetch-mock';
 import MockServerconfig from '../../../../mocks/mock_server-config.json';
 
 import ServerResourcesService from '../../../../services/experiments/execution/server-resources-service';
-import DialogService from '../../../error-handler-service';
+import DialogService from '../../../dialog-service';
 
 jest.setTimeout(10000);
 

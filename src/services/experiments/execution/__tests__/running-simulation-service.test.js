@@ -8,7 +8,7 @@ import MockAvailableServers from '../../../../mocks/mock_available-servers.json'
 import MockSimulations from '../../../../mocks/mock_simulations.json';
 
 import RunningSimulationService from '../running-simulation-service.js';
-import DialogService from '../../../error-handler-service';
+import DialogService from '../../../dialog-service';
 import RoslibService from '../../../roslib-service';
 import { EXPERIMENT_STATE } from '../../experiment-constants.js';
 
