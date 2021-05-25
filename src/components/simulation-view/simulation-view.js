@@ -58,7 +58,6 @@ export default class SimulationView extends React.Component {
     console.info(simInfo);
     let experiments = await ExperimentStorageService.instance.getExperiments();
     let experimentName = experiments.find(experiment => experiment.id === simInfo.experimentID).configuration.name;
-    console.info(experimentName);
 
     this.setState({simulationInfo: simInfo, experimentName: experimentName});
   }
