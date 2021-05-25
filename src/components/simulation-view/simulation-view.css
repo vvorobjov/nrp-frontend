@@ -1,7 +1,7 @@
 .simulation-view-wrapper {
   display: grid;
   grid-template-rows: auto auto;
-  grid-template-columns: 66px auto;
+  grid-template-columns: 68px auto;
   grid-template-areas: 
       "simulation-view-header simulation-view-header"
       "simulation-view-sidebar simulation-view-mainview";
