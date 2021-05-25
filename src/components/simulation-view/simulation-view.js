@@ -10,6 +10,7 @@ import SimulationToolsService from './simulation-tools-service';
 import ExperimentStorageService from '../../services/experiments/files/experiment-storage-service';
 import RunningSimulationService from '../../services/experiments/execution/running-simulation-service';
 import { EXPERIMENT_STATE } from '../../services/experiments/experiment-constants';
+import timeDDHHMMSS from '../../utility/time-filter';
 
 import LeaveSimulationDialog from './leave-simulation-dialog';
 
@@ -58,9 +59,12 @@ export default class SimulationView extends React.Component {
   }
 
   async componentDidMount() {
+    console.info('componentDidMount');
     await this.updateSimulationInfo();
     let experiments = await ExperimentStorageService.instance.getExperiments();
+    console.info(this.state);
     let experimentInfo = experiments.find(experiment => experiment.id === this.state.simulationInfo.experimentID);
+    console.info(experimentInfo);
     let experimentName = experimentInfo.configuration.name;
     this.setState({experimentName: experimentName});
 
@@ -74,15 +78,21 @@ export default class SimulationView extends React.Component {
   }
 
   async updateSimulationInfo() {
+    console.info('updateSimulationInfo');
     let simInfo = await RunningSimulationService.instance.getInfo(this.serverURL, this.simulationID);
-    console.info(simInfo);
     this.setState({simulationInfo: simInfo});
+    console.info('updateSimulationInfo - after setState');
+    console.info(this.state);
   }
 
   async updateInternalPageInfo() {
+    if (!this.state.simulationInfo) {
+      return;
+    }
+
     let dateNow = new Date();
     let dateSimCreation = new Date(this.state.simulationInfo.creationDate);
-    console.info(dateNow - dateSimCreation);
+    this.setState({simulationTimingRealtime: timeDDHHMMSS((dateNow - dateSimCreation) / 1000)});
   }
 
   async onButtonStartPause() {
@@ -98,14 +108,25 @@ export default class SimulationView extends React.Component {
     this.setState({showLeaveDialog: show});
   }
 
+  leaveSimulation() {
+    this.props.history.push({
+      pathname: '/experiments-overview'
+    });
+  }
+
   render() {
     return (
       <div>
         <LeaveSimulationDialog visible={this.state.showLeaveDialog}
-          setVisibility={this.showLeaveDialog.bind(this)}
-          stopSimulation={() => {
-            RunningSimulationService.instance.updateState(this.serverURL, this.simulationID, EXPERIMENT_STATE.STOPPED);
-          }}/>
+          setVisibility={(visible) => this.showLeaveDialog(visible)}
+          stopSimulation={async () => {
+            await RunningSimulationService.instance.updateState(this.serverURL, this.simulationID,
+              EXPERIMENT_STATE.STOPPED);
+            this.leaveSimulation();
+          }}
+          leaveSimulation={() => {
+            this.leaveSimulation();
+          }} />
         <div className='simulation-view-wrapper'>
           <div className='simulation-view-header'>
             <div className='simulation-view-controls'>
@@ -128,7 +149,7 @@ export default class SimulationView extends React.Component {
                 <div>Simulation time:</div>
                 <div>{'00 00:00:00'}</div>
                 <div>Real time:</div>
-                <div>{'11 11:11:11'}</div>
+                <div>{this.state.simulationTimingRealtime}</div>
                 <div>Real timeout:</div>
                 <div>{'22 22:22:22'}</div>
               </div>

@@ -16,10 +16,10 @@ class LeaveSimulationDialog extends React.Component{
             <Modal.Body>Would you like to leave or stop the simulation?</Modal.Body>
             <Modal.Footer>
               <div>
-                <Button variant="light">
+                <Button variant="light" onClick={() => this.props.leaveSimulation()}>
                   Leave
                 </Button>
-                <Button variant="danger" onClick={this.props.stopSimulation()}>
+                <Button variant="danger" onClick={() => this.props.stopSimulation()}>
                   Stop
                 </Button>
               </div>
