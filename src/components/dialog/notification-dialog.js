@@ -58,7 +58,8 @@ class NotificationDialog extends React.Component{
             {notifications.map((notification, index) => {
               return (
                 <li key={index} className='no-style'>
-                  <Toast className='toast-width' onClose={(index) => this.handleClose(index)}>
+                  <Toast className='toast-width' onClose={(index) => this.handleClose(index)}
+                    delay={notification.type==='Warning'? 60000: 10000} autohide>
                     <Toast.Header className={notification.type==='Warning'? 'warning': 'info'} >
                       <strong className='mr-auto'>{notification.type}</strong>
                     </Toast.Header>
