@@ -62,7 +62,17 @@ class ExperimentExecutionService extends HttpService {
 
     //TODO: placeholder, register actual progress callback later
     let progressCallback = (msg) => {
-      console.info(msg);
+      if (msg && msg.progress) {
+        if (msg.progress.done) {
+          console.info({ main: 'Simulation initialized.' });
+        }
+        else {
+          console.info({
+            main: msg.progress.task,
+            sub: msg.progress.subtask
+          });
+        }
+      }
     };
 
     let launchOnNextServer = async () => {
@@ -154,7 +164,7 @@ class ExperimentExecutionService extends HttpService {
       progressCallback({ main: 'Initialize Simulation...' });
 
       // register for messages during initialization
-      SimulationService.instance.registerForRosStatusInformation(
+      SimulationService.instance.addRosStatusInfoCallback(
         serverConfiguration.rosbridge.websocket,
         progressCallback
       );

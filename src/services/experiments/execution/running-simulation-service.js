@@ -8,7 +8,7 @@ import config from '../../../config.json';
 let _instance = null;
 const SINGLETON_ENFORCER = Symbol();
 
-let rosStatusListeners = new Map();
+let rosStatusTopics = new Map();
 const INTERVAL_CHECK_SIMULATION_READY = 1000;
 
 /**
@@ -101,42 +101,53 @@ class SimulationService extends HttpService {
    * @param {string} rosbridgeWebsocket - ROS websocket URL
    * @param {*} setProgressMessage - callback to be called with new status info
    */
-  registerForRosStatusInformation(rosbridgeWebsocket, setProgressMessage) {
-    let destroyCurrentConnection = () => {
-      if (rosStatusListeners.has(rosbridgeWebsocket)) {
-        let statusListener = rosStatusListeners.get(rosbridgeWebsocket);
-        // remove the progress bar callback only, unsubscribe terminates the rosbridge
-        // connection for any other subscribers on the status topic
-        statusListener.removeAllListeners();
-        rosStatusListeners.delete(rosbridgeWebsocket);
-      }
-    };
-
-    destroyCurrentConnection();
+  startRosStatusInformation(rosbridgeWebsocket) {
+    this.stopRosStatusInformation(rosbridgeWebsocket);
 
     let rosConnection = RoslibService.instance.getConnection(rosbridgeWebsocket);
-    let statusListener = RoslibService.instance.createStringTopic(
+    let statusTopic = RoslibService.instance.createStringTopic(
       rosConnection,
       config['ros-topics'].status
     );
-    rosStatusListeners.set(rosbridgeWebsocket, statusListener);
+    rosStatusTopics.set(rosbridgeWebsocket, statusTopic);
 
-    statusListener.subscribe((data) => {
-      let message = JSON.parse(data.data);
-      if (message && message.progress) {
-        if (message.progress.done) {
-          destroyCurrentConnection();
-          setProgressMessage({ main: 'Simulation initialized.' });
-        }
-        else {
-          setProgressMessage({
-            main: message.progress.task,
-            sub: message.progress.subtask
-          });
-        }
+    this.addRosStatusInfoCallback(rosbridgeWebsocket, (msg) => {
+      if (msg.state && msg.state === EXPERIMENT_STATE.STOPPED) {
+        this.stopRosStatusInformation(rosbridgeWebsocket);
       }
     });
   };
+
+  stopRosStatusInformation(rosbridgeWebsocket) {
+    let statusTopic = rosStatusTopics.get(rosbridgeWebsocket);
+    if (!statusTopic) {
+      return;
+    }
+
+    // remove the progress bar callback only, unsubscribe terminates the rosbridge
+    // connection for any other subscribers on the status topic
+    statusTopic.unsubscribe(); // fully disconnects rosbridge
+    statusTopic.removeAllListeners();
+    rosStatusTopics.delete(rosbridgeWebsocket);
+  }
+
+  startRosCleErrorInfo(rosbridgeWebsocket) {
+    //TODO
+  }
+
+  addRosStatusInfoCallback(rosbridgeWebsocket, infoCallback) {
+    if (!rosStatusTopics.has(rosbridgeWebsocket)) {
+      this.startRosStatusInformation(rosbridgeWebsocket);
+    }
+
+    let statusTopic = rosStatusTopics.get(rosbridgeWebsocket);
+    statusTopic.subscribe((data) => {
+      let message = JSON.parse(data.data);
+      if (message) {
+        infoCallback(message);
+      }
+    });
+  }
 
   /**
    * Get the state the simulation is currently in.

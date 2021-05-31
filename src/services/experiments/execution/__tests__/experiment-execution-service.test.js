@@ -137,7 +137,7 @@ test('respects settings for specific dev server to launch and single brain proce
 
 test('can launch an experiment given a specific server + configuration', async () => {
   jest.spyOn(ExperimentExecutionService.instance, 'httpRequestPOST').mockImplementation();
-  jest.spyOn(RunningSimulationService.instance, 'registerForRosStatusInformation').mockImplementation();
+  jest.spyOn(RunningSimulationService.instance, 'addRosStatusInfoCallback').mockImplementation();
   let simulationReadyResult = Promise.resolve(MockSimulations[0]);
   jest.spyOn(RunningSimulationService.instance, 'simulationReady').mockImplementation(() => {
     return simulationReadyResult;

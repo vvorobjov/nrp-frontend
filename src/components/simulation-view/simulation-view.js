@@ -7,6 +7,7 @@ import { TiMediaRecord } from 'react-icons/ti';
 import { VscDebugRestart } from 'react-icons/vsc';
 
 import SimulationToolsService from './simulation-tools-service';
+import ServerResourcesService from '../../services/experiments/execution/server-resources-service.js';
 import ExperimentStorageService from '../../services/experiments/files/experiment-storage-service';
 import RunningSimulationService from '../../services/experiments/execution/running-simulation-service';
 import { EXPERIMENT_STATE } from '../../services/experiments/experiment-constants';
@@ -51,7 +52,7 @@ export default class SimulationView extends React.Component {
     this.serverURL = 'http://' + this.serverIP + ':8080'; // this should probably be part of some config
 
     this.state = {
-      model: FlexLayout.Model.fromJson(jsonBaseLayout),
+      modelFlexLayout: FlexLayout.Model.fromJson(jsonBaseLayout),
       showLeaveDialog: false
     };
 
@@ -59,40 +60,41 @@ export default class SimulationView extends React.Component {
   }
 
   async componentDidMount() {
-    console.info('componentDidMount');
     await this.updateSimulationInfo();
     let experiments = await ExperimentStorageService.instance.getExperiments();
-    console.info(this.state);
-    let experimentInfo = experiments.find(experiment => experiment.id === this.state.simulationInfo.experimentID);
-    console.info(experimentInfo);
-    let experimentName = experimentInfo.configuration.name;
+    this.experimentInfo = experiments.find(experiment => experiment.id === this.state.simulationInfo.experimentID);
+    console.info('SimulationView - experimentInfo');
+    console.info(this.experimentInfo);
+
+    let experimentName = this.experimentInfo.configuration.name;
     this.setState({experimentName: experimentName});
 
-    this.intervalUpdateInternalPageInfo = setInterval(() => {
-      this.updateInternalPageInfo();
-    }, SimulationView.CONSTANTS.INTERVAL_INTERNAL_UPDATE_MS);
-  }
-
-  componentWillUnmount() {
-    this.intervalUpdateInternalPageInfo && clearInterval(this.intervalUpdateInternalPageInfo);
+    let server = this.experimentInfo.joinableServers.find(
+      server => server.runningSimulation.creationUniqueID === this.state.simulationInfo.creationUniqueID);
+    this.serverConfig = await ServerResourcesService.instance.getServerConfig(server.server);
+    console.info('this.serverConfig');
+    console.info(this.serverConfig);
+    RunningSimulationService.instance.addRosStatusInfoCallback(
+      this.serverConfig.rosbridge.websocket,
+      (data) => {
+        this.onStatusInfoROS(data);
+      }
+    );
   }
 
   async updateSimulationInfo() {
-    console.info('updateSimulationInfo');
     let simInfo = await RunningSimulationService.instance.getInfo(this.serverURL, this.simulationID);
     this.setState({simulationInfo: simInfo});
-    console.info('updateSimulationInfo - after setState');
-    console.info(this.state);
+    console.info('SimulationView.updateSimulationInfo - simulationInfo');
+    console.info(this.state.simulationInfo);
   }
 
-  async updateInternalPageInfo() {
-    if (!this.state.simulationInfo) {
-      return;
-    }
-
-    let dateNow = new Date();
-    let dateSimCreation = new Date(this.state.simulationInfo.creationDate);
-    this.setState({simulationTimingRealtime: timeDDHHMMSS((dateNow - dateSimCreation) / 1000)});
+  onStatusInfoROS(message) {
+    this.setState({
+      timingRealtime: timeDDHHMMSS(message.realTime),
+      timingSimulationTime: timeDDHHMMSS(message.simulationTime),
+      timingTimeout: timeDDHHMMSS(message.timeout)
+    });
   }
 
   async onButtonStartPause() {
@@ -102,6 +104,10 @@ export default class SimulationView extends React.Component {
     await RunningSimulationService.instance.updateState(this.serverURL, this.simulationID, newState);
 
     this.updateSimulationInfo();
+  }
+
+  onButtonLayout() {
+    console.info(this.state.modelFlexLayout.toJson());
   }
 
   showLeaveDialog(show) {
@@ -134,7 +140,7 @@ export default class SimulationView extends React.Component {
                 <button className='nrp-btn btn-default' onClick={() => this.showLeaveDialog(true)}>
                   <GiExitDoor className='icon' />
                 </button>
-                <button className='nrp-btn btn-default'><VscDebugRestart className='icon' /></button>
+                <button disabled={true} className='nrp-btn btn-default'><VscDebugRestart className='icon' /></button>
                 <button className='nrp-btn btn-default' onClick={() => {
                   this.onButtonStartPause();
                 }}>
@@ -142,21 +148,23 @@ export default class SimulationView extends React.Component {
                     ? <RiPlayFill className='icon' />
                     : <RiPauseFill className='icon' />}
                 </button>
-                <button className='nrp-btn btn-default'><TiMediaRecord className='icon' /></button>
+                <button disabled={true} className='nrp-btn btn-default'><TiMediaRecord className='icon' /></button>
               </div>
 
               <div className='simulation-view-time-info'>
                 <div>Simulation time:</div>
-                <div>{'00 00:00:00'}</div>
+                <div>{this.state.timingSimulationTime}</div>
                 <div>Real time:</div>
-                <div>{this.state.simulationTimingRealtime}</div>
+                <div>{this.state.timingRealtime}</div>
                 <div>Real timeout:</div>
-                <div>{'22 22:22:22'}</div>
+                <div>{this.state.timingTimeout}</div>
               </div>
             </div>
 
             <div className='simulation-view-experiment-title'>{this.state.experimentName}</div>
-            <button className='nrp-btn btn-default'><RiLayout6Line className='icon' /></button>
+            <button className='nrp-btn btn-default' onClick={() => {
+              this.onButtonLayout();
+            }}><RiLayout6Line className='icon' /></button>
           </div>
           <div className='simulation-view-sidebar'>
             {Array.from(SimulationToolsService.instance.tools.values()).map(tool => {
@@ -182,7 +190,7 @@ export default class SimulationView extends React.Component {
             })}
           </div>
           <div className='simulation-view-mainview'>
-            <FlexLayout.Layout ref={this.refLayout} model={this.state.model}
+            <FlexLayout.Layout ref={this.refLayout} model={this.state.modelFlexLayout}
               factory={(node) => {
                 return SimulationToolsService.instance.flexlayoutNodeFactory(node);
               }} />
