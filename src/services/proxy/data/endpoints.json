@@ -9,6 +9,9 @@
         "experiments": {
             "url": "/experiments"
         },
+        "models": {
+            "url": "/models"
+        },
         "identity": {
             "url": "/identity",
             "me": {
@@ -37,6 +40,12 @@
             },
             "scanStorage": {
                 "url": "/storage/scanStorage"
+            },
+            "allCustomModels": {
+                "url": "/storage/models/all"
+            },
+            "userModels": {
+                "url": "/storage/models/user"
             }
         }
     }
