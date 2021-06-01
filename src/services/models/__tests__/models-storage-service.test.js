@@ -4,7 +4,7 @@
 import '@testing-library/jest-dom';
 import 'jest-fetch-mock';
 
-import ModelsStorageService from '../models-storage-service'
+import ModelsStorageService from '../models-storage-service';
 
 test('makes sure that invoking the constructor fails with the right message', () => {
   expect(() => {

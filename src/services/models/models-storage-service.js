@@ -129,7 +129,7 @@ class ModelsStorageService extends HttpService {
     * @return the response of the request
     */
   async setCustomModel(modelType, modelName, fileContent) {
-    
+
     try {
       this.verifyModelType(modelType);
       const setCustomModelURL = `${storageModelsURL}/${modelType}/${modelName}`;

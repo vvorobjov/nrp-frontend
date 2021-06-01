@@ -81,6 +81,6 @@ export const handlers = [
   rest.delete(`${config.api.proxy.url}${endpoints.proxy.storage.userModels.url}/:modelType/:modelName`,
     (req, res, ctx) => {
       return res(ctx.json(MockCustomModels[1]));
-    }),
+    })
 
 ];
