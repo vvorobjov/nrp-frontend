@@ -7,8 +7,19 @@ import ErrorHandlerService from '../../error-handler-service.js';
 const importExperimentURL = `${config.api.proxy.url}${endpoints.proxy.storage.importExperiment.url}`;
 const scanStorageURL = `${config.api.proxy.url}${endpoints.proxy.storage.scanStorage.url}`;
 
+/**
+ * The Import Experiment Service performs the requests (Extract),
+ * processes data such as zip or folder (Transform), 
+ * and passes them to the Import Experiment Component (Load).
+ * Errors are handled by communicating witht he Error Handler Service.
+ */
+
 let _instance = null;
 const SINGLETON_ENFORCER = Symbol();
+
+/**
+ * Non-default options (content type) for the POST request
+ */
 const options = {
   mode: 'cors', // no-cors, *cors, same-origin
   cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
