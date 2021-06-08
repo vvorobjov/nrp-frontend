@@ -30,14 +30,15 @@
     "web-vitals": "^0.2.4"
   },
   "devDependencies": {
-    "jest-fetch-mock": "^3.0.3",
-    "jest-localstorage-mock": "2.4.6",
-    "msw": "^0.23.0",
     "@testing-library/jest-dom": "^5.11.5",
     "@testing-library/react": "^11.1.0",
     "@testing-library/user-event": "^12.1.10",
     "@typescript-eslint/parser": "4.14.2",
     "eslint": "7.19.0",
+    "jest-fetch-mock": "^3.0.3",
+    "jest-localstorage-mock": "2.4.6",
+    "msw": "^0.23.0",
+    "node": "16.1.0",
     "ts-node": "^9.1.1",
     "typescript": "4.1.3"
   },
