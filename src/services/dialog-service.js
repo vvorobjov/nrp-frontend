@@ -12,7 +12,7 @@ const SINGLETON_ENFORCER = Symbol();
  *  - data: related content | optional
  *  - stack: call stack | optional
  */
-class ErrorHandlerService extends EventEmitter {
+class DialogService extends EventEmitter {
   constructor(enforcer) {
     super();
     if (enforcer !== SINGLETON_ENFORCER) {
@@ -22,7 +22,7 @@ class ErrorHandlerService extends EventEmitter {
 
   static get instance() {
     if (_instance == null) {
-      _instance = new ErrorHandlerService(SINGLETON_ENFORCER);
+      _instance = new DialogService(SINGLETON_ENFORCER);
     }
 
     return _instance;
@@ -31,28 +31,37 @@ class ErrorHandlerService extends EventEmitter {
   // HTTP request error
   networkError(error) {
     error.type = 'Network Error';
-    this.emit(ErrorHandlerService.EVENTS.ERROR, error);
+    this.emit(DialogService.EVENTS.ERROR, error);
   }
 
   // Handling data error
   dataError(error){
     error.type = 'Data Error';
-    this.emit(ErrorHandlerService.EVENTS.ERROR, error);
+    this.emit(DialogService.EVENTS.ERROR, error);
   }
 
-  startSimulationError(error) {
-    error.type = 'Start Simulation Error';
-    this.emit(ErrorHandlerService.EVENTS.ERROR, error);
+  simulationError(error) {
+    error.type = 'Simulation Error';
+    this.emit(DialogService.EVENTS.ERROR, error);
   }
 
-  updateSimulationError(error) {
-    error.type = 'Update Simulation Error';
-    this.emit(ErrorHandlerService.EVENTS.ERROR, error);
+  progressNotification(notification) {
+    notification.type = 'Progress Status';
+    this.emit(DialogService.EVENTS.NOTIFICATION, notification);
+  }
+
+  warningNotification(notification) {
+    notification.type = 'Warning';
+    this.emit(DialogService.EVENTS.NOTIFICATION, notification);
   }
 }
 
-ErrorHandlerService.EVENTS = Object.freeze({
+DialogService.EVENTS = Object.freeze({
   ERROR: 'ERROR'
 });
 
-export default ErrorHandlerService;
+DialogService.EVENTS = Object.freeze({
+  NOTIFICATION: 'NOTIFICATION'
+});
+
+export default DialogService;

@@ -1,4 +1,4 @@
-import ErrorHandlerService from '../../error-handler-service.js';
+import DialogService from '../../dialog-service.js';
 import RoslibService from '../../roslib-service.js';
 import { HttpService } from '../../http-service.js';
 import { EXPERIMENT_STATE } from '../experiment-constants.js';
@@ -44,7 +44,7 @@ class SimulationService extends HttpService {
       cachedConfigFiles = response.resources;
     }
     catch (error) {
-      ErrorHandlerService.instance.networkError(error);
+      DialogService.instance.networkError(error);
     }
 
     return cachedConfigFiles;
@@ -162,7 +162,7 @@ class SimulationService extends HttpService {
       return response;
     }
     catch (error) {
-      ErrorHandlerService.instance.networkError(error);
+      DialogService.instance.networkError(error);
     }
   }
 
@@ -179,7 +179,7 @@ class SimulationService extends HttpService {
       return response;
     }
     catch (error) {
-      ErrorHandlerService.instance.updateSimulationError(error);
+      DialogService.instance.simulationError(error);
     }
   }
 
@@ -196,7 +196,7 @@ class SimulationService extends HttpService {
       return response;
     }
     catch (error) {
-      ErrorHandlerService.instance.networkError(error);
+      DialogService.instance.networkError(error);
     }
   }
 }

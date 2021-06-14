@@ -1,0 +1,20 @@
+[
+    {
+        "name": "custom_hbp_clearpath_robotics_husky_a200",
+        "path": "robots/husky_model.zip",
+        "ownerName": "nrpuser",
+        "type": "robots",
+        "fileName": "husky_model.zip"
+    },
+    {
+        "name": "deleted_hbp_clearpath_robotics_husky_a200",
+        "ownerName": "nrpuser",
+        "type": "robots"
+    },
+    {
+        "name": "created_hbp_clearpath_robotics_husky_a200",
+        "ownerName": "nrpuser",
+        "type": "robots"
+    }
+
+]

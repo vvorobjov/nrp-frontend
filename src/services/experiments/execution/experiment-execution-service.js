@@ -3,7 +3,7 @@ import _ from 'lodash';
 //import NrpAnalyticsService from '../../nrp-analytics-service.js';
 import ServerResourcesService from './server-resources-service.js';
 import SimulationService from './running-simulation-service.js';
-import ErrorHandlerService from '../../error-handler-service';
+import DialogService from '../../dialog-service';
 import { HttpService } from '../../http-service.js';
 import { EXPERIMENT_STATE } from '../experiment-constants.js';
 
@@ -64,12 +64,12 @@ class ExperimentExecutionService extends HttpService {
     let progressCallback = (msg) => {
       if (msg && msg.progress) {
         if (msg.progress.done) {
-          console.info({ main: 'Simulation initialized.' });
+          DialogService.instance.progressNotification({message:'The experiment is loading'});
         }
         else {
-          console.info({
-            main: msg.progress.task,
-            sub: msg.progress.subtask
+          DialogService.instance.progressNotification({
+            message: msg.progress.task,
+            details: msg.progress.subtask
           });
         }
       }
@@ -100,7 +100,7 @@ class ExperimentExecutionService extends HttpService {
         progressCallback
       ).catch((failure) => {
         if (failure.error) {
-          ErrorHandlerService.instance.startSimulationError(failure.error);
+          DialogService.instance.simulationError(failure.error);
         }
         fatalErrorOccurred = fatalErrorOccurred || failure.isFatal;
 

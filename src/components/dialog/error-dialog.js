@@ -1,7 +1,7 @@
 import React from 'react';
 import { Modal, Button } from 'react-bootstrap';
 
-import ErrorHandlerService from '../../services/error-handler-service.js';
+import DialogService from '../../services/dialog-service.js';
 
 import './error-dialog.css';
 
@@ -15,10 +15,16 @@ class ErrorDialog extends React.Component{
   }
 
   async componentDidMount() {
-    ErrorHandlerService.instance.addListener(
-      ErrorHandlerService.EVENTS.ERROR, (error) => {
-        this.onError(error);
-      });
+    this.onError = this.onError.bind(this);
+    DialogService.instance.addListener(
+      DialogService.EVENTS.ERROR, this.onError
+    );
+  }
+
+  componentWillUnmount() {
+    DialogService.instance.removeListener(
+      DialogService.EVENTS.ERROR, this.onError
+    );
   }
 
   onError(error) {
@@ -45,7 +51,7 @@ class ErrorDialog extends React.Component{
     return (
       <div>
         {error?
-          <div className="modal-dialog-wrapper">
+          <div className="error-dialog-wrapper">
             <Modal.Dialog>
               <Modal.Header className="modal-header">
                 <h4>{error.type}</h4>

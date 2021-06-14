@@ -7,7 +7,7 @@ import 'jest-fetch-mock';
 import MockServerconfig from '../../../../mocks/mock_server-config.json';
 
 import ServerResourcesService from '../../../../services/experiments/execution/server-resources-service';
-import ErrorHandlerService from '../../../error-handler-service';
+import DialogService from '../../../dialog-service';
 
 jest.setTimeout(10000);
 
@@ -67,9 +67,9 @@ test('can get a server config', async () => {
   jest.spyOn(ServerResourcesService.instance, 'httpRequestGET').mockImplementation(() => {
     return Promise.reject();
   });
-  jest.spyOn(ErrorHandlerService.instance, 'networkError').mockImplementation();
+  jest.spyOn(DialogService.instance, 'networkError').mockImplementation();
   config = await ServerResourcesService.instance.getServerConfig('test-server-id');
-  expect(ErrorHandlerService.instance.networkError).toHaveBeenCalled();
+  expect(DialogService.instance.networkError).toHaveBeenCalled();
 });
 
 test('should stop polling updates when window is unloaded', async () => {

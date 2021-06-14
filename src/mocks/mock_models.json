@@ -1,0 +1,9 @@
+[
+    {
+        "name": "hbp_clearpath_robotics_husky_a200",
+        "path": "robots/husky_model.zip",
+        "ownerName": "nrpuser",
+        "type": "robots",
+        "fileName": "husky_model.zip"
+    }
+]

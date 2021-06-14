@@ -3,7 +3,7 @@ import { EXPERIMENT_RIGHTS } from '../experiment-constants';
 
 import endpoints from '../../proxy/data/endpoints.json';
 import config from '../../../config.json';
-import ErrorHandlerService from '../../error-handler-service.js';
+import DialogService from '../../dialog-service.js';
 
 const storageURL = `${config.api.proxy.url}${endpoints.proxy.storage.url}`;
 const storageExperimentsURL = `${config.api.proxy.url}${endpoints.proxy.storage.experiments.url}`;
@@ -79,7 +79,7 @@ class ExperimentStorageService extends HttpService {
         this.emit(ExperimentStorageService.EVENTS.UPDATE_EXPERIMENTS, this.experiments);
       }
       catch (error) {
-        ErrorHandlerService.instance.networkError(error);
+        DialogService.instance.networkError(error);
       }
     }
 
