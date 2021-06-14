@@ -1,7 +1,7 @@
 
 import { EventEmitter } from 'events';
 
-import AuthenticationService from './authentication-service.js';
+import AuthenticationService from './authentication-service-v2.js';
 
 /**
  * Base class that performs http requests with default request options.
@@ -55,7 +55,9 @@ export class HttpService extends EventEmitter {
     if (!response.ok) {
       if (response.status === 477) {
         const responseText = await response.text();
-        AuthenticationService.instance.openAuthenticationPage(responseText);
+        console.info('auth error');
+        console.info(responseText);
+        AuthenticationService.instance.openAuthenticationPage(/*responseText*/);
       }
       else if (response.status === 478) {
         //TODO: redirect to maintenance page
