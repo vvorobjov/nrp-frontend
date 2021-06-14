@@ -99,7 +99,6 @@ export default class ExperimentFilesViewer extends React.Component {
   render() {
     let selectedExperimentFiles = this.state.selectedExperiment ?
       RemoteExperimentFilesService.instance.mapFileInfos.get(this.state.selectedExperiment.uuid) : undefined;
-
     return (
       <div>
         {RemoteExperimentFilesService.instance.isSupported() ?

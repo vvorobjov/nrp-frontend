@@ -3,7 +3,7 @@ import JSZip from 'jszip';
 
 import endpoints from '../../proxy/data/endpoints.json';
 import config from '../../../config.json';
-import ErrorHandlerService from '../../error-handler-service.js';
+import DialogService from '../../dialog-service.js';
 const importExperimentURL = `${config.api.proxy.url}${endpoints.proxy.storage.importExperiment.url}`;
 const scanStorageURL = `${config.api.proxy.url}${endpoints.proxy.storage.scanStorage.url}`;
 
@@ -69,7 +69,7 @@ export default class ImportExperimentService extends HttpService {
   async scanStorage() {
     return this.httpRequestPOST(scanStorageURL)
       .then(response => this.getScanStorageResponse(response))
-      .catch(error => ErrorHandlerService.instance.networkError(error));
+      .catch(error => DialogService.instance.networkError(error));
   }
 
   async zipExperimentFolder(event) {
@@ -106,7 +106,7 @@ export default class ImportExperimentService extends HttpService {
             )
           )
           .catch(error => {
-            ErrorHandlerService.instance.dataError(error);
+            DialogService.instance.dataError(error);
             return Promise.reject(error);
           })
       );
@@ -115,7 +115,7 @@ export default class ImportExperimentService extends HttpService {
     return Promise.all(promises)
       .then(() => zip.generateAsync({ type: 'blob' }))
       .catch(error => {
-        ErrorHandlerService.instance.dataError(error);
+        DialogService.instance.dataError(error);
         return Promise.reject(error);
       });
   }
@@ -124,7 +124,7 @@ export default class ImportExperimentService extends HttpService {
     return this.zipExperimentFolder(event).then(async zipContent => {
       return this.httpRequestPOST(importExperimentURL, zipContent, options)
         .then(response => response.json())
-        .catch(error => ErrorHandlerService.instance.networkError(error)
+        .catch(error => DialogService.instance.networkError(error)
         );
     });
   }
@@ -151,7 +151,7 @@ export default class ImportExperimentService extends HttpService {
         zipContents.map(zipContent =>
           this.httpRequestPOST(importExperimentURL, zipContent, options)
             .catch(error => {
-              ErrorHandlerService.instance.networkError(error);
+              DialogService.instance.networkError(error);
               return Promise.reject(error);
             })
         )

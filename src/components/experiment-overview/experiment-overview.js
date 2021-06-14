@@ -6,6 +6,7 @@ import ExperimentStorageService from '../../services/experiments/files/experimen
 import PublicExperimentsService from '../../services/experiments/files/public-experiments-service.js';
 import ExperimentServerService from '../../services/experiments/execution/server-resources-service.js';
 import ExperimentExecutionService from '../../services/experiments/execution/experiment-execution-service.js';
+import RemoteExperimentFilesService from '../../services/experiments/files/remote-experiment-files-service.js';
 
 import ImportExperimentButtons from '../experiment-list/import-experiment-buttons.js';
 import ExperimentList from '../experiment-list/experiment-list.js';
@@ -109,6 +110,13 @@ export default class ExperimentOverview extends React.Component {
     });
   }
 
+  onSelectTab(index, lastIndex){
+    this.setState({selectedTabIndex: index});
+    if (index===3 && lastIndex!==3){
+      RemoteExperimentFilesService.instance.notifyNotSupported();
+    }
+  }
+
   render() {
     return (
       <div className='experiment-overview-wrapper'>
@@ -118,7 +126,7 @@ export default class ExperimentOverview extends React.Component {
 
         <Tabs className="tabs-view" id="tabs-experiment-lists"
           selectedIndex={this.state.selectedTabIndex}
-          onSelect={(index) => this.setState({ selectedTabIndex: index })} >
+          onSelect={(index, lastIndex) => this.onSelectTab(index, lastIndex)} >
           <TabList>
             <Tab>My Experiments</Tab>
             <Tab>New Experiment</Tab>
