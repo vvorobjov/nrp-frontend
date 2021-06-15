@@ -13,6 +13,7 @@ class AuthenticationService {
     }
 
     this.CLIENT_ID = config.authV2.clientId;
+    this.CLIENT_SECRET = config.authV2.secret;
     this.STORAGE_KEY = `tokens-${this.CLIENT_ID}@https://iam.ebrains.eu/auth/realms/hbp/protocol/openid-connect/auth`;
 
     this.redirectToAuthPage = true;
@@ -74,13 +75,7 @@ class AuthenticationService {
     let authCode = authCodeMatch[1];
     console.info({sessionState: sessionState, authCode: authCode});
 
-    let urlRequestAccessToken = 'https://iam.ebrains.eu/auth/realms/hbp/protocol/openid-connect/token?'
-      + 'grant_type=authorization_code'
-      + '&client_id=' + this.CLIENT_ID
-      + '&redirect_uri=' + window.location.href
-      + '&code=' + authCode
-      + '&client_secret=' + 'some-secret';
-    let responseAccessTokenRequest = this.httpRequestPOST(urlRequestAccessToken);
+    this.getAccessToken(authCode);
 
     /*localStorage.setItem(
       this.STORAGE_KEY,
@@ -89,6 +84,47 @@ class AuthenticationService {
     );*/
     //const pathMinusAccessToken = path.substr(0, path.indexOf('?'));
     //window.location.href = pathMinusAccessToken;
+  }
+
+  async getAccessToken(authenticationCode) {
+    console.info(authenticationCode);
+    /*let urlRequestAccessToken = 'https://iam.ebrains.eu/auth/realms/hbp/protocol/openid-connect/token?'
+      + 'grant_type=authorization_code'
+      + '&client_id=' + this.CLIENT_ID
+      + '&redirect_uri=' + window.location.origin
+      + '&code=' + authenticationCode
+      + '&client_secret=' + this.CLIENT_SECRET;*/
+    let urlRequestAccessToken = 'https://iam.ebrains.eu/auth/realms/hbp/protocol/openid-connect/token';
+
+    let options = {
+      method: 'POST',
+      mode: 'cors', // no-cors, *cors, same-origin
+      cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
+      credentials: 'same-origin', // include, *same-origin, omit
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        //'Access-Control-Allow-Origin': '*',
+        Referer: window.location.origin
+      },
+      // redirect: manual, *follow, error
+      redirect: 'follow',
+      // referrerPolicy: no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin,
+      // strict-origin, strict-origin-when-cross-origin, unsafe-url
+      referrerPolicy: 'no-referrer'
+    };
+
+    options.body = JSON.stringify({
+      grant_type: 'authorization_code',
+      client_id: this.CLIENT_ID,
+      redirect_uri: window.location.origin,
+      client_secret: this.CLIENT_SECRET,
+      code: authenticationCode
+    });
+
+    const responseAccessTokenRequest = await fetch(urlRequestAccessToken, options);
+    console.info(responseAccessTokenRequest);
+    /*const responseJSON = await responseAccessTokenRequest.json();
+    console.info(responseJSON);*/
   }
 
   /**
