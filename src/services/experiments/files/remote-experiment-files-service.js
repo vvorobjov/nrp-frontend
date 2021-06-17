@@ -1,6 +1,8 @@
 import { HttpService } from '../../http-service.js';
 import ExperimentStorageService from './experiment-storage-service';
 import getMimeByExtension from '../../../utility/mime-type';
+import DialogService from '../../dialog-service';
+import browserName from '../../../utility/browser-name';
 
 let _instance = null;
 const SINGLETON_ENFORCER = Symbol();
@@ -37,6 +39,14 @@ class RemoteExperimentFilesService extends HttpService {
 
   isSupported() {
     return window.showDirectoryPicker !== undefined && window.showDirectoryPicker !== null;
+  }
+
+  notifyNotSupported() {
+    if (!this.isSupported()){
+      DialogService.instance.warningNotification({
+        message : 'The remote experiment file system is not supported on ' + browserName()
+      });
+    }
   }
 
   toggleAutoSync() {

@@ -1,4 +1,4 @@
-import ErrorHandlerService from '../../error-handler-service.js';
+import DialogService from '../../dialog-service.js';
 import { HttpService } from '../../http-service.js';
 
 import endpoints from '../../proxy/data/endpoints.json';
@@ -79,7 +79,7 @@ class ServerResourcesService extends HttpService {
       .then(async (response) => {
         return await response.json();
       })
-      .catch(ErrorHandlerService.instance.networkError);
+      .catch(DialogService.instance.networkError);
   }
 }
 

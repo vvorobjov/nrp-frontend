@@ -1,0 +1,25 @@
+.toast-notification-wrapper{
+  position: fixed;
+  bottom: 0;
+  right: 0;
+  z-index: 498;
+}
+
+.no-style{
+  list-style-type: none;
+}
+
+.toast-width{
+  max-width: none;
+  width: 350px;
+}
+
+.warning{
+  background-color:rgb(248, 248, 122);
+  color:rgb(126, 126, 45);
+}
+
+.info{
+  background-color: rgb(143, 143, 250);
+  color: rgb(48, 48, 134)
+}
