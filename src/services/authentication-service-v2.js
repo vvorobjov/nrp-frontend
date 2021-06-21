@@ -100,13 +100,6 @@ class AuthenticationService {
       referrerPolicy: 'no-referrer'
     };
 
-    /*options.body = JSON.stringify({
-      grant_type: 'authorization_code',
-      client_id: this.CLIENT_ID,
-      redirect_uri: window.location.origin,
-      client_secret: this.CLIENT_SECRET,
-      code: authorizationCode
-    });*/
     let formDetails = {
       grant_type: 'authorization_code',
       client_id: this.CLIENT_ID,
@@ -120,10 +113,9 @@ class AuthenticationService {
     options.body = formBody;
 
     const responseAccessTokenRequest = await fetch(urlRequestAccessToken, options);
+    const responseAccessTokenRequestJSON = await responseAccessTokenRequest.json();
     console.info(responseAccessTokenRequest);
-    console.info(await responseAccessTokenRequest.json());
-    /*const responseJSON = await responseAccessTokenRequest.json();
-    console.info(responseJSON);*/
+    console.info(responseAccessTokenRequestJSON);
 
     /*localStorage.setItem(
       this.STORAGE_KEY,
