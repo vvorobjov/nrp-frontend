@@ -62,10 +62,10 @@ class AuthenticationService {
    */
   checkForSessionStateAndAuthCode() {
     const path = window.location.href;
-    const sessionStateMatch = /&session_state=([^&]*)/.exec(path);
-    const authCodeMatch = /&code=([^&]*)/.exec(path);
+    const sessionStateMatch = /session_state=([^&]*)/.exec(path);
+    const authCodeMatch = /code=([^&]*)/.exec(path);
 
-    if (!sessionStateMatch || !authCodeMatch[1]) {
+    if (!sessionStateMatch || !authCodeMatch) {
       return;
     }
 
@@ -73,9 +73,57 @@ class AuthenticationService {
 
     let sessionState = sessionStateMatch[1];
     let authCode = authCodeMatch[1];
-    console.info({sessionState: sessionState, authCode: authCode});
+    console.info('authCode = ' + authCode);
 
     this.getAccessToken(authCode);
+  }
+
+  async getAccessToken(authorizationCode) {
+    console.info('getAccessToken - origin = ' + window.location.origin);
+    console.info('getAccessToken - authenticationCode = ' + authorizationCode);
+    let urlRequestAccessToken = 'https://iam.ebrains.eu/auth/realms/hbp/protocol/openid-connect/token';
+
+    let options = {
+      method: 'POST',
+      mode: 'cors', // no-cors, *cors, same-origin
+      //cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
+      //credentials: 'same-origin', // include, *same-origin, omit
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded'//,
+        //'Access-Control-Allow-Origin': '*',
+        //Referer: window.location.origin
+      },
+      // redirect: manual, *follow, error
+      //redirect: 'follow',
+      // referrerPolicy: no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin,
+      // strict-origin, strict-origin-when-cross-origin, unsafe-url
+      referrerPolicy: 'no-referrer'
+    };
+
+    /*options.body = JSON.stringify({
+      grant_type: 'authorization_code',
+      client_id: this.CLIENT_ID,
+      redirect_uri: window.location.origin,
+      client_secret: this.CLIENT_SECRET,
+      code: authorizationCode
+    });*/
+    let formDetails = {
+      grant_type: 'authorization_code',
+      client_id: this.CLIENT_ID,
+      redirect_uri: window.location.origin,
+      client_secret: this.CLIENT_SECRET,
+      code: authorizationCode
+    };
+    const formBody = Object.entries(formDetails)
+      .map(([key, value]) => encodeURIComponent(key) + '=' + encodeURIComponent(value))
+      .join('&');
+    options.body = formBody;
+
+    const responseAccessTokenRequest = await fetch(urlRequestAccessToken, options);
+    console.info(responseAccessTokenRequest);
+    console.info(await responseAccessTokenRequest.json());
+    /*const responseJSON = await responseAccessTokenRequest.json();
+    console.info(responseJSON);*/
 
     /*localStorage.setItem(
       this.STORAGE_KEY,
@@ -84,47 +132,6 @@ class AuthenticationService {
     );*/
     //const pathMinusAccessToken = path.substr(0, path.indexOf('?'));
     //window.location.href = pathMinusAccessToken;
-  }
-
-  async getAccessToken(authenticationCode) {
-    console.info(authenticationCode);
-    /*let urlRequestAccessToken = 'https://iam.ebrains.eu/auth/realms/hbp/protocol/openid-connect/token?'
-      + 'grant_type=authorization_code'
-      + '&client_id=' + this.CLIENT_ID
-      + '&redirect_uri=' + window.location.origin
-      + '&code=' + authenticationCode
-      + '&client_secret=' + this.CLIENT_SECRET;*/
-    let urlRequestAccessToken = 'https://iam.ebrains.eu/auth/realms/hbp/protocol/openid-connect/token';
-
-    let options = {
-      method: 'POST',
-      mode: 'cors', // no-cors, *cors, same-origin
-      cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
-      credentials: 'same-origin', // include, *same-origin, omit
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-        //'Access-Control-Allow-Origin': '*',
-        Referer: window.location.origin
-      },
-      // redirect: manual, *follow, error
-      redirect: 'follow',
-      // referrerPolicy: no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin,
-      // strict-origin, strict-origin-when-cross-origin, unsafe-url
-      referrerPolicy: 'no-referrer'
-    };
-
-    options.body = JSON.stringify({
-      grant_type: 'authorization_code',
-      client_id: this.CLIENT_ID,
-      redirect_uri: window.location.origin,
-      client_secret: this.CLIENT_SECRET,
-      code: authenticationCode
-    });
-
-    const responseAccessTokenRequest = await fetch(urlRequestAccessToken, options);
-    console.info(responseAccessTokenRequest);
-    /*const responseJSON = await responseAccessTokenRequest.json();
-    console.info(responseJSON);*/
   }
 
   /**
@@ -166,6 +173,7 @@ class AuthenticationService {
     if (!this.redirectToAuthPage) {
       return;
     }
+    console.info('openAuthenticationPage - origin=' + window.location.origin);
 
     this.clearStoredToken();
 
@@ -178,7 +186,8 @@ class AuthenticationService {
       &redirect_uri=${encodeURIComponent(window.location.href)}`;*/
 
     let testClientID = 'community-apps-tutorial';
-    let testRedirectURI = window.location.href; //'http://localhost:3000';
+    console.info('redirect_uri=' + window.location.origin);
+    let testRedirectURI = window.location.origin; //'http://localhost:3000';
     window.location.href = url +
       '&client_id=' + testClientID +
       '&redirect_uri=' + testRedirectURI;
