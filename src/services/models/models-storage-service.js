@@ -2,7 +2,7 @@ import { HttpService } from '../http-service.js';
 
 import endpoints from '../proxy/data/endpoints.json';
 import config from '../../config.json';
-import ErrorHandlerService from '../error-handler-service';
+import DialogService from '../dialog-service';
 
 const storageModelsURL = `${config.api.proxy.url}${endpoints.proxy.models.url}`;
 const allCustomModelsURL = `${config.api.proxy.url}${endpoints.proxy.storage.allCustomModels.url}`;
@@ -48,7 +48,7 @@ class ModelsStorageService extends HttpService {
         this.verifyModelType(modelType);
       }
       catch (error) {
-        ErrorHandlerService.instance.dataError(error);
+        DialogService.instance.dataError(error);
       }
 
       try {
@@ -58,7 +58,7 @@ class ModelsStorageService extends HttpService {
         this.models = await (await this.httpRequestGET(modelsWithTypeURL)).json();
       }
       catch (error) {
-        ErrorHandlerService.instance.networkError(error);
+        DialogService.instance.networkError(error);
       }
 
     }
@@ -80,7 +80,7 @@ class ModelsStorageService extends HttpService {
       return (await this.httpRequestGET(customModelsURL)).json();
     }
     catch (error) {
-      ErrorHandlerService.instance.networkError(error);
+      DialogService.instance.networkError(error);
     }
   }
 
@@ -115,7 +115,7 @@ class ModelsStorageService extends HttpService {
       return (await this.httpRequestDELETE(deleteCustomModelURL)).json();
     }
     catch (error) {
-      ErrorHandlerService.instance.dataError(error);
+      DialogService.instance.dataError(error);
     }
   }
 
@@ -136,7 +136,7 @@ class ModelsStorageService extends HttpService {
       return (await this.httpRequestPOST(setCustomModelURL, fileContent)).json();
     }
     catch (error) {
-      ErrorHandlerService.instance.networkError(error);
+      DialogService.instance.networkError(error);
     }
   }
 }
