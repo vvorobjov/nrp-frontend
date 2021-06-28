@@ -64,7 +64,8 @@ class NotificationDialog extends React.Component{
                       <strong className='mr-auto'>{notification.type}</strong>
                     </Toast.Header>
                     <Toast.Body>
-                      {notification.message}
+                      <h6>{notification.message}</h6>
+                      {notification.details}
                     </Toast.Body>
                   </Toast>
                 </li>

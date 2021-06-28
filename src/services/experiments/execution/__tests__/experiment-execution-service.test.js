@@ -137,7 +137,7 @@ test('respects settings for specific dev server to launch and single brain proce
 
 test('can launch an experiment given a specific server + configuration', async () => {
   jest.spyOn(ExperimentExecutionService.instance, 'httpRequestPOST').mockImplementation();
-  jest.spyOn(RunningSimulationService.instance, 'registerForRosStatusInformation').mockImplementation();
+  jest.spyOn(RunningSimulationService.instance, 'addRosStatusInfoCallback').mockImplementation();
   let simulationReadyResult = Promise.resolve(MockSimulations[0]);
   jest.spyOn(RunningSimulationService.instance, 'simulationReady').mockImplementation(() => {
     return simulationReadyResult;
@@ -202,9 +202,9 @@ test('should be able to stop an experiment', async () => {
   await ExperimentExecutionService.instance.stopExperiment(simulation);
   expect(RunningSimulationService.instance.updateState).toHaveBeenCalledTimes(2);
   expect(RunningSimulationService.instance.updateState).toHaveBeenCalledWith(
-    expect.any(String), expect.any(String), { state: EXPERIMENT_STATE.INITIALIZED });
+    expect.any(String), expect.any(String), EXPERIMENT_STATE.INITIALIZED);
   expect(RunningSimulationService.instance.updateState).toHaveBeenCalledWith(
-    expect.any(String), expect.any(String), { state: EXPERIMENT_STATE.STOPPED });
+    expect.any(String), expect.any(String), EXPERIMENT_STATE.STOPPED);
   expect(simulation.stopping).toBe(true);
 
   // stop a STARTED simulation
@@ -213,7 +213,7 @@ test('should be able to stop an experiment', async () => {
   await ExperimentExecutionService.instance.stopExperiment(simulation);
   expect(RunningSimulationService.instance.updateState).toHaveBeenCalledTimes(1);
   expect(RunningSimulationService.instance.updateState).toHaveBeenCalledWith(
-    expect.any(String), expect.any(String), { state: EXPERIMENT_STATE.STOPPED });
+    expect.any(String), expect.any(String), EXPERIMENT_STATE.STOPPED);
 
   // stop a PAUSED simulation
   RunningSimulationService.instance.updateState.mockClear();
@@ -221,7 +221,7 @@ test('should be able to stop an experiment', async () => {
   await ExperimentExecutionService.instance.stopExperiment(simulation);
   expect(RunningSimulationService.instance.updateState).toHaveBeenCalledTimes(1);
   expect(RunningSimulationService.instance.updateState).toHaveBeenCalledWith(
-    expect.any(String), expect.any(String), { state: EXPERIMENT_STATE.STOPPED });
+    expect.any(String), expect.any(String), EXPERIMENT_STATE.STOPPED);
 
   // stop a HALTED simulation
   RunningSimulationService.instance.updateState.mockClear();
@@ -229,7 +229,7 @@ test('should be able to stop an experiment', async () => {
   await ExperimentExecutionService.instance.stopExperiment(simulation);
   expect(RunningSimulationService.instance.updateState).toHaveBeenCalledTimes(1);
   expect(RunningSimulationService.instance.updateState).toHaveBeenCalledWith(
-    expect.any(String), expect.any(String), { state: EXPERIMENT_STATE.STOPPED });
+    expect.any(String), expect.any(String), EXPERIMENT_STATE.STOPPED);
 
   // stop a simulation in an undefined state, error
   RunningSimulationService.instance.updateState.mockClear();
