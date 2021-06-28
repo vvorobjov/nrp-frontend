@@ -61,8 +61,18 @@ class ExperimentExecutionService extends HttpService {
     let brainProcesses = launchSingleMode ? 1 : experiment.configuration.brainProcesses;
 
     //TODO: placeholder, register actual progress callback later
-    let progressCallback = () => {
-      DialogService.instance.progressNotification({message:'The experiment is loading'});
+    let progressCallback = (msg) => {
+      if (msg && msg.progress) {
+        if (msg.progress.done) {
+          DialogService.instance.progressNotification({message:'The experiment is loading'});
+        }
+        else {
+          DialogService.instance.progressNotification({
+            message: msg.progress.task,
+            details: msg.progress.subtask
+          });
+        }
+      }
     };
 
     let launchOnNextServer = async () => {
@@ -154,7 +164,7 @@ class ExperimentExecutionService extends HttpService {
       progressCallback({ main: 'Initialize Simulation...' });
 
       // register for messages during initialization
-      SimulationService.instance.registerForRosStatusInformation(
+      SimulationService.instance.addRosStatusInfoCallback(
         serverConfiguration.rosbridge.websocket,
         progressCallback
       );
@@ -200,7 +210,7 @@ class ExperimentExecutionService extends HttpService {
             return SimulationService.instance.updateState(
               serverURL,
               simulationID,
-              { state: state }
+              state
             );
           }
 

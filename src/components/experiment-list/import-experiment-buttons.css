@@ -10,9 +10,9 @@
     top: 15%;
     box-shadow: 5px 5px 5px #000;
     z-index: 10001;
-  }
+}
   
-  .import-button {
+.import-button {
     cursor: pointer;
     height: 50%;
-  }
+}

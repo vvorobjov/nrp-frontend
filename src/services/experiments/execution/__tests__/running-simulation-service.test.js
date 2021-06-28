@@ -110,8 +110,8 @@ test('register for ROS status information', () => {
   let progressMessageCallback = jest.fn();
 
   // we register twice to check that original sub is destroyed and re-created without error
-  RunningSimulationService.instance.registerForRosStatusInformation('test-ros-ws-url', progressMessageCallback);
-  RunningSimulationService.instance.registerForRosStatusInformation('test-ros-ws-url', progressMessageCallback);
+  RunningSimulationService.instance.addRosStatusInfoCallback('test-ros-ws-url', progressMessageCallback);
+  RunningSimulationService.instance.addRosStatusInfoCallback('test-ros-ws-url', progressMessageCallback);
   expect(RoslibService.instance.getConnection.mock.calls.length).toBe(2);
   expect(mockStatusListener.removeAllListeners.mock.calls.length).toBe(1);
 
