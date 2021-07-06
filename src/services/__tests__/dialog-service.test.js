@@ -27,7 +27,7 @@ test('should emit an event on network error', () => {
   jest.spyOn(DialogService.instance, 'networkError').mockImplementation(() => {
     return Promise.resolve();
   });
-  let NetworkError = MockDialog
+  let NetworkError = MockDialog;
 
   let confirmNetworkError = (startingNetwork) => {
     expect(startingNetwork).toEqual(NetworkError);
@@ -47,7 +47,7 @@ test('should emit an event on data error', () => {
   jest.spyOn(DialogService.instance, 'dataError').mockImplementation(() => {
     return Promise.resolve();
   });
-  let DataError = MockDialog
+  let DataError = MockDialog;
 
   let confirmDataError = (startingData) => {
     expect(startingData).toEqual(DataError);
@@ -67,7 +67,7 @@ test('should emit an event on simulation error', () => {
   jest.spyOn(DialogService.instance, 'simulationError').mockImplementation(() => {
     return Promise.resolve();
   });
-  let SimulationError = MockDialog
+  let SimulationError = MockDialog;
 
   let confirmSimulationError = (startingSimulation) => {
     expect(startingSimulation).toEqual(SimulationError);
@@ -87,7 +87,7 @@ test('should emit an event on progress notification', () => {
   jest.spyOn(DialogService.instance, 'progressNotification').mockImplementation(() => {
     return Promise.resolve();
   });
-  let ProgressNotification = MockDialog
+  let ProgressNotification = MockDialog;
 
   let confirmProgressNotification = (startingProgress) => {
     expect(startingProgress).toEqual(ProgressNotification);
@@ -107,8 +107,7 @@ test('should emit an event on warning notification', () => {
   jest.spyOn(DialogService.instance, 'warningNotification').mockImplementation(() => {
     return Promise.resolve();
   });
-
-  let WarningNotification = MockDialog
+  let WarningNotification = MockDialog;
 
   let confirmWarningNotification = (startingWarning) => {
     expect(startingWarning).toEqual(WarningNotification);

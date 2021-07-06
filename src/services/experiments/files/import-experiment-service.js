@@ -9,7 +9,7 @@ const scanStorageURL = `${config.api.proxy.url}${endpoints.proxy.storage.scanSto
 
 /**
  * The Import Experiment Service performs the requests (Extract),
- * processes data such as zip or folder (Transform), 
+ * processes data such as zip or folder (Transform),
  * and passes them to the Import Experiment Component (Load).
  * Errors are handled by communicating witht he Error Handler Service.
  */
@@ -53,13 +53,13 @@ export default class ImportExperimentService extends HttpService {
     return _instance;
   }
 
-  getImportZipResponses(responses) {
+  async getImportZipResponses(responses) {
     let importZipResponses = {
       zipBaseFolderName: [],
       destFolderName: []
     };
     importZipResponses.numberOfZips = responses.length;
-    responses.forEach(async response =>{
+    await responses.forEach(async response =>{
       response = await response.json();
       importZipResponses['zipBaseFolderName'].push(response['zipBaseFolderName']);
       importZipResponses['destFolderName'].push(response['destFolderName']);
@@ -91,6 +91,7 @@ export default class ImportExperimentService extends HttpService {
     }
     let promises = [];
     Array.from(files).forEach(file => {
+      console.log(file);
       promises.push(
         new Promise((resolve, reject) => {
           let reader = new FileReader();
@@ -140,7 +141,7 @@ export default class ImportExperimentService extends HttpService {
     });
   }
 
-  readZippedExperimentExperiment(event) {
+  readZippedExperiment(event) {
     let files = event.target.files;
     let zipFiles = [];
     Array.from(files).forEach(file => {
@@ -157,7 +158,7 @@ export default class ImportExperimentService extends HttpService {
   }
 
   importZippedExperiment(event) {
-    let promises = this.readZippedExperimentExperiment(event)
+    let promises = this.readZippedExperiment(event)
       .then(zipContents =>
         zipContents.map(zipContent =>
           this.httpRequestPOST(importExperimentURL, zipContent, options)
