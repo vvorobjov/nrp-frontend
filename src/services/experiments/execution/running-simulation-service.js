@@ -126,7 +126,6 @@ class SimulationService extends HttpService {
 
     // remove the progress bar callback only, unsubscribe terminates the rosbridge
     // connection for any other subscribers on the status topic
-    statusTopic.unsubscribe(); // fully disconnects rosbridge
     statusTopic.removeAllListeners();
     rosStatusTopics.delete(rosbridgeWebsocket);
   }

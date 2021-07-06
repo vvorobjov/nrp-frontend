@@ -60,7 +60,6 @@ class ExperimentExecutionService extends HttpService {
 
     let brainProcesses = launchSingleMode ? 1 : experiment.configuration.brainProcesses;
 
-    //TODO: placeholder, register actual progress callback later
     let progressCallback = (msg) => {
       if (msg && msg.progress) {
         if (msg.progress.done) {
