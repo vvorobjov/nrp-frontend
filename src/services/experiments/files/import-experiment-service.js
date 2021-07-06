@@ -91,7 +91,6 @@ export default class ImportExperimentService extends HttpService {
     }
     let promises = [];
     Array.from(files).forEach(file => {
-      console.log(file);
       promises.push(
         new Promise((resolve, reject) => {
           let reader = new FileReader();
