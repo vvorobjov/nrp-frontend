@@ -109,32 +109,32 @@ test('register for ROS status information', () => {
   });
   let progressMessageCallback = jest.fn();
 
-  // we register twice to check that the original sub is conserved without error
+  // we register twice to check that original sub is destroyed and re-created without error
   RunningSimulationService.instance.addRosStatusInfoCallback('test-ros-ws-url', progressMessageCallback);
   RunningSimulationService.instance.addRosStatusInfoCallback('test-ros-ws-url', progressMessageCallback);
-  expect(RoslibService.instance.getConnection.mock.calls.length).toBe(1);
-  expect(mockStatusListener.removeAllListeners.mock.calls.length).toBe(0);
+  expect(RoslibService.instance.getConnection.mock.calls.length).toBe(2);
+  expect(mockStatusListener.removeAllListeners.mock.calls.length).toBe(1);
 
   // send status update with task info
   let rosStatusData = {
-    task: 'test-some-task',
-    subtask: 'test-some-subtask'
+    progress: {
+      task: 'test-some-task',
+      subtask: 'test-some-subtask'
+    }
   };
   statusUpdateCallback({ data: JSON.stringify(rosStatusData) });
   expect(progressMessageCallback).toHaveBeenCalledWith({
-    task: rosStatusData.task,
-    subtask: rosStatusData.subtask
+    main: rosStatusData.progress.task,
+    sub: rosStatusData.progress.subtask
   });
 
   // send status update indicating we're done
-  rosStatusData = {
-    done: true
-  }
+  rosStatusData.progress.done = true;
   statusUpdateCallback({ data: JSON.stringify(rosStatusData) });
   expect(progressMessageCallback).toHaveBeenCalledWith({
-    done: true
+    main: 'Simulation initialized.'
   });
-  expect(mockStatusListener.removeAllListeners.mock.calls.length).toBe(0);
+  expect(mockStatusListener.removeAllListeners.mock.calls.length).toBe(2);
 });
 
 test('can retrieve the state of a simulation', async () => {
