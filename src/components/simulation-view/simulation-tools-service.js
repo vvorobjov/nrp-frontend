@@ -1,3 +1,5 @@
+import Gz3dView from '../gz3d/gz3d-view';
+
 let _instance = null;
 const SINGLETON_ENFORCER = Symbol();
 
@@ -89,6 +91,35 @@ SimulationToolsService.TOOLS = Object.freeze({
     },
     getIcon: () => {
       return <span>NRP-Core Docs</span>;
+    }
+  },
+  GZ3D_STANDALONE: {
+    singleton: true,
+    flexlayoutNode: {
+      'type': 'tab',
+      'name': 'GZ3D standalone',
+      'component': 'gz3d-standalone'
+    },
+    flexlayoutFactoryCb: () =>  {
+      return <iframe src='http://localhost:12345'
+        title='Gazebo web rendering' />;
+    },
+    getIcon: () => {
+      return <span>GZ3D</span>;
+    }
+  },
+  GZ3D_PACKAGE: {
+    singleton: true,
+    flexlayoutNode: {
+      'type': 'tab',
+      'name': 'GZ3D package',
+      'component': 'gz3d-package'
+    },
+    flexlayoutFactoryCb: () =>  {
+      return <Gz3dView />;
+    },
+    getIcon: () => {
+      return <span>GZ3D</span>;
     }
   }
 });

@@ -5,7 +5,7 @@ import DialogService from '../../services/dialog-service.js';
 
 import './error-dialog.css';
 
-class ErrorDialog extends React.Component{
+class ErrorDialog extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
