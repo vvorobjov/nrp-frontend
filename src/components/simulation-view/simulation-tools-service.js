@@ -1,3 +1,5 @@
+import DataVisualizer from '../data-visualizer/data-visualizer.js';
+
 let _instance = null;
 const SINGLETON_ENFORCER = Symbol();
 
@@ -89,6 +91,20 @@ SimulationToolsService.TOOLS = Object.freeze({
     },
     getIcon: () => {
       return <span>NRP-Core Docs</span>;
+    }
+  },
+  DATA_VISUALIZER:{
+    singleton:true,
+    flexlayoutNode:{
+      'type': 'tab',
+      'name': 'Data Visualizer',
+      'component': 'data-visualizer'
+    },
+    flexlayoutFactoryCb: () =>  {
+      return <DataVisualizer/>;
+    },
+    getIcon: () => {
+      return <span>Data Visualizer</span>;
     }
   }
 });

@@ -75,7 +75,7 @@ class ExperimentExecutionService extends HttpService {
       }
     };
 
-    let launchOnNextServer = async () => {
+    let getServerIdConfig = async () => {
       if (!serversToTry.length) {
         //TODO: GUI feedback
         return Promise.reject(ExperimentExecutionService.ERRORS.LAUNCH_NO_SERVERS_LEFT);
@@ -87,6 +87,11 @@ class ExperimentExecutionService extends HttpService {
 
       let serverID = serversToTry.splice(0, 1)[0];
       let serverConfig = await ServerResourcesService.instance.getServerConfig(serverID);
+      return [serverID, serverConfig];
+    };
+
+    let launchOnNextServer = async () => {
+      let serverID, serverConfig = getServerIdConfig();
 
       return await this.launchExperimentOnServer(
         experiment.id,

@@ -1,0 +1,227 @@
+/*data visualizer = dv*/
+
+.dv-container {
+  overflow: auto;
+  position: relative;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  padding: 10px;
+}
+
+.dv-header {
+  overflow:auto;
+  flex-shrink: 0;
+}
+
+.dv-toolbar {
+  display: flex;
+}
+
+.dv-button {
+  flex-grow: 1;
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  height: 67px;
+  border: 1px solid #777777;
+  width: 100%;
+  clip-path: inset(0 0 0 0);
+}
+
+.dv-image {
+  width: 100%;
+  height: auto;
+  max-width: 90px;
+  max-height: 93px;
+  position: relative;
+  top: 5px;
+  margin-bottom: 2px;
+}
+
+.dv-caption {
+  position: relative;
+  width: 100%;
+  color: black;
+  text-align: center;
+  font-size: 11px;
+  top: 5px;
+}
+
+.plot-title {
+  overflow: auto;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.plot-pane {
+  flex-grow: 1;
+}
+
+.plot-button {
+  margin-top: 20px;
+  display: flex;
+  flex-direction: row-reverse;
+  align-items: flex-end;
+}
+
+.structure-container {
+  display: contents
+}
+
+.axis-title {
+  font-weight: 600;
+  font-size: 16px;
+  margin-bottom: 10px;
+  margin-top: 15px;
+}
+
+.axis-labels {
+  display: flex
+}
+
+.label-container {
+  display: flex;
+  margin-bottom: 5px;
+}
+
+.label-title{
+  width: 40px;
+  margin-top: 2px;
+  text-align: right;
+  margin-right: 5px;
+}
+
+.datasource-scroll {
+  overflow: auto;
+  height: calc(100% - 240px);
+  border: 1 px solid lightgray;
+}
+
+.datasource-scroll-sm {
+  overflow: auto;
+  height: calc(100% - 80px);
+  border: 1px solid lightgray;
+}
+
+.datasource-element {
+  display: flex;
+  margin-bottom: 5px;
+  flex-wrap: wrap;
+  padding: 8px;
+  background-color: #eee
+}
+
+.datasource-dimension {
+  display: flex;
+  margin-bottom: 5px;
+}
+
+.dimension-source {
+  flex: 1;
+  height: 26px;
+  min-width: 100px;
+  padding-right: 15px;
+  padding-left: 15px;
+  transition: all cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.5s;
+  background: white;
+}
+
+.plot-remove {
+  align-items: flex-end;
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.plot-show {
+  margin-top: 20px;
+  display: flex;
+  flex-direction: row-reverse;
+  align-items: flex-end;
+}
+
+.model-list {
+  border: 1px solid #777777;
+  clip-path: inset(0 0 0 0);
+  height: 100%;
+  overflow-y: auto;
+}
+
+.model-container {
+  overflow: auto;
+  padding: 10px;
+  position: relative;
+  display: inline-block;
+  margin: 2px;
+  width: 120px;
+  height: 100px;
+  overflow: hidden
+}
+
+.model-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  border-radius: 5px;
+  flex-direction: column;
+}
+
+.model-content:hover {
+  background-color: gainsboro;
+  cursor: pointer;
+}
+
+.model-image {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.image-thumbnail {
+  padding: 4px;
+  line-height: 1.428571429;
+  background-color: transparent;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  transition: all 0.2s ease-in-out;
+  display: inline-blox;
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
+  margin: auto;
+  border: 0 none;
+  box-shadow: none;
+}
+
+.image-disabled {
+  opacity: 0.4;
+  filter: alpha(opacity=40);
+  pointer-events: none;
+}
+
+.image-clickable:hover {
+  cursor: pointer;
+}
+
+.model-box {
+  width: 100%;
+  align-items: center;
+  display: flex
+}
+
+.model-title {
+  width: 100%;
+  color: black;
+  text-align: center;
+  font-size: 11px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  padding: 1px 3px 3px 3px;
+}
