@@ -7,3 +7,8 @@
     width: 25px;
     height: 25px;
 }
+
+.nrp-btn-wide {
+  width: 150px;
+  margin-right: 5px;
+}
