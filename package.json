@@ -29,6 +29,7 @@
     "react-tabs": "3.1.2",
     "roslib": "1.1.0",
     "rxjs": "6.6.3",
+    "three": "0.132.2",
     "web-vitals": "^0.2.4"
   },
   "devDependencies": {

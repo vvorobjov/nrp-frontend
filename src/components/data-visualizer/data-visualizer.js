@@ -1,23 +1,25 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
+import * as THREE from 'three';
 
 import DataVisualizerService from '../../services/experiments/visualization/data-visualizer-service';
 
 import './data-visualizer.js';
 import '../main.css';
+import ServerResourcesService from '../../services/experiments/execution/server-resources-service';
 
 export default class DataVisualizer extends React.Component {
   constructor(props){
     super(props);
     this.state = {
-      isPlotOpen: false,
-      isStructure: false,
+      isPlotVisible: false,
+      isStructureVisible: false,
       data: [],
       container: ReactDOM.findDOMNode(DataVisualizer).getElementsByClassName('plot-pane'),
       layout: null,
-      uniqueKey: '',
-      contextualUniqueKey: '',
       hasAxis: false,
+      modelStateLastTime: undefined,
+      modelStateUpdateRate: 1.0 / 10.0,
       types: [
         {
           title: 'Basic',
@@ -117,34 +119,213 @@ export default class DataVisualizer extends React.Component {
       axisLabels: [],
       plotStructure: [],
       sortedSources: [],
-      openModels: [],
+      visibleModels: [],
       assetsPath: ''
     };
   }
 
   async componentDidMount() {
     this.unregisterPlot = this.unregisterPlot.bind(this);
+
+    this.parseStateMessage = this.parseStateMessage.bind(this);
+    DataVisualizerService.instance.addListener(
+      DataVisualizerService.EVENTS.STATE_MESSAGES, this.parseStateMessage
+    );
+
+    this.parseStandardMessage = this.parseStandardMessage.bind(this);
+    DataVisualizerService.instance.addListener(
+      DataVisualizerService.EVENTS.STANDARD_MESSAGE, this.parseStandardMessage
+    );
+  }
+
+  componentWillUnmount() {
+    DataVisualizerService.instance.removeListener(
+      DataVisualizerService.EVENTS.STATE_MESSAGE, this.parseStateMessage
+    );
+
+    DataVisualizerService.instance.removeListener(
+      DataVisualizerService.EVENTS.STANDARD_MESSAGE, this.parseStandardMessage
+    );
+  }
+
+  loadSettings(settings) {
+    let key = this.keyContext();
+    this.setKey(key);
+    if (!settings.plottingToolsData || key in settings.plottingToolsData ) {
+      return;
+    }
+    this.settings = settings.plottingToolsData[key];
+    this.setState({
+      isStructureVisible: settings.structureSetupVisible,
+      isPlotVisible: settings.plotVisible,
+      axisLabels: settings.axisLabels,
+      plotModel: settings.plotModel,
+      plotStructure: settings.plotStructure
+    });
+    if (this.state.isPlotVisible) {
+      this.showPlot(true);
+    }
+    else if (this.state.isStructure) {
+      this.showStructure(this.state.plotModel);
+    }
+  }
+
+  keyContext() {
+    return this.findKeyContext(ReactDOM.findDOMNode(DataVisualizer), 'plotid');
+  }
+
+  findKeyContext(base, rootKey) {
+    if (!base.parentElement || base.parentElement.id === '') {
+      return rootKey;
+    }
+    let parentChildren = base.parentElement.children;
+    let index = -1;
+    for (let i = 0; i < parentChildren.length; i++) {
+      if (parentChildren[1] === base) {
+        index = 1;
+        break;
+      }
+    }
+    rootKey += '';
+    rootKey += index;
+    return this.findKeyContext(base.parentElement, rootKey);
+  }
+
+  parseStateMessage(response) {
+    let message = response.message;
+    let topics = response.topics;
+    let currentTime = Date.now() / 1000.0;
+    if (
+      this.state.modelStateLastTime !== undefined &&
+      currentTime - this.state.modelStateLastTime < this.state.modelStateUpdateRate
+    ) {
+      return;
+    }
+    this.setState({ modelStateLastTime: currentTime });
+    let needUpdateTime = false;
+    if (this.state.data === null) {
+      return;
+    }
+    for (let i = 0; i < this.state.plotStructure.plotElementslength; i++) {
+      let dataElement = this.state.plotModel.mergedDimensions
+        ? this.state.data[0]
+        : this.state.data[1];
+      for (
+        let dim = 0;
+        dim < this.state.plotStructure.plotElements[i].dimensions.length;
+        dim++
+      ) {
+        let dimension = this.state.plotStructure.plotElements[i].dimensions[dim];
+        if (topics[dimension.source] === 'gazebo_msgs/Model/States') {
+          //Search a message that matches (if any)
+          for (let j = 0; j < message.name.length; j++) {
+            if (dimension.source.startWith('/' + message.name[j])) {
+              let addValue = false;
+              let value = 0;
+              if (dimension.source.startWith('/' + message.name[j] + '/model_state/position')) {
+                addValue = true;
+                if (dimension.source.endWith('.x')) {
+                  value = message.pose[j].position.x;
+                }
+                else if (dimension.source.endsWith('.y')) {
+                  value = message.pose[j].position.y;
+                }
+                else if (dimension.source.endsWith('.z')) {
+                  value = message.pose[j].position.z;
+                }
+                else if (dimension.source.startWith('/' + message.name[j] + '/model_state/angle')) {
+                  let q = new THREE.Quaternion(
+                    message.pose[j].orientation.x,
+                    message.pose[j].orientation.y,
+                    message.pose[j].orientation.z,
+                    message.pose[j].orientation.w
+                  );
+                  let euler = new THREE.Euler();
+                  euler.setFromQuaternion(q, 'XYZ');
+                  addValue = true;
+                  if (dimension.source.endsWith('.x')) {
+                    value = euler.x;
+                  }
+                  else if (dimension.source.endsWith('.y')) {
+                    value = euler.y;
+                  }
+                  else if (dimension.source.endsWith('.z')) {
+                    value = euler.z;
+                  }
+                }
+                if (addValue) {
+                  this.setState({ needPlotUpdate: true});
+                  needUpdateTime = true;
+                  this.addValueToDimension(i, dim, dataElement, value);
+                }
+                break;
+              }
+            }
+          }
+        }
+      }
+    }
+    if (needUpdateTime) {
+      this.addTimePoint();
+    }
+  }
+
+  parseStandardMessage(message) {
+    let needUpdateTime = false;
+    if (this.state.data === null) {
+      return;
+    }
+    for (let i = 0; i < this.state.plotStructure.plotElements.length; i++) {
+      let dataElement = this.plotModel.mergedDimensions
+        ? this.state.data[0]
+        : this.state.data[1];
+      for (let dim = 0; dim < this.state.plotStructure.plotElements[i].dimensions.length; dim++) {
+        let dimension = this.state.plotStructure.plotElements[i].dimensions[dim];
+        if (dimension.source === this.name) {
+          this.addValueToDimension(i, dim, dataElement, message.data);
+          this.setState({ needPlotUpdate: true });
+          needUpdateTime = true;
+        }
+      }
+    }
+    if (needUpdateTime) {
+      this.addTimePoint();
+    }
+  }
+
+  showStructureSetup(model) {
+    this.setState({
+      isStructure: true,
+      axisLabels: ['x', 'Y', 'Z'],
+      plotModel: model,
+      plotStructure: { axis: [], plotElements: [] }
+    });
+    ServerResourcesService.instance.getTopics(DataVisualizerService.instance.loadTopics);
+    while (this.state.plotModel.dimensions < this.state.axisLabels.length) {
+      this.state.axisLabels.pop();
+    }
+    this.addDefaultElement();
   }
 
   newPlot() {
     this.setState({
-      isPlotOpen: false,
-      isStructure: false
+      isPlotVisible: false,
+      isStructureVisible: false
     });
     if (this.unregisterPlot) {
-      DataVisualizerService.instance.unregisterPlot();
+      DataVisualizerService.instance.unregisterPlot(this.keyContext());
       this.unregisterPlot = null;
     }
   }
 
   showPlot(hasSettings) {
     if (this.unregisterPlot) {
-      DataVisualizerService.instance.unregisterPlot();
+      DataVisualizerService.instance.unregisterPlot(this.keyContext());
       this.unregisterPlot = null;
     }
     this.setState({
-      isPlotOpen: true,
-      isStructure: false,
+      isPlotVisible: true,
+      isStructureVisible: false,
       layout: {
         title: 'NRP Data Visualizer',
         width: this.checkSize(this.state.layout.clientWidth),
@@ -186,7 +367,7 @@ export default class DataVisualizer extends React.Component {
       element ++
     ) {
       let label = this.state.plotStructure.plotElements[element].label;
-      let plotModel = DataVisualizerService.instance.getModel();
+      let plotModel = this.state.plotModel;
       if (plotModel.mergedDimensions) {
         if (element === 0) {
           newElement = {};
@@ -271,23 +452,16 @@ export default class DataVisualizer extends React.Component {
     });
     this.startListening();
     if (hasSettings) {
-      this.saveSettings();
+      DataVisualizerService.instance.saveSettings(
+        this.keyContext(), this.state.isStructureVisible, this.state.isPlotVisible,
+        this.state.axisLabels, this.state.plotModel, this.state.plotStructure
+      );
     }
     this.unregisterPlot = DataVisualizerService.instance.unregisterPlot;
   }
 
   checkSize(size) {
-    return size;
-  }
-
-  contextualUniqueKey() {
-    return this.findContextualUniqueKey(ReactDOM.findDOMNode(DataVisualizer), 'plotid');
-  }
-
-  findContextualUniqueKey(base, rootKey) {
-    if (!base.parentElement || base.parentElement.id === 'simulation-view-mainview') {
-      return rootKey;
-    }
+    return size < 280 ? 280 : size;
   }
 
   startListening() {
@@ -312,35 +486,42 @@ export default class DataVisualizer extends React.Component {
     });
   }
 
-  changeType(type) {
-    return type;
+  changeIsType(type) {
+    type.visible = !type.visible;
+    this.updateVisibleModels();
   }
 
-  suppressKeyPress(event) {
-    return event;
-  }
-
-  setPlotStructure(index) {
-    return index;
+  updateVisibleModels() {
+    let visibleModels = [];
+    for (let i = 0; i < this.state.types.length; i++) {
+      let cat = this.state.types[i];
+      if (cat.visible) {
+        for (let j = 0; j < cat.models.length; i++) {
+          cat.models[j].color = cat.color['default'];
+          visibleModels.push(cat.models[j]);
+        }
+      }
+    }
+    this.setState({ visibleModels: visibleModels });
   }
 
   render() {
     return (
       <div class="dv-container">
-        {!this.state.isPlotOpen && !this.state.isStructure ?
+        {!this.state.isPlotVisible && !this.state.isStructureVisible ?
           <div class="dv-header">
             <h3>Data Visualizer</h3>
             <hr/>
             <div class="dv-toolbar">
               {this.state.types.forEach((type, index) => {
                 const buttonStyle = {
-                  'background-color': type.isPlotOpen? type.color[type.colorMode]:
+                  'background-color': type.isPlotVisible? type.color[type.colorMode]:
                     (type.colorMode==='mouseover'? '#ffffff': '#eeeeee'),
                   'border-top-left-radius': index===0? '25px': '0px',
                   'border-top-right-radius': index===type.length? '25px': '0px'
                 };
                 return (
-                  <div class="dv-button" style={{buttonStyle}} onClick={this.changeType(type)}
+                  <div class="dv-button" style={{buttonStyle}} onClick={this.changeIsType(type)}
                     onMouseDown={() => this.setState([...this.state.types][index].colorMode='mousedown')}
                     onMouseUp={() => this.setState([...this.state.types][index].colorMode='mouseup')}
                     onMouseOver={() => this.setState([...this.state.types][index].colorMode='mouseover')}
@@ -352,7 +533,7 @@ export default class DataVisualizer extends React.Component {
             </div>
           </div>
           : null}
-        {this.state.isPlotOpen && this.state.isStructure ?
+        {this.state.isPlotVisible && this.state.isStructureVisible ?
           <div class="plot-title">
             <div class="plot-pane"/>
             <div class="plot-button">
@@ -363,7 +544,7 @@ export default class DataVisualizer extends React.Component {
             </div>
           </div>
           : null}
-        {this.state.isStructure ?
+        {this.state.isStructureVisible ?
           <div class="structure-container">
             <h3>Plotting Tool</h3>
             {this.state.hasAxis ?
@@ -374,7 +555,7 @@ export default class DataVisualizer extends React.Component {
                     return (
                       <div class="label-container">
                         <div class="label-title">{label}</div>
-                        <input type="text" onKeyDown={(event) => this.suppressKeyPress(event)} required
+                        <input type="text" onKeyDown={(event) => event.suppressKeyPress()} required
                           onChange={(index) => this.setState(this.state.plotStructure.axis[index])}></input>
                       </div>);
                   })}
@@ -387,7 +568,7 @@ export default class DataVisualizer extends React.Component {
                 return (
                   <div class="datasource-element">
                     <div class="label-title">Label</div>
-                    <input type="text" onKeyDown={(event) => this.suppressKeyPress(event)} required
+                    <input type="text" onKeyDown={(event) => event.suppressKeyPress()} required
                       onChange={() => this.setState(element.label)}></input>
                     {this.element.dimensions.forEach((index_dim, dimension) => {
                       return (
@@ -429,13 +610,13 @@ export default class DataVisualizer extends React.Component {
             </div>
           </div>
           : null}
-        {!this.state.isPlotOpen && !this.state.isStructure ?
+        {!this.state.isPlotVisible && !this.state.isStructureVisible ?
           <div class="model-list">
-            {this.state.openModels.forEach(model => {
+            {this.state.visibleModels.forEach(model => {
               return (
                 <li class="model-container">
                   <button class="model-content" id={'insert-entity-'+model.modelPath}
-                    onMouseDown={this.showStructureSetup(model)}>
+                    onMouseDown={this.showStructure(model)}>
                     <div class="model-image">
                       <img class={this.props.stateService.currentState===this.props.STATE.INITIALIZED?
                         'image-disabled image-thumbnail': 'image-clickable image-tumbnail'}
