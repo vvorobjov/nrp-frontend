@@ -6,7 +6,7 @@ import DialogService from '../../services/dialog-service.js';
 import './notification-dialog.css';
 
 class NotificationDialog extends React.Component{
-  constructor(props){
+  constructor(props) {
     super(props);
     this.state = {
       notifications: []

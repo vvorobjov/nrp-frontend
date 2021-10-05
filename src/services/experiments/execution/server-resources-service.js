@@ -81,6 +81,14 @@ class ServerResourcesService extends HttpService {
       })
       .catch(DialogService.instance.networkError);
   }
+
+  getTopics(callback) {
+    this.httpRequestGET(proxyServerURL + '/simulation/topics')
+      .then(async (response) => {
+        return await callback(response.json());
+      })
+      .catch(DialogService.instance.networkError);
+  }
 }
 
 ServerResourcesService.EVENTS = Object.freeze({

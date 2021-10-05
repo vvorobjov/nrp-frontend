@@ -3,6 +3,8 @@ import UserSettingsService from '../../user/user-settings-service';
 
 import ExperimentExecutionService from '../execution/experiment-execution-service';
 import DataVisualizerROSAdapter from './data-visualizer-rosadapter';
+import SimulationService from '../execution/running-simulation-service';
+import ServerResourcesService from '../execution/server-resources-service';
 
 let _instance = null;
 const SINGLETON_ENFORCER = Symbol();
@@ -10,7 +12,7 @@ const SINGLETON_ENFORCER = Symbol();
 /**
  * Service taking care of data visualization operations and transition between the adaptor and the component
  */
-export default class DataVisualizerService {
+class DataVisualizerService {
   constructor(enforcer) {
     if (enforcer !== SINGLETON_ENFORCER) {
       throw new Error('Use' + this.constructor.name + '.instance');
@@ -28,11 +30,19 @@ export default class DataVisualizerService {
       _instance = new DataVisualizerService(SINGLETON_ENFORCER);
     }
 
-    return this.instance;
+    return _instance;
   }
 
   setKey(keyContext) {
     this.key = keyContext;
+  }
+
+  getState(serverURL, simulationID) {
+    return SimulationService.instance.getState(serverURL, simulationID);
+  }
+
+  loadTopics() {
+    ServerResourcesService.instance.getTopics(DataVisualizerROSAdapter.instance.loadTopics);
   }
 
   sendSettings(settings) {
@@ -81,7 +91,7 @@ export default class DataVisualizerService {
 
   initializeConnection(plotStructure) {
     let server = ExperimentExecutionService.instance.getServerConfig()[1];
-    //BUILD PARALLEL BRANCH HERE WITH DIFFERENT ADPATER
+    //BUILD PARALLEL BRANCH HERE WITH DIFFERENT ADAPTER
     //Parameters: plotStructure, server, adapter
     if (this.adapter.name === 'ROS') {
       this.connection = DataVisualizerROSAdapter.instance.getOrCreateConnectionTo(server);
@@ -90,7 +100,9 @@ export default class DataVisualizerService {
   }
 
   closeConnection() {
-    DataVisualizerROSAdapter.instance.unsubscribeTopics();
+    if (this.adapter.name === 'ROS') {
+      DataVisualizerROSAdapter.instance.unsubscribeTopics();
+    }
   }
 }
 
@@ -99,3 +111,5 @@ DataVisualizerService.EVENTS = Object.freeze({
   STATE_MESSAGE: 'STATE_MESSAGE',
   SETTINGS: 'SETTINGS'
 });
+
+export default DataVisualizerService;

@@ -57,10 +57,7 @@ class DialogService extends EventEmitter {
 }
 
 DialogService.EVENTS = Object.freeze({
-  ERROR: 'ERROR'
-});
-
-DialogService.EVENTS = Object.freeze({
+  ERROR: 'ERROR',
   NOTIFICATION: 'NOTIFICATION'
 });
 
