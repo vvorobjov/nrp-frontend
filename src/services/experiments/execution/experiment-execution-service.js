@@ -91,14 +91,14 @@ class ExperimentExecutionService extends HttpService {
     };
 
     let launchOnNextServer = async () => {
-      let serverID, serverConfig = getServerIdConfig();
+      let server = await getServerIdConfig();
 
       return await this.launchExperimentOnServer(
         experiment.id,
         experiment.private,
         brainProcesses,
-        serverID,
-        serverConfig,
+        server[0],
+        server[1],
         reservation,
         playbackRecording,
         profiler,

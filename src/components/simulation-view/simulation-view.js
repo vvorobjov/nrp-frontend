@@ -192,7 +192,9 @@ export default class SimulationView extends React.Component {
           <div className='simulation-view-mainview'>
             <FlexLayout.Layout ref={this.refLayout} model={this.state.modelFlexLayout}
               factory={(node) => {
-                return SimulationToolsService.instance.flexlayoutNodeFactory(node);
+                return SimulationToolsService.instance.flexlayoutNodeFactory(
+                  node, this.serverURL, this.simulationID, this.state.timingSimulationTime, this.state.timingTimeout
+                );
               }} />
           </div>
         </div>

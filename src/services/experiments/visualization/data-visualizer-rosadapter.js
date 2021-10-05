@@ -23,12 +23,12 @@ export default class DataVisualizerROSAdapter {
     this.loadSettingsWhenTopic = true;
   }
 
-  static get instanceAndLoadTopics() {
+  static get instance() {
     if (_instance == null) {
       _instance = new DataVisualizerROSAdapter(SINGLETON_ENFORCER);
     }
 
-    return this.instance;
+    return _instance;
   }
 
   async componentDidMount() {
@@ -58,7 +58,7 @@ export default class DataVisualizerROSAdapter {
   }
 
   stateMessage (message) {
-    DataVisualizerService.sendStateMessage(message, this.topics);
+    DataVisualizerService.instance.sendStateMessage(message, this.topics);
   }
 
   standardMessage (message) {
