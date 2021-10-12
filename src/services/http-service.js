@@ -1,7 +1,7 @@
 
 import { EventEmitter } from 'events';
 
-import AuthenticationService from './authentication-service-v2.js';
+import AuthenticationService from './authentication-service';
 
 /**
  * Base class that performs http requests with default request options.

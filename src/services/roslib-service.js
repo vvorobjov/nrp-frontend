@@ -1,7 +1,7 @@
 import * as ROSLIB from 'roslib';
 import _ from 'lodash';
 
-import AuthenticationService from './authentication-service-v2';
+import AuthenticationService from './authentication-service';
 
 let _instance = null;
 const SINGLETON_ENFORCER = Symbol();
