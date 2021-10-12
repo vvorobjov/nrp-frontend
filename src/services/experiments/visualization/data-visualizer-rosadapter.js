@@ -1,4 +1,4 @@
-import ServerResourcesService from '../execution/server-resources-service';
+import SimulationService from '../execution/running-simulation-service';
 import UserSettingsService from '../../user/user-settings-service';
 import DataVisualizerService from './data-visualizer-service';
 
@@ -31,11 +31,11 @@ export default class DataVisualizerROSAdapter {
     return _instance;
   }
 
-  async componentDidMount() {
+  getTopics(serverURL, simulationID) {
     UserSettingsService.instance.settings.then(() => {
-      ServerResourcesService.instance.getTopics(this.loadTopics);
+      SimulationService.instance.getTopics(serverURL, simulationID, this.loadTopics);
     });
-    this.settings = ServerResourcesService.instance.settingsData;
+    this.settings = UserSettingsService.instance.settingsData;
   }
 
   loadTopics(response) {
@@ -47,6 +47,7 @@ export default class DataVisualizerROSAdapter {
     }
     this.sortedTopics = Object.keys(this.topics);
     this.sortedTopics.sort();
+    DataVisualizerService.instance.sendSortedSources(this.sortedTopics);
     if (this.loadSettingsWhenTopic) {
       this.loadSettingsWhenTopic = false;
       DataVisualizerService.instance.sendSettings(this.settings);

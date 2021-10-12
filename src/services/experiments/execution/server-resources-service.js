@@ -79,15 +79,9 @@ class ServerResourcesService extends HttpService {
       .then(async (response) => {
         return await response.json();
       })
-      .catch(DialogService.instance.networkError);
-  }
-
-  getTopics(callback) {
-    this.httpRequestGET(proxyServerURL + '/simulation/topics')
-      .then(async (response) => {
-        return await callback(response.json());
-      })
-      .catch(DialogService.instance.networkError);
+      .catch((error) => {
+        DialogService.instance.networkError(error);
+      });
   }
 }
 

@@ -1,7 +1,18 @@
 import React from 'react';
 import * as THREE from 'three';
+import ChartBasic from '../../assets/images/data-visualizer/basic_chart.png';
+import ChartLine from '../../assets/images/data-visualizer/line_chart.png';
+import ChartPie from '../../assets/images/data-visualizer/pie_chart.png';
+import PlotScatter from '../../assets/images/data-visualizer/scatter_plot.png';
+import  ChartBar from '../../assets/images/data-visualizer/bar_chart.png';
+import AreaFilled from '../../assets/images/data-visualizer/filled_area.png';
+import ChartBubble from '../../assets/images/data-visualizer/bubble_chart.png';
+import ChartStatistical from '../../assets/images/data-visualizer/statistical_chart.png';
+import BarError from '../../assets/images/data-visualizer/error_bar.png';
+import Chart3d from '../../assets/images/data-visualizer/3d_chart.png';
+import Scatter3d from '../../assets/images/data-visualizer/scatter_3d.png';
 
-import './data-visualizer.js';
+import './data-visualizer.css';
 import '../main.css';
 
 import DataVisualizerService from '../../services/experiments/visualization/data-visualizer-service';
@@ -13,11 +24,11 @@ export default class DataVisualizer extends React.Component {
     let types = [
       {
         title: 'Basic',
-        thumbnail: 'img/esv/plotting-tool/basic_chart.png',
+        thumbnail: ChartBasic,
         models: [
           {
-            modelTitle: 'Line',
-            thumbnail: 'img/esv/plotting-tool/line_charts.png',
+            title: 'Line',
+            thumbnail: ChartLine,
             dimensions: 2,
             multi: true, // We can add several lines
             hasAxis: true,
@@ -25,8 +36,8 @@ export default class DataVisualizer extends React.Component {
             mode: 'lines'
           },
           {
-            modelTitle: 'Pie',
-            thumbnail: 'img/esv/plotting-tool/pie_charts.png',
+            title: 'Pie',
+            thumbnail: ChartPie,
             dimensions: 1,
             multi: true,
             hasAxis: false,
@@ -35,8 +46,8 @@ export default class DataVisualizer extends React.Component {
             valuesMustBePositive: true
           },
           {
-            modelTitle: 'Scatter',
-            thumbnail: 'img/esv/plotting-tool/scatter_plots.png',
+            title: 'Scatter',
+            thumbnail: PlotScatter,
             dimensions: 2,
             multi: false,
             hasAxis: true,
@@ -44,8 +55,8 @@ export default class DataVisualizer extends React.Component {
             mode: 'markers'
           },
           {
-            modelTitle: 'Bar',
-            thumbnail: 'img/esv/plotting-tool/bar_charts.png',
+            title: 'Bar',
+            thumbnail: ChartBar,
             dimensions: 1,
             multi: true,
             hasAxis: false,
@@ -54,8 +65,8 @@ export default class DataVisualizer extends React.Component {
             mergedDimensionsUseXY: true
           },
           {
-            modelTitle: 'Fill Area',
-            thumbnail: 'img/esv/plotting-tool/filled_area.png',
+            title: 'Filled Areas',
+            thumbnail: AreaFilled,
             dimensions: 2,
             multi: true,
             hasAxis: true,
@@ -63,8 +74,8 @@ export default class DataVisualizer extends React.Component {
             fill: 'tozeroy'
           },
           {
-            modelTitle: 'Bubbles',
-            thumbnail: 'img/esv/plotting-tool/bubble_chart.png',
+            title: 'Bubbles',
+            thumbnail: ChartBubble,
             dimensions: 3,
             multi: true,
             hasAxis: true,
@@ -76,11 +87,11 @@ export default class DataVisualizer extends React.Component {
       },
       {
         title: 'Stastical',
-        thumbnail: 'img/esv/plotting-tool/statistical_chart.png',
+        thumbnail: ChartStatistical,
         models: [
           {
-            modelTitle: 'Error Bars',
-            thumbnail: 'img/esv/plotting-tool/error_bars.png',
+            title: 'Error Bars',
+            thumbnail: BarError,
             dimensions: 3,
             multi: true,
             hasAxis: true,
@@ -92,11 +103,11 @@ export default class DataVisualizer extends React.Component {
       },
       {
         title: '3D',
-        thumbnail: 'img/esv/plotting-tool/3d_charts.png',
+        thumbnail: Chart3d,
         models: [
           {
-            modelTitle: 'Scatter 3D',
-            thumbnail: 'img/esv/plotting-tool/scatter3d.png',
+            title: 'Scatter 3D',
+            thumbnail: Scatter3d,
             dimensions: 3,
             multi: true,
             hasAxis: true,
@@ -121,16 +132,16 @@ export default class DataVisualizer extends React.Component {
       types: this.createModelsTypes(types),
       axisLabels: [],
       plotStructure: [],
-      sortedSources: [],
-      visibleModels: [],
-      assetsPath: ''
+      sortedSources: []
     };
   }
 
   async componentDidMount() {
-    this.setState({
-      container: document.getElementsByClassName('plot-pane'),
-      keyContext: this.findKeyContext(document, 'plotid')
+    this.setState(state => {
+      return {
+        container: document.getElementsByClassName('plot-pane'),
+        keyContext: this.findKeyContext(document, 'plotid')
+      };
     });
 
     //ROS specific function
@@ -143,6 +154,16 @@ export default class DataVisualizer extends React.Component {
     DataVisualizerService.instance.addListener(
       DataVisualizerService.EVENTS.STANDARD_MESSAGE, this.parseStandardMessage
     );
+
+    this.loadSettings = this.loadSettings.bind(this);
+    DataVisualizerService.instance.addListener(
+      DataVisualizerService.EVENTS.SETTINGS, this.loadSettings
+    );
+
+    this.loadSortedSources = this.loadSortedSources.bind(this);
+    DataVisualizerService.instance.addListener(
+      DataVisualizerService.EVENTS.SORTED_SOURCES, this.loadSortedSources
+    );
   }
 
   componentWillUnmount() {
@@ -154,6 +175,14 @@ export default class DataVisualizer extends React.Component {
     DataVisualizerService.instance.removeListener(
       DataVisualizerService.EVENTS.STANDARD_MESSAGE, this.parseStandardMessage
     );
+
+    DataVisualizerService.instance.removeListener(
+      DataVisualizerService.EVENTS.SETTINGS, this.loadSettings
+    );
+
+    DataVisualizerService.instance.removeListener(
+      DataVisualizerService.EVENTS.SORTED_SOURCES, this.loadSortedSources
+    );
   }
 
   createModelsTypes(types) {
@@ -162,10 +191,12 @@ export default class DataVisualizer extends React.Component {
       types[i].colorMode = 'default';
       types[i].color = {};
       types[i].color.default = 'hsl(' + (10 + i / (types.length + 1) * 360.0) + ',95%,87%)';
-      types[i].color.mouseOver = 'hsl(' + (10 + i/(types.length + 1) * 360.0) + ',80%,90%)';
-      types[i].color.mouseDown = 'hsl(' + (10 + i/(types.length + 1) * 360.0) + ',100%,70%)';
     }
     return types;
+  }
+
+  loadSortedSources(sortedSources) {
+    this.setState({ sortedSources: sortedSources });
   }
 
   loadSettings(settings) {
@@ -308,21 +339,21 @@ export default class DataVisualizer extends React.Component {
     }
   }
 
-  addValueToDimension(index, dataIndex, dataElement, value) {
+  addValueToDimension(index, dataIndex, dataElement, data) {
     let plotValues;
     if (this.state.plotModel.valuesPositive) {
-      value = value < 0 ? -value : value;
+      data = data < 0 ? -data : data;
     }
 
     if (this.state.plotModel.mergedDimensions) {
       if (this.state.plotModel.mergedDimensionsUseXY) {
         plotValues = dataElement.y.slice(0);
-        plotValues[index] = value;
+        plotValues[index] = data;
         dataElement.values = plotValues;
       }
       else {
         plotValues = dataElement.y.slice(0);
-        plotValues[index] = value;
+        plotValues[index] = data;
         dataElement.values = plotValues;
       }
     }
@@ -330,7 +361,7 @@ export default class DataVisualizer extends React.Component {
       switch(dataIndex) {
       default: //case 0
         plotValues = dataElement.x.slice(0);
-        plotValues.push(value);
+        plotValues.push(data);
         if (plotValues.length > this.state.maxPoints) {
           plotValues.splice(0, plotValues.length - this.state.maxPoints);
         }
@@ -339,7 +370,7 @@ export default class DataVisualizer extends React.Component {
 
       case 1:
         plotValues = dataElement.y.slice(0);
-        plotValues.push(value);
+        plotValues.push(data);
         if (plotValues.length > this.state.maxPoints) {
           plotValues.splice(0, plotValues.length - this.state.maxPoints);
         }
@@ -356,7 +387,7 @@ export default class DataVisualizer extends React.Component {
         else {
           plotValues = dataElement.z.slice(0);
         }
-        plotValues.push(value);
+        plotValues.push(data);
         if (plotValues.length > this.state.maxPoints) {
           plotValues.splice(0, plotValues.length - this.state.maxPoints);
         }
@@ -392,9 +423,11 @@ export default class DataVisualizer extends React.Component {
       plotModel: model,
       plotStructure: { axis: [], plotElements: [] }
     });
-    DataVisualizerService.instance.loadTopics();
+    DataVisualizerService.instance.loadTopics(this.props.serverURL, this.props.simulationID);
     while (this.state.plotModel.dimensions < this.state.axisLabels.length) {
-      this.state.axisLabels.pop();
+      this.setState(state => {
+        return { axisLabels: state.axisLabels.slice(0, -1) };
+      });
     }
     this.addDefaultElement();
   }
@@ -568,38 +601,69 @@ export default class DataVisualizer extends React.Component {
   addDefaultElement() {
     let minimalPlot = { label: '', dimensions: []};
     for (let i = 0; i < this.state.plotModel.dimensions; i++) {
-      this.setState({ plotStructure: { ...this.state.plotStructure, axis : [...this.state.plotStructure.axis, '']}});
-      minimalPlot.dimensions.push({ source: this.state.sortedSources[i] });
+      this.setState(state => {
+        minimalPlot.dimensions.push({ source: state.sortedSources[i] });
+        return { plotStructure : { ...state.plotStructure, axis : [...state.plotStructure.axis, ''] } };
+      });
     }
-    this.setState({
-      plotStructure: {
-        ...this.state.plotStructure,
-        plotElements: [...this.state.plotStructure.plotElements, minimalPlot]
-      }
+    this.setState(state => {
+      return {
+        plotStructure: { ...state.plotStructure, plotElements: [...state.plotStructure.plotElements, minimalPlot] }
+      };
     });
   }
 
-  changeIsType(type) {
-    type.visible = !type.visible;
-    this.updateVisibleModels();
+  removeElement(elementIndex) {
+    this.setState(state => {
+      return {plotStructure: state.plotStructure.plotElements.splice(elementIndex, 1)};
+    });
   }
 
-  updateVisibleModels() {
-    let visibleModels = [];
-    for (let i = 0; i < this.state.types.length; i++) {
-      let cat = this.state.types[i];
-      if (cat.visible) {
-        for (let j = 0; j < cat.models.length; j++) {
-          cat.models[j].color = cat.color['default'];
-          visibleModels.push(cat.models[j]);
-        }
-      }
-    }
-    this.setState({ visibleModels: visibleModels });
+  changeTypeVisible(typeIndex) {
+    this.setState(state => {
+      let types = state.types;
+      types[typeIndex].visible = !types[typeIndex].visible;
+      types[typeIndex].models.forEach((model, modelIndex) => {
+        types[typeIndex].models[modelIndex].color = types[typeIndex].color.default;
+      });
+      return { types: types };
+    } );
   }
 
-  getState() {
-    DataVisualizerService.instance.getState(this.props.serverURL, this.props.simulationID);
+  changeTypeColor(typeIndex, colorMode) {
+    this.setState(state => {
+      let types = [ ...state.types ];
+      types[typeIndex].colorMode = colorMode;
+      return { types: types };
+    } );
+  }
+
+  changeAxis(labelIndex, axis) {
+    this.setState(state => {
+      let plotStructure = state.plotStructure;
+      plotStructure.axis[labelIndex] = axis;
+      return { plotStructure: plotStructure};
+    });
+  }
+
+  changeLabel(elementIndex, label) {
+    this.setState(state => {
+      let plotStructure = state.plotStructure;
+      plotStructure.plotElements[elementIndex].label = label;
+      return { plotStructure: plotStructure };
+    });
+  }
+
+  changeSource(elementIndex, dimensionIndex, source) {
+    this.setState(state => {
+      let plotStructure = state.plotStructure;
+      plotStructure.plotElements[elementIndex].dimensions[dimensionIndex].source = source;
+      return { plotStructure: plotStructure };
+    });
+  }
+
+  getSimulationState(serverURL, simulationID) {
+    DataVisualizerService.instance.getSimulationState(serverURL, simulationID);
   }
 
   render() {
@@ -610,21 +674,18 @@ export default class DataVisualizer extends React.Component {
             <h3>Data Visualizer</h3>
             <hr/>
             <div className="dv-toolbar">
-              {this.state.types.forEach((type, index) => {
-                const buttonStyle = {
-                  'background-color': type.isPlotVisible? type.color[type.colorMode]:
-                    (type.colorMode==='mouseover'? '#ffffff': '#eeeeee'),
-                  'border-top-left-radius': index===0? '25px': '0px',
-                  'border-top-right-radius': index===type.length? '25px': '0px'
+              {this.state.types.map((type, typeIndex) => {
+                let buttonStyle = {
+                  'background-color': type.visible? type.color[type.colorMode]: '#eeeeee',
+                  'border-top-left-radius': typeIndex===0? '25px': '0px',
+                  'border-top-right-radius': typeIndex===this.state.types.length-1? '25px': '0px'
                 };
                 return (
-                  <div className="dv-button" style={{buttonStyle}} onClick={this.changeIsType(type)}
-                    onMouseDown={() => this.setState({types: [...this.state.types][index].colorMode='mousedown'})}
-                    onMouseUp={() => this.setState({types: [...this.state.types][index].colorMode='mouseup'})}
-                    onMouseOver={() => this.setState({types: [...this.state.types][index].colorMode='mouseover'})}
-                    onMouseLeave={() => this.setState({types: [...this.state.types][index].colorMode='default'})}>
+                  <div className="dv-button" key={typeIndex} style={buttonStyle}
+                    onClick={() => this.changeTypeVisible(typeIndex)}
+                    onMouseLeave={() => this.changeTypeColor(typeIndex, 'default')}>
                     <img className="dv-image" src={type.thumbnail} alt=""/>
-                    <div className="dv-caption">{this.state.types.title}</div>
+                    <div className="dv-caption">{type.title}</div>
                   </div>);
               })}
             </div>
@@ -635,7 +696,7 @@ export default class DataVisualizer extends React.Component {
             <div className="plot-pane"/>
             <div className="plot-button">
               <button className="nrp-btn nrp-btn-small btn-default btn-md small-icon-button"
-                onClick={this.newPlot()} v-pressable>
+                onClick={() => this.newPlot()} v-pressable>
                 <p>New Plot</p>
               </button>
             </div>
@@ -648,12 +709,12 @@ export default class DataVisualizer extends React.Component {
               <div className="axis-container">
                 <div className="axis-title">Axis Labels</div>
                 <div className="axis-labels">
-                  {this.state.axisLabels.forEach(label => {
+                  {this.state.axisLabels.map((label, labelIndex) => {
                     return (
-                      <div className="label-container">
+                      <div className="label-container" key={labelIndex}>
                         <div className="label-title">{label}</div>
                         <input type="text" onKeyDown={(event) => event.suppressKeyPress()} required
-                          onChange={(index) => this.setState(this.state.plotStructure.axis[index])}></input>
+                          onChange={(axis) => this.changeAxis(labelIndex, axis)}></input>
                       </div>);
                   })}
                 </div>
@@ -661,21 +722,22 @@ export default class DataVisualizer extends React.Component {
               : null}
             <div className="structure-title">Data Sources</div>
             <div className={this.state.hasAxis? 'datasource-scroll': 'datasource-scroll-sm'}>
-              {this.state.plotStructure.plotElements.forEach((index, element) => {
+              {this.state.plotStructure.plotElements.map((element, elementIndex) => {
                 return (
-                  <div className="datasource-element">
+                  <div className="datasource-element" key="elementIndex">
                     <div className="label-title">Label</div>
                     <input type="text" onKeyDown={(event) => event.suppressKeyPress()} required
-                      onChange={() => this.setState(element.label)}></input>
-                    {this.element.dimensions.forEach((index_dim, dimension) => {
+                      onChange={(label) => this.changeLabel(elementIndex, label)}></input>
+                    {element.dimensions.map((dimension, dimensionIndex) => {
                       return (
-                        <div className="datasource-dimension">
-                          <div className="label-title">{this.state.axisLabels[index_dim]}</div>
-                          <select className="dimension-source" onChange={() => this.setState(dimension.source)}
+                        <div className="datasource-dimension" key={dimensionIndex}>
+                          <div className="label-title">{this.state.axisLabels[dimensionIndex]}</div>
+                          <select className="dimension-source"
+                            onChange={(source) => this.changeSource(elementIndex, dimensionIndex, source)}
                             value={dimension.source}>
-                            {this.state.sortedSources.forEach(source => {
+                            {this.state.sortedSources.map((source, sourceIndex) => {
                               return (
-                                <option value={source}>{source}</option>
+                                <option value={source} key={sourceIndex}>{source}</option>
                               );
                             })}
                           </select>
@@ -683,7 +745,7 @@ export default class DataVisualizer extends React.Component {
                     })}
                     <div className="plot-remove">
                       <button className="nrp-btn nrp-btn-small btn-default btn-md small-icon-button"
-                        onClick={this.removeElement(index)} title="Remove plot entry" v-pressable>
+                        onClick={() => this.removeElement(elementIndex)} title="Remove plot entry" v-pressable>
                         <div className="button-symbol">X</div>
                       </button>
                     </div>
@@ -693,15 +755,15 @@ export default class DataVisualizer extends React.Component {
             </div>
             <div className="plot-show">
               <button className="nrp-btn nrp-btn-wide btn-default btn-md small-icon-button"
-                onClick={this.showPlot()} title="Add new plot entry" v-pressable>
+                onClick={() => this.showPlot()} title="Add new plot entry" v-pressable>
                 <div>Show Plot</div>
               </button>
               <button className="nrp-btn nrp-btn-wide btn-default btn-md small-icon-button"
-                onClick={this.addDefaultElement()} title="Add new plot entry" v-pressable>
+                onClick={() => this.addDefaultElement()} title="Add new plot entry" v-pressable>
                 <div>Add Data Source</div>
               </button>
               <button className="nrp-btn nrp-btn-wide btn-default btn-md small-icon-button"
-                onClick={this.newPlot()} title="Choose another plot" v-pressable>
+                onClick={() => this.newPlot()} title="Choose another plot" v-pressable>
                 <div>Back</div>
               </button>
             </div>
@@ -709,23 +771,33 @@ export default class DataVisualizer extends React.Component {
           : null}
         {!this.state.isPlotVisible && !this.state.isStructureVisible ?
           <div className="model-list">
-            {this.state.visibleModels.forEach(model => {
-              return (
-                <li className="model-container">
-                  <button className="model-content" id={'insert-entity-'+model.modelPath}
-                    onMouseDown={this.showStructure(model)}>
-                    <div className="model-image">
-                      <img className={this.getState()===EXPERIMENT_STATE.INITIALIZED?
-                        'image-disabled image-thumbnail': 'image-clickable image-tumbnail'}
-                      src={model.thumbnail? model.thumbnail:
-                        this.state.assetsPath+'/'+model.modelPath+'/thumbnail.png'} alt={model.modelPath}/>
-                    </div>
-                    <div className="model-box">
-                      <div className="model-title" style={{'background':model.color}}> {model.title}</div>
-                    </div>
-                  </button>
-                </li>
-              );
+            { this.state.types.map((type, typeIndex) => {
+              if (type.visible) {
+                let titleStyle = {  'background-color': type.color['default'] };
+                return type.models.map((model, modelIndex) => {
+                  let borderStyle = { 'border': '2px solid ' + type.color['default'] };
+                  return (
+                    <li className="model-container" key={modelIndex.toString() + typeIndex.toString()}>
+                      <div className="model-content" style={borderStyle} data-role="button"
+                        onMouseDown={() => this.showStructure(model)}>
+                        <div className="model-image">
+                          <img className={
+                            this.getSimulationState(this.props.serverURL, this.props.simulationID)
+                              ===EXPERIMENT_STATE.INITIALIZED?
+                              'image-disabled image-thumbnail': 'image-clickable image-thumbnail'}
+                          src={model.thumbnail} alt={model.modelPath}/>
+                        </div>
+                        <div className="model-caption">
+                          <div className="model-title" style={titleStyle}> {model.title}</div>
+                        </div>
+                      </div>
+                    </li>
+                  );
+                });
+              }
+              else {
+                return null;
+              }
             })}
           </div>
           : null}

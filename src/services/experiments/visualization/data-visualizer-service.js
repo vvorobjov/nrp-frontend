@@ -1,10 +1,11 @@
 import Plotly from 'plotly.js';
-import UserSettingsService from '../../user/user-settings-service';
+import { EventEmitter } from 'events';
 
+
+import UserSettingsService from '../../user/user-settings-service';
 import ExperimentExecutionService from '../execution/experiment-execution-service';
 import DataVisualizerROSAdapter from './data-visualizer-rosadapter';
 import SimulationService from '../execution/running-simulation-service';
-import ServerResourcesService from '../execution/server-resources-service';
 
 let _instance = null;
 const SINGLETON_ENFORCER = Symbol();
@@ -12,8 +13,9 @@ const SINGLETON_ENFORCER = Symbol();
 /**
  * Service taking care of data visualization operations and transition between the adaptor and the component
  */
-class DataVisualizerService {
+class DataVisualizerService extends EventEmitter {
   constructor(enforcer) {
+    super();
     if (enforcer !== SINGLETON_ENFORCER) {
       throw new Error('Use' + this.constructor.name + '.instance');
     }
@@ -37,12 +39,12 @@ class DataVisualizerService {
     this.key = keyContext;
   }
 
-  getState(serverURL, simulationID) {
-    return SimulationService.instance.getState(serverURL, simulationID);
+  async getSimulationState(serverURL, simulationID) {
+    return await SimulationService.instance.getState(serverURL, simulationID);
   }
 
-  loadTopics() {
-    ServerResourcesService.instance.getTopics(DataVisualizerROSAdapter.instance.loadTopics);
+  loadTopics(serverURL, simulationID) {
+    DataVisualizerROSAdapter.instance.getTopics(serverURL, simulationID);
   }
 
   sendSettings(settings) {
@@ -50,6 +52,11 @@ class DataVisualizerService {
     this.emit(DataVisualizerService.EVENTS.SETTINGS, this.settings);
   }
 
+  sendSortedSources(sortedSources) {
+    this.emit(DataVisualizerService.EVENTS.SORTED_SOURCES, sortedSources);
+  }
+
+  // ROS specific function
   sendStateMessage (message, topics) {
     this.emit(DataVisualizerService.EVENTS.STATE_MESSAGE, {message, topics});
   }
@@ -109,7 +116,8 @@ class DataVisualizerService {
 DataVisualizerService.EVENTS = Object.freeze({
   STANDARD_MESSAGE: 'STANDARD_MESSAGE',
   STATE_MESSAGE: 'STATE_MESSAGE',
-  SETTINGS: 'SETTINGS'
+  SETTINGS: 'SETTINGS',
+  SORTED_SOURCES: 'SORTED_SOURCES'
 });
 
 export default DataVisualizerService;
