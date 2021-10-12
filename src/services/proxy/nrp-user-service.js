@@ -62,7 +62,6 @@ class NrpUserService extends HttpService {
   async getCurrentUser() {
     if (!this.currentUser) {
       let responseIdentity = await this.httpRequestGET(IDENTITY_ME_URL);
-      console.info(responseIdentity);
       if (responseIdentity.ok) {
         this.currentUser = await responseIdentity.json();
       }

@@ -44,7 +44,9 @@ export class HttpService extends EventEmitter {
    */
   performRequest = async (url, options, data) => {
     // Add authorization header
-    options.headers.Authorization = `Bearer ${AuthenticationService.instance.getStoredToken()}`;
+    await AuthenticationService.instance.promiseInitialized;
+    let token = AuthenticationService.instance.getToken();
+    options.headers.Authorization = 'Bearer ' + token;
     if (data) {
       options.body = data;
     }
@@ -54,10 +56,7 @@ export class HttpService extends EventEmitter {
     // error handling
     if (!response.ok) {
       if (response.status === 477) {
-        const responseText = await response.text();
-        console.info('auth error');
-        console.info(responseText);
-        AuthenticationService.instance.openAuthenticationPage(/*responseText*/);
+        AuthenticationService.instance.authenticate();
       }
       else if (response.status === 478) {
         //TODO: redirect to maintenance page
