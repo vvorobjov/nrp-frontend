@@ -132,27 +132,25 @@ export default class DataVisualizer extends React.Component {
       types: this.createModelsTypes(types),
       axisLabels: [],
       plotStructure: [],
-      sortedSources: []
+      message: {},
+      topics: [],
+      sortedSources: [],
+      timer: null
     };
+
+    this.timer = null;
   }
 
   async componentDidMount() {
-    this.setState(state => {
-      return {
-        container: document.getElementsByClassName('plot-pane'),
-        keyContext: this.findKeyContext(document, 'plotid')
-      };
+    this.setState({
+      container: document.getElementsByClassName('plot-pane'),
+      keyContext: this.findKeyContext(document, 'plotid')
     });
 
     //ROS specific function
-    this.parseStateMessage = this.parseStateMessage.bind(this);
+    this.loadMessageAndTopics = this.loadMessageAndTopics.bind(this);
     DataVisualizerService.instance.addListener(
-      DataVisualizerService.EVENTS.STATE_MESSAGE, this.parseStateMessage
-    );
-
-    this.parseStandardMessage = this.parseStandardMessage.bind(this);
-    DataVisualizerService.instance.addListener(
-      DataVisualizerService.EVENTS.STANDARD_MESSAGE, this.parseStandardMessage
+      DataVisualizerService.EVENTS.MESSAGE_AND_TOPICS, this.loadMessageAndTopics
     );
 
     this.loadSettings = this.loadSettings.bind(this);
@@ -164,16 +162,19 @@ export default class DataVisualizer extends React.Component {
     DataVisualizerService.instance.addListener(
       DataVisualizerService.EVENTS.SORTED_SOURCES, this.loadSortedSources
     );
+
+    this.timer = setTimeout(() =>{
+      if (this.state.needPlotUpdate) {
+        this.setState({ needPlotUpdate: false });
+        DataVisualizerService.instance.updatePlotly();
+      }
+    }, 500);
   }
 
   componentWillUnmount() {
     //ROS specific function
     DataVisualizerService.instance.removeListener(
-      DataVisualizerService.EVENTS.STATE_MESSAGE, this.parseStateMessage
-    );
-
-    DataVisualizerService.instance.removeListener(
-      DataVisualizerService.EVENTS.STANDARD_MESSAGE, this.parseStandardMessage
+      DataVisualizerService.EVENTS.MESSAGE_AND_TOPICS, this.loadMessageAndTopics
     );
 
     DataVisualizerService.instance.removeListener(
@@ -183,6 +184,8 @@ export default class DataVisualizer extends React.Component {
     DataVisualizerService.instance.removeListener(
       DataVisualizerService.EVENTS.SORTED_SOURCES, this.loadSortedSources
     );
+
+    clearTimeout(this.timer);
   }
 
   createModelsTypes(types) {
@@ -193,6 +196,13 @@ export default class DataVisualizer extends React.Component {
       types[i].color.default = 'hsl(' + (10 + i / (types.length + 1) * 360.0) + ',95%,87%)';
     }
     return types;
+  }
+
+  loadMessageAndTopics(response) {
+    this.setState({
+      message: response.message,
+      topics: response.topics
+    });
   }
 
   loadSortedSources(sortedSources) {
@@ -238,9 +248,7 @@ export default class DataVisualizer extends React.Component {
   }
 
   //ROS specific function
-  parseStateMessage(response) {
-    let message = response.message;
-    let topics = response.topics;
+  parseStateMessage() {
     let currentTime = Date.now() / 1000.0;
     if (
       this.state.modelStateLastTime !== undefined &&
@@ -263,29 +271,29 @@ export default class DataVisualizer extends React.Component {
         dim++
       ) {
         let dimension = this.state.plotStructure.plotElements[i].dimensions[dim];
-        if (topics[dimension.source] === 'gazebo_msgs/Model/States') {
+        if (this.state.topics[dimension.source] === 'gazebo_msgs/Model/States') {
           //Search a message that matches (if any)
-          for (let j = 0; j < message.name.length; j++) {
-            if (dimension.source.startWith('/' + message.name[j])) {
+          for (let j = 0; j < this.state.message.name.length; j++) {
+            if (dimension.source.startWith('/' + this.state.message.name[j])) {
               let addValue = false;
               let value = 0;
-              if (dimension.source.startWith('/' + message.name[j] + '/model_state/position')) {
+              if (dimension.source.startWith('/' + this.state.message.name[j] + '/model_state/position')) {
                 addValue = true;
                 if (dimension.source.endWith('.x')) {
-                  value = message.pose[j].position.x;
+                  value = this.state.message.pose[j].position.x;
                 }
                 else if (dimension.source.endsWith('.y')) {
-                  value = message.pose[j].position.y;
+                  value = this.state.message.pose[j].position.y;
                 }
                 else if (dimension.source.endsWith('.z')) {
-                  value = message.pose[j].position.z;
+                  value = this.state.message.pose[j].position.z;
                 }
-                else if (dimension.source.startWith('/' + message.name[j] + '/model_state/angle')) {
+                else if (dimension.source.startWith('/' + this.state.message.name[j] + '/model_state/angle')) {
                   let q = new THREE.Quaternion(
-                    message.pose[j].orientation.x,
-                    message.pose[j].orientation.y,
-                    message.pose[j].orientation.z,
-                    message.pose[j].orientation.w
+                    this.state.message.pose[j].orientation.x,
+                    this.state.message.pose[j].orientation.y,
+                    this.state.message.pose[j].orientation.z,
+                    this.state.message.pose[j].orientation.w
                   );
                   let euler = new THREE.Euler();
                   euler.setFromQuaternion(q, 'XYZ');
@@ -313,11 +321,11 @@ export default class DataVisualizer extends React.Component {
       }
     }
     if (needUpdateTime) {
-      this.addTimePoint(topics);
+      this.addTimePoint();
     }
   }
 
-  parseStandardMessage(message) {
+  parseStandardMessage() {
     let needUpdateTime = false;
     if (this.state.data === null) {
       return;
@@ -329,7 +337,7 @@ export default class DataVisualizer extends React.Component {
       for (let dim = 0; dim < this.state.plotStructure.plotElements[i].dimensions.length; dim++) {
         let dimension = this.state.plotStructure.plotElements[i].dimensions[dim];
         if (dimension.source === this.name) {
-          this.addValueToDimension(i, dim, dataElement, message.data);
+          this.addValueToDimension(i, dim, dataElement, this.state.message.data);
           needUpdateTime = true;
         }
       }
@@ -402,14 +410,14 @@ export default class DataVisualizer extends React.Component {
     }
   }
 
-  addTimePoint(topics) {
+  addTimePoint() {
     for (let i = 0; i < this.state.plotStructure.plotElements.length; i++) {
       let dataElement = this.state.plotModel.mergedDimensions
         ? this.state.plotlyData[0]
         : this.state.plotlyData[1];
       for (let di = 0; di < this.state.plotStructure.plotElements[i].dimensions.length; di++) {
         let dimension = this.state.plotStructure.plotElements[i].dimensions[di];
-        if (topics[dimension.source] === '_time') {
+        if (this.state.topics[dimension.source] === '_time') {
           this.addValueToDimension(i, di, dataElement, this.props.timingTimeout);
         }
       }
@@ -453,8 +461,8 @@ export default class DataVisualizer extends React.Component {
       isStructureVisible: false,
       layout: {
         title: 'NRP Data Visualizer',
-        width: this.checkSize(this.state.layout.clientWidth),
-        height: this.checkSize(this.state.layout.clientHeight)
+        width: this.state.layout.clientWidth < 280 ? 280 : this.state.layout.clientWidth,
+        height: this.state.layout.clientHeight < 280 ? 280 : this.state.layout.clientHeight
       }
     });
     if (this.state.hasAxis) {
@@ -585,10 +593,6 @@ export default class DataVisualizer extends React.Component {
     DataVisualizerService.instance.unregisterPlot();
   }
 
-  checkSize(size) {
-    return size < 280 ? 280 : size;
-  }
-
   startListening() {
     this.stopListening();
     DataVisualizerService.instance.initializeConnection(this.state.plotStructure);
@@ -599,7 +603,7 @@ export default class DataVisualizer extends React.Component {
   }
 
   addDefaultElement() {
-    let minimalPlot = { label: '', dimensions: []};
+    let minimalPlot = { label: '', dimensions: [] };
     for (let i = 0; i < this.state.plotModel.dimensions; i++) {
       this.setState(state => {
         minimalPlot.dimensions.push({ source: state.sortedSources[i] });
@@ -668,6 +672,7 @@ export default class DataVisualizer extends React.Component {
 
   render() {
     return (
+      // data visualizer = dv
       <div className="dv-container">
         {!this.state.isPlotVisible && !this.state.isStructureVisible ?
           <div className="dv-header">
@@ -676,9 +681,9 @@ export default class DataVisualizer extends React.Component {
             <div className="dv-toolbar">
               {this.state.types.map((type, typeIndex) => {
                 let buttonStyle = {
-                  'background-color': type.visible? type.color[type.colorMode]: '#eeeeee',
-                  'border-top-left-radius': typeIndex===0? '25px': '0px',
-                  'border-top-right-radius': typeIndex===this.state.types.length-1? '25px': '0px'
+                  backgroundColor: type.visible? type.color[type.colorMode]: '#eeeeee',
+                  borderTopLeftRadius: typeIndex===0? '25px': '0px',
+                  borderTopRightRadius: typeIndex===this.state.types.length-1? '25px': '0px'
                 };
                 return (
                   <div className="dv-button" key={typeIndex} style={buttonStyle}
@@ -773,9 +778,9 @@ export default class DataVisualizer extends React.Component {
           <div className="model-list">
             { this.state.types.map((type, typeIndex) => {
               if (type.visible) {
-                let titleStyle = {  'background-color': type.color['default'] };
+                let titleStyle = {  backgroundColor: type.color['default'] };
                 return type.models.map((model, modelIndex) => {
-                  let borderStyle = { 'border': '2px solid ' + type.color['default'] };
+                  let borderStyle = { border: '2px solid ' + type.color['default'] };
                   return (
                     <li className="model-container" key={modelIndex.toString() + typeIndex.toString()}>
                       <div className="model-content" style={borderStyle} data-role="button"

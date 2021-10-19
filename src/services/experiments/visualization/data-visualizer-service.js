@@ -43,8 +43,8 @@ class DataVisualizerService extends EventEmitter {
     return await SimulationService.instance.getState(serverURL, simulationID);
   }
 
-  loadTopics(serverURL, simulationID) {
-    DataVisualizerROSAdapter.instance.getTopics(serverURL, simulationID);
+  loadTopics(serverURL) {
+    DataVisualizerROSAdapter.instance.getTopics(serverURL);
   }
 
   sendSettings(settings) {
@@ -57,12 +57,8 @@ class DataVisualizerService extends EventEmitter {
   }
 
   // ROS specific function
-  sendStateMessage (message, topics) {
-    this.emit(DataVisualizerService.EVENTS.STATE_MESSAGE, {message, topics});
-  }
-
-  sendStandardMessage (message) {
-    this.emit(DataVisualizerService.EVENTS.STANDARD_MESSAGE, message);
+  sendMessageAndTopics (message, topics) {
+    this.emit(DataVisualizerService.EVENTS.MESSAGE_AND_TOPICS, {message, topics});
   }
 
   saveSettings(keyContext, isStructure, isPlot, axisLabels, plotModel, plotStructure) {
@@ -84,16 +80,23 @@ class DataVisualizerService extends EventEmitter {
       height: this.checkSize(this.container.clientHeight)
     });
     if (this.key !== keyContext) {
-      this.saveSettings();
+      UserSettingsService.instance.saveSettings(this.settings);
       return [this.container.offsetWidth, this.container.offsetHeight].join('x');
     }
   }
 
   buildPlotly(container, data, layout) {
+    this.data = data;
+    this.layout = layout;
+    this.container = container;
     if (this.plotly) {
       return Plotly.react(container, data, layout, this.plotlyConfig);
     }
     return Plotly.plot(container, data, layout, this.plotlyConfig);
+  }
+
+  updatePlotly(container) {
+    Plotly.react(container, this.data, this.layout, this.plotlyConfig);
   }
 
   initializeConnection(plotStructure) {
@@ -114,8 +117,7 @@ class DataVisualizerService extends EventEmitter {
 }
 
 DataVisualizerService.EVENTS = Object.freeze({
-  STANDARD_MESSAGE: 'STANDARD_MESSAGE',
-  STATE_MESSAGE: 'STATE_MESSAGE',
+  MESSAGE_AND_TOPICS:  'MESSAGE_AND_TOPICS',
   SETTINGS: 'SETTINGS',
   SORTED_SOURCES: 'SORTED_SOURCES'
 });

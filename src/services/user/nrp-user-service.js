@@ -1,5 +1,5 @@
 import config from '../../config.json';
-import endpoints from './data/endpoints.json';
+import endpoints from '../proxy/data/endpoints.json';
 
 import { HttpService } from '../http-service.js';
 
