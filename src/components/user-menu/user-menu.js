@@ -2,7 +2,7 @@ import React from 'react';
 import Dropdown from 'react-bootstrap/Dropdown';
 import { FaUserCircle, FaSignOutAlt } from 'react-icons/fa';
 
-import NrpUserService from '../../services/proxy/nrp-user-service.js';
+import NrpUserService from '../../services/user/nrp-user-service.js';
 import AuthenticationService from '../../services/authentication-service.js';
 
 import './user-menu.css';

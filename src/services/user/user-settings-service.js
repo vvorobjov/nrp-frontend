@@ -10,7 +10,7 @@ export default class UserSettingsService {
       throw new Error('Use' + this.constructor.name + '.instance');
     }
 
-    this.settings = {};
+    this.settingsData = {};
   }
 
   static get instance() {
@@ -21,7 +21,7 @@ export default class UserSettingsService {
     return _instance;
   }
 
-  saveSettings(settings) {
-    return settings;
+  saveSettings(settingsData) {
+    this.settingsData = settingsData;
   }
 }

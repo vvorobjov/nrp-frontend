@@ -35,8 +35,13 @@ class DialogService extends EventEmitter {
   }
 
   // Handling data error
-  dataError(error){
+  dataError(error) {
     error.type = 'Data Error';
+    this.emit(DialogService.EVENTS.ERROR, error);
+  }
+
+  rosError(error) {
+    error.type = 'ROS Error';
     this.emit(DialogService.EVENTS.ERROR, error);
   }
 

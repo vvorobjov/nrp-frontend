@@ -173,8 +173,8 @@ class SimulationService extends HttpService {
    * @param {function} callback Processing function
    * @returns {object} The simulation topics processed
    */
-  async getTopics(serverURL, simulationID, callback) {
-    await this.httpRequestGET(serverURL + '/simulation/' + simulationID + '/topics')
+  async getTopics(serverURL, callback) {
+    await this.httpRequestGET(serverURL + '/simulation/topics')
       .then(async (response) => {
         console.log(response);
         return await callback(response.json());
