@@ -1,4 +1,5 @@
 import React from 'react';
+import Plot from 'react-plotlyjs';
 import * as THREE from 'three';
 import ChartBasic from '../../assets/images/data-visualizer/basic_chart.png';
 import ChartLine from '../../assets/images/data-visualizer/line_chart.png';
@@ -120,9 +121,10 @@ export default class DataVisualizer extends React.Component {
     this.state = {
       isPlotVisible: false,
       isStructureVisible: false,
+      config: {},
+      container: undefined,
       data: [],
       plotModel: [],
-      container: undefined,
       keyContext: undefined,
       layout: null,
       hasAxis: false,
@@ -143,7 +145,7 @@ export default class DataVisualizer extends React.Component {
 
   async componentDidMount() {
     this.setState({
-      container: document.getElementsByClassName('plot-pane'),
+      container: document.getElementsByClassName('plot'),
       keyContext: this.findKeyContext(document, 'plotid')
     });
 
@@ -166,7 +168,6 @@ export default class DataVisualizer extends React.Component {
     this.timer = setTimeout(() =>{
       if (this.state.needPlotUpdate) {
         this.setState({ needPlotUpdate: false });
-        DataVisualizerService.instance.updatePlotly();
       }
     }, 500);
   }
@@ -413,8 +414,8 @@ export default class DataVisualizer extends React.Component {
   addTimePoint() {
     for (let i = 0; i < this.state.plotStructure.plotElements.length; i++) {
       let dataElement = this.state.plotModel.mergedDimensions
-        ? this.state.plotlyData[0]
-        : this.state.plotlyData[1];
+        ? this.state.data[0]
+        : this.state.data[1];
       for (let di = 0; di < this.state.plotStructure.plotElements[i].dimensions.length; di++) {
         let dimension = this.state.plotStructure.plotElements[i].dimensions[di];
         if (this.state.topics[dimension.source] === '_time') {
@@ -424,14 +425,14 @@ export default class DataVisualizer extends React.Component {
     }
   }
 
-  showStructure(model) {
+  async showStructure(model) {
     this.setState({
-      isStructure: true,
-      axisLabels: ['x', 'Y', 'Z'],
+      isStructureVisible: true,
+      axisLabels: ['X', 'Y', 'Z'],
       plotModel: model,
       plotStructure: { axis: [], plotElements: [] }
     });
-    DataVisualizerService.instance.loadTopics(this.props.serverURL, this.props.simulationID);
+    await DataVisualizerService.instance.loadTopics(this.props.serverURL);
     while (this.state.plotModel.dimensions < this.state.axisLabels.length) {
       this.setState(state => {
         return { axisLabels: state.axisLabels.slice(0, -1) };
@@ -445,27 +446,30 @@ export default class DataVisualizer extends React.Component {
       isPlotVisible: false,
       isStructureVisible: false
     });
-    if (DataVisualizerService.instance.unregisterPlot) {
-      DataVisualizerService.instance.unregisterPlot(this.state.keyContext);
-      DataVisualizerService.instance.unregisterPlot = null;
-    }
+    this.setState( state => {
+      return {
+        config: {
+          ...state.config,
+          width: state.container.clientWidth < 280 ? 280 : state.container.clientWidth,
+          height: state.container.clientHeight < 280 ? 280 : state.container.clientHeight
+        }
+      };
+    });
+    DataVisualizerService.instance.unregisterPlot(this.state.keyContext);
   }
 
   showPlot(hasSettings) {
-    if (DataVisualizerService.instance.unregisterPlot) {
-      DataVisualizerService.instance.unregisterPlot(this.state.keyContext);
-      DataVisualizerService.instance.unregisterPlot = null;
-    }
+    DataVisualizerService.instance.unregisterPlot(this.state.keyContext);
     this.setState({
       isPlotVisible: true,
       isStructureVisible: false,
       layout: {
         title: 'NRP Data Visualizer',
-        width: this.state.layout.clientWidth < 280 ? 280 : this.state.layout.clientWidth,
-        height: this.state.layout.clientHeight < 280 ? 280 : this.state.layout.clientHeight
+        width: this.state.container.clientWidth < 280 ? 280 : this.state.container.clientWidth,
+        height: this.state.container.clientHeight < 280 ? 280 : this.state.container.clientHeight
       }
     });
-    if (this.state.hasAxis) {
+    if (this.state.plotModel.hasAxis) {
       for (
         let axis = 0;
         axis < this.state.plotStructure.axis.length;
@@ -576,13 +580,6 @@ export default class DataVisualizer extends React.Component {
         this.state.data.push(newElement);
       }
     }
-    this.state.setState({
-      plotly: DataVisualizerService.instance.buildPlotly(
-        this.state.container,
-        this.state.data,
-        this.state.layout
-      )
-    });
     this.startListening();
     if (hasSettings) {
       DataVisualizerService.instance.saveSettings(
@@ -590,7 +587,7 @@ export default class DataVisualizer extends React.Component {
         this.state.axisLabels, this.state.plotModel, this.state.plotStructure
       );
     }
-    DataVisualizerService.instance.unregisterPlot();
+    DataVisualizerService.instance.unregisterPlot(this.state.keyContext);
   }
 
   startListening() {
@@ -619,7 +616,8 @@ export default class DataVisualizer extends React.Component {
 
   removeElement(elementIndex) {
     this.setState(state => {
-      return {plotStructure: state.plotStructure.plotElements.splice(elementIndex, 1)};
+      state.plotStructure.plotElements.splice(elementIndex, 1);
+      return { plotStructure: state.plotStructure };
     });
   }
 
@@ -698,7 +696,11 @@ export default class DataVisualizer extends React.Component {
           : null}
         {this.state.isPlotVisible && this.state.isStructureVisible ?
           <div className="plot-title">
-            <div className="plot-pane"/>
+            <Plot id="plot"
+              data={this.state.data}
+              layout={this.state.layout}
+              config={this.state.config}
+            />
             <div className="plot-button">
               <button className="nrp-btn nrp-btn-small btn-default btn-md small-icon-button"
                 onClick={() => this.newPlot()} v-pressable>
@@ -709,8 +711,8 @@ export default class DataVisualizer extends React.Component {
           : null}
         {this.state.isStructureVisible ?
           <div className="structure-container">
-            <h3>Plotting Tool</h3>
-            {this.state.hasAxis ?
+            <h3>Data Visualizer</h3>
+            {this.state.plotModel.hasAxis ?
               <div className="axis-container">
                 <div className="axis-title">Axis Labels</div>
                 <div className="axis-labels">
@@ -718,21 +720,21 @@ export default class DataVisualizer extends React.Component {
                     return (
                       <div className="label-container" key={labelIndex}>
                         <div className="label-title">{label}</div>
-                        <input type="text" onKeyDown={(event) => event.suppressKeyPress()} required
-                          onChange={(axis) => this.changeAxis(labelIndex, axis)}></input>
+                        <input onKeyDown={(event) => event.suppressKeyPress()}
+                          required onChange={(axis) => this.changeAxis(labelIndex, axis)}/>
                       </div>);
                   })}
                 </div>
               </div>
               : null}
             <div className="structure-title">Data Sources</div>
-            <div className={this.state.hasAxis? 'datasource-scroll': 'datasource-scroll-sm'}>
+            <div className={this.state.plotModel.hasAxis? 'datasource-scroll': 'datasource-scroll-sm'}>
               {this.state.plotStructure.plotElements.map((element, elementIndex) => {
                 return (
-                  <div className="datasource-element" key="elementIndex">
-                    <div className="label-title">Label</div>
-                    <input type="text" onKeyDown={(event) => event.suppressKeyPress()} required
-                      onChange={(label) => this.changeLabel(elementIndex, label)}></input>
+                  <div className="datasource-element" key={elementIndex}>
+                    <div className="label-title">Label </div>
+                    <input className="label-name" type="text" onKeyDown={(event) => event.suppressKeyPress()} required
+                      onChange={(label) => this.changeLabel(elementIndex, label)}/>
                     {element.dimensions.map((dimension, dimensionIndex) => {
                       return (
                         <div className="datasource-dimension" key={dimensionIndex}>
@@ -749,8 +751,8 @@ export default class DataVisualizer extends React.Component {
                         </div>);
                     })}
                     <div className="plot-remove">
-                      <button className="nrp-btn nrp-btn-small btn-default btn-md small-icon-button"
-                        onClick={() => this.removeElement(elementIndex)} title="Remove plot entry" v-pressable>
+                      <button className="nrp-btn btn-default btn-md small-icon-button"
+                        onClick={() => this.removeElement(elementIndex)} title="Remove plot entry">
                         <div className="button-symbol">X</div>
                       </button>
                     </div>
@@ -760,15 +762,15 @@ export default class DataVisualizer extends React.Component {
             </div>
             <div className="plot-show">
               <button className="nrp-btn nrp-btn-wide btn-default btn-md small-icon-button"
-                onClick={() => this.showPlot()} title="Add new plot entry" v-pressable>
+                onClick={() => this.showPlot()} title="Add new plot entry">
                 <div>Show Plot</div>
               </button>
               <button className="nrp-btn nrp-btn-wide btn-default btn-md small-icon-button"
-                onClick={() => this.addDefaultElement()} title="Add new plot entry" v-pressable>
+                onClick={() => this.addDefaultElement()} title="Add new plot entry">
                 <div>Add Data Source</div>
               </button>
               <button className="nrp-btn nrp-btn-wide btn-default btn-md small-icon-button"
-                onClick={() => this.newPlot()} title="Choose another plot" v-pressable>
+                onClick={() => this.newPlot()} title="Choose another plot">
                 <div>Back</div>
               </button>
             </div>

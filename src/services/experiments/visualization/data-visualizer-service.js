@@ -1,11 +1,10 @@
-import Plotly from 'plotly.js';
 import { EventEmitter } from 'events';
 
 
 import UserSettingsService from '../../user/user-settings-service';
-import ExperimentExecutionService from '../execution/experiment-execution-service';
 import DataVisualizerROSAdapter from './data-visualizer-rosadapter';
 import SimulationService from '../execution/running-simulation-service';
+import ServerResourcesService from '../execution/server-resources-service';
 
 let _instance = null;
 const SINGLETON_ENFORCER = Symbol();
@@ -17,9 +16,8 @@ class DataVisualizerService extends EventEmitter {
   constructor(enforcer) {
     super();
     if (enforcer !== SINGLETON_ENFORCER) {
-      throw new Error('Use' + this.constructor.name + '.instance');
+      throw new Error('Use ' + this.constructor.name + '.instance');
     }
-    this.container = {};
     this.key = '';
     this.adapter = 'ROS';
     this.plotly = true;
@@ -43,8 +41,8 @@ class DataVisualizerService extends EventEmitter {
     return await SimulationService.instance.getState(serverURL, simulationID);
   }
 
-  loadTopics(serverURL) {
-    DataVisualizerROSAdapter.instance.getTopics(serverURL);
+  async loadTopics(serverURL) {
+    await DataVisualizerROSAdapter.instance.getTopics(serverURL);
   }
 
   sendSettings(settings) {
@@ -74,37 +72,18 @@ class DataVisualizerService extends EventEmitter {
     UserSettingsService.instance.saveSettings(this.settings);
   }
 
-  async unregisterPlot(keyContext) {
-    Plotly.relayout(this.container, {
-      width: this.checkSize(this.container.clientWidth),
-      height: this.checkSize(this.container.clientHeight)
-    });
+  unregisterPlot(keyContext) {
     if (this.key !== keyContext) {
       UserSettingsService.instance.saveSettings(this.settings);
-      return [this.container.offsetWidth, this.container.offsetHeight].join('x');
     }
   }
 
-  buildPlotly(container, data, layout) {
-    this.data = data;
-    this.layout = layout;
-    this.container = container;
-    if (this.plotly) {
-      return Plotly.react(container, data, layout, this.plotlyConfig);
-    }
-    return Plotly.plot(container, data, layout, this.plotlyConfig);
-  }
-
-  updatePlotly(container) {
-    Plotly.react(container, this.data, this.layout, this.plotlyConfig);
-  }
-
-  initializeConnection(plotStructure) {
-    let server = ExperimentExecutionService.instance.getServerConfig()[1];
+  initializeConnection(plotStructure, simulationId) {
+    let server = ServerResourcesService.instance.getServerConfig(simulationId);
     //BUILD PARALLEL BRANCH HERE WITH DIFFERENT ADAPTER
     //Parameters: plotStructure, server, adapter
     if (this.adapter.name === 'ROS') {
-      this.connection = DataVisualizerROSAdapter.instance.getOrCreateConnectionTo(server);
+      this.connection = DataVisualizerROSAdapter.instance.getOrCreateConnection(server);
       DataVisualizerROSAdapter.instance.subscribeTopics(plotStructure);
     }
   }

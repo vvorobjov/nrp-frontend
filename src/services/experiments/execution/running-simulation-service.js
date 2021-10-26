@@ -170,14 +170,12 @@ class SimulationService extends HttpService {
    * Get the ROS topics of the simulation and apply a callback function to them.
    * @param {string} serverURL URL of the server the simulation is running on
    * @param {number} simulationID ID of the simulation
-   * @param {function} callback Processing function
    * @returns {object} The simulation topics processed
    */
-  async getTopics(serverURL, callback) {
-    await this.httpRequestGET(serverURL + '/simulation/topics')
+  async getTopics(serverURL) {
+    return await this.httpRequestGET(serverURL + '/simulation/topics')
       .then(async (response) => {
-        console.log(response);
-        return await callback(response.json());
+        return await response.json();
       })
       .catch((error) => {
         DialogService.instance.networkError(error);

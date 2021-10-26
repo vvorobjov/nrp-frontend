@@ -53,7 +53,9 @@ export default class SimulationView extends React.Component {
 
     this.state = {
       modelFlexLayout: FlexLayout.Model.fromJson(jsonBaseLayout),
-      showLeaveDialog: false
+      showLeaveDialog: false,
+      timingSimulationTime: 0,
+      timingTimeout: 0
     };
 
     this.refLayout = React.createRef();

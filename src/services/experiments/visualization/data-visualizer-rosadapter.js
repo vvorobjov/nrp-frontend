@@ -1,8 +1,8 @@
 import SimulationService from '../execution/running-simulation-service';
 import UserSettingsService from '../../user/user-settings-service';
-import ExperimentExecutionService from '../execution/experiment-execution-service';
 import DataVisualizerService from './data-visualizer-service';
 import DialogService from '../../dialog-service';
+import ServerResourcesService from '../execution/server-resources-service';
 
 let _instance = null;
 const SINGLETON_ENFORCER = Symbol();
@@ -13,7 +13,7 @@ const SINGLETON_ENFORCER = Symbol();
 export default class DataVisualizerROSAdapter {
   constructor(enforcer) {
     if (enforcer !== SINGLETON_ENFORCER) {
-      throw new Error('Use' + this.constructor.name + '.instance');
+      throw new Error('Use ' + this.constructor.name + '.instance');
     }
     this.supportedTypes =  [
       'std_msgs/Float32',
@@ -42,9 +42,9 @@ export default class DataVisualizerROSAdapter {
     return _instance;
   }
 
-  getTopics(serverURL) {
-    SimulationService.instance.getTopics(serverURL, this.sendTopics);
+  async getTopics(serverURL) {
     this.settings = UserSettingsService.instance.settingsData;
+    this.sendTopics(await SimulationService.instance.getTopics(serverURL));
   }
 
   sendTopics(response) {
@@ -56,7 +56,7 @@ export default class DataVisualizerROSAdapter {
     }
     this.sortedTopics = Object.keys(this.topics);
     this.sortedTopics.sort();
-    this.loadRobotsTopics();
+    this.loadRobotTopics();
     DataVisualizerService.instance.sendSortedSources(this.sortedTopics);
     if (this.loadSettingsWhenTopic) {
       this.loadSettingsWhenTopic = false;
@@ -78,7 +78,7 @@ export default class DataVisualizerROSAdapter {
         const request = new this.roslib.ServiceRequest({
           model_name: robot.robotId
         });
-        const rosWebSocketURL = ExperimentExecutionService.instance.getServerConfig()[1].rosbridge.websocket;
+        const rosWebSocketURL = ServerResourcesService.instance.getServerConfig().rosbridge.websocket;
         const rosModelPropertyService = this.roslib.createService(
           rosWebSocketURL,
           '/gazebo/get_model_propreties',
