@@ -148,6 +148,12 @@
   flex-direction: column;
 }
 
+.button-symbol {
+  top: 1px;
+  font-size: 16px;
+  left: 10px;
+}
+
 .plot-show {
   margin-top: 20px;
   display: flex;
