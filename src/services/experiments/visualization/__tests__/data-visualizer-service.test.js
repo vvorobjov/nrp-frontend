@@ -107,7 +107,7 @@ test('initializeConnection gets the server configuration, get/create a ROS conne
   jest.spyOn(ServerResourcesService.instance, 'getServerConfig').mockImplementation(() => {
     return 'mock-server';
   });
-  jest.spyOn(DataVisualizerROSAdapter.instance, 'getOrCreateConnection').mockImplementation(() => {
+  jest.spyOn(DataVisualizerROSAdapter.instance, 'getOrCreateConnectionTo').mockImplementation(() => {
     return 'mock-connection';
   });
   jest.spyOn(DataVisualizerROSAdapter.instance, 'subscribeTopics').mockImplementation();

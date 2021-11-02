@@ -4,7 +4,6 @@ import { EventEmitter } from 'events';
 import UserSettingsService from '../../user/user-settings-service';
 import DataVisualizerROSAdapter from './data-visualizer-rosadapter';
 import SimulationService from '../execution/running-simulation-service';
-import ServerResourcesService from '../execution/server-resources-service';
 
 let _instance = null;
 const SINGLETON_ENFORCER = Symbol();
@@ -41,8 +40,8 @@ class DataVisualizerService extends EventEmitter {
     return await SimulationService.instance.getState(serverURL, simulationID);
   }
 
-  async loadTopics(serverURL) {
-    await DataVisualizerROSAdapter.instance.getTopics(serverURL);
+  async loadTopics(serverURL, simulationID, serverConfig) {
+    await DataVisualizerROSAdapter.instance.getTopics(serverURL, simulationID, serverConfig);
   }
 
   sendSettings(settings) {
@@ -78,12 +77,11 @@ class DataVisualizerService extends EventEmitter {
     }
   }
 
-  initializeConnection(plotStructure, simulationId) {
-    let server = ServerResourcesService.instance.getServerConfig(simulationId);
+  initializeConnection(plotStructure, serverConfig) {
     //BUILD PARALLEL BRANCH HERE WITH DIFFERENT ADAPTER
     //Parameters: plotStructure, server, adapter
     if (this.adapter.name === 'ROS') {
-      this.connection = DataVisualizerROSAdapter.instance.getOrCreateConnection(server);
+      this.connection = DataVisualizerROSAdapter.instance.getOrCreateConnectionTo(serverConfig);
       DataVisualizerROSAdapter.instance.subscribeTopics(plotStructure);
     }
   }

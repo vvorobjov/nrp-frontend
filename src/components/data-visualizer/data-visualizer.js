@@ -1,5 +1,5 @@
 import React from 'react';
-import Plot from 'react-plotlyjs';
+import Plot from 'react-plotly.js';
 import * as THREE from 'three';
 import ChartBasic from '../../assets/images/data-visualizer/basic_chart.png';
 import ChartLine from '../../assets/images/data-visualizer/line_chart.png';
@@ -432,7 +432,8 @@ export default class DataVisualizer extends React.Component {
       plotModel: model,
       plotStructure: { axis: [], plotElements: [] }
     });
-    await DataVisualizerService.instance.loadTopics(this.props.serverURL);
+    await DataVisualizerService.instance.loadTopics(this.props.serverURL,
+      this.props.simulationID, this.props.serverConfig);
     while (this.state.plotModel.dimensions < this.state.axisLabels.length) {
       this.setState(state => {
         return { axisLabels: state.axisLabels.slice(0, -1) };
@@ -592,7 +593,7 @@ export default class DataVisualizer extends React.Component {
 
   startListening() {
     this.stopListening();
-    DataVisualizerService.instance.initializeConnection(this.state.plotStructure);
+    DataVisualizerService.instance.initializeConnection(this.state.plotStructure, this.props.serverConfig);
   }
 
   stopListening() {
@@ -659,7 +660,7 @@ export default class DataVisualizer extends React.Component {
   changeSource(elementIndex, dimensionIndex, source) {
     this.setState(state => {
       let plotStructure = state.plotStructure;
-      plotStructure.plotElements[elementIndex].dimensions[dimensionIndex].source = source;
+      plotStructure.plotElements[elementIndex].dimensions[dimensionIndex].source = source.target.value;
       return { plotStructure: plotStructure };
     });
   }
@@ -694,7 +695,7 @@ export default class DataVisualizer extends React.Component {
             </div>
           </div>
           : null}
-        {this.state.isPlotVisible && this.state.isStructureVisible ?
+        {this.state.isPlotVisible && !this.state.isStructureVisible ?
           <div className="plot-title">
             <Plot id="plot"
               data={this.state.data}
@@ -702,9 +703,9 @@ export default class DataVisualizer extends React.Component {
               config={this.state.config}
             />
             <div className="plot-button">
-              <button className="nrp-btn nrp-btn-small btn-default btn-md small-icon-button"
-                onClick={() => this.newPlot()} v-pressable>
-                <p>New Plot</p>
+              <button className="nrp-btn nrp-btn-wide btn-default btn-md small-icon-button"
+                onClick={() => this.newPlot()}>
+                <div>New Plot</div>
               </button>
             </div>
           </div>
@@ -720,8 +721,7 @@ export default class DataVisualizer extends React.Component {
                     return (
                       <div className="label-container" key={labelIndex}>
                         <div className="label-title">{label}</div>
-                        <input onKeyDown={(event) => event.suppressKeyPress()}
-                          required onChange={(axis) => this.changeAxis(labelIndex, axis)}/>
+                        <input required onChange={(axis) => this.changeAxis(labelIndex, axis)}/>
                       </div>);
                   })}
                 </div>
@@ -733,7 +733,7 @@ export default class DataVisualizer extends React.Component {
                 return (
                   <div className="datasource-element" key={elementIndex}>
                     <div className="label-title">Label </div>
-                    <input className="label-name" type="text" onKeyDown={(event) => event.suppressKeyPress()} required
+                    <input className="label-name" type="text" required
                       onChange={(label) => this.changeLabel(elementIndex, label)}/>
                     {element.dimensions.map((dimension, dimensionIndex) => {
                       return (

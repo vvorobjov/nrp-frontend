@@ -2,7 +2,7 @@ import SimulationService from '../execution/running-simulation-service';
 import UserSettingsService from '../../user/user-settings-service';
 import DataVisualizerService from './data-visualizer-service';
 import DialogService from '../../dialog-service';
-import ServerResourcesService from '../execution/server-resources-service';
+import RoslibService from '../../roslib-service';
 
 let _instance = null;
 const SINGLETON_ENFORCER = Symbol();
@@ -25,8 +25,6 @@ export default class DataVisualizerROSAdapter {
     ];
     this.topicConnections = [];
     this.topics = [];
-    this.sceneInfo = [];
-    this.roslib = undefined;
     this.rosConnection = undefined;
     this.modelPointsFrequency = 2;
     this.topics = [];
@@ -42,13 +40,14 @@ export default class DataVisualizerROSAdapter {
     return _instance;
   }
 
-  async getTopics(serverURL) {
+  async getTopics(serverURL, simulationID, serverConfig) {
     this.settings = UserSettingsService.instance.settingsData;
-    this.sendTopics(await SimulationService.instance.getTopics(serverURL));
+    await this.sendTopics(await SimulationService.instance.getTopics(serverURL),
+      serverURL, simulationID, serverConfig);
   }
 
-  sendTopics(response) {
-    this.topics = [{ Time: '_time' }];
+  async sendTopics(response, serverURL, simulationID, serverConfig) {
+    this.topics = { Time: '_time' };
     for (let i = 0; i < response.topics.length; i++) {
       if (this.supportedTypes.includes(response.topics[i].topicType)) {
         this.topics[response.topics[i].topic] = response.topics[i].topicType;
@@ -56,7 +55,7 @@ export default class DataVisualizerROSAdapter {
     }
     this.sortedTopics = Object.keys(this.topics);
     this.sortedTopics.sort();
-    this.loadRobotTopics();
+    await this.loadRobotTopics(serverURL, simulationID, serverConfig);
     DataVisualizerService.instance.sendSortedSources(this.sortedTopics);
     if (this.loadSettingsWhenTopic) {
       this.loadSettingsWhenTopic = false;
@@ -64,23 +63,24 @@ export default class DataVisualizerROSAdapter {
     }
   }
 
-  loadRobotTopics() {
-    if (this.sceneInfo.robots) {
-      for (let i = 0; i < this.sceneInfo.robots.length; i++) {
-        const robot = this.sceneInfo.robots[i];
-        let topics = this.topics;
-        topics['/' + robot.robotId + '/model_state/position.x'] = 'gazebo_msgs/ModelStates';
-        topics['/' + robot.robotId + '/model_state/position.y'] = 'gazebo_msgs/ModelStates';
-        topics['/' + robot.robotId + '/model_state/position.z'] = 'gazebo_msgs/ModelStates';
-        topics['/' + robot.robotId + '/model_state/angle.x'] = 'gazebo_msgs/ModelStates';
-        topics['/' + robot.robotId + '/model_state/angle.y'] = 'gazebo_msgs/ModelStates';
-        topics['/' + robot.robotId + '/model_state/angle.z'] = 'gazebo_msgs/ModelStates';
-        const request = new this.roslib.ServiceRequest({
+  async loadRobotTopics(serverURL, simulationID, serverConfig) {
+    let response = await SimulationService.instance.getRobots(serverURL, simulationID);
+    if (response.robots) {
+      for (let i = 0; i < response.robots.length; i++) {
+        const robot = response.robots[i];
+        this.topics['/' + robot.robotId + '/model_state/position.x'] = 'gazebo_msgs/ModelStates';
+        this.topics['/' + robot.robotId + '/model_state/position.y'] = 'gazebo_msgs/ModelStates';
+        this.topics['/' + robot.robotId + '/model_state/position.z'] = 'gazebo_msgs/ModelStates';
+        this.topics['/' + robot.robotId + '/model_state/angle.x'] = 'gazebo_msgs/ModelStates';
+        this.topics['/' + robot.robotId + '/model_state/angle.y'] = 'gazebo_msgs/ModelStates';
+        this.topics['/' + robot.robotId + '/model_state/angle.z'] = 'gazebo_msgs/ModelStates';
+        const request = RoslibService.instance.requestService({
           model_name: robot.robotId
         });
-        const rosWebSocketURL = ServerResourcesService.instance.getServerConfig().rosbridge.websocket;
-        const rosModelPropertyService = this.roslib.createService(
-          rosWebSocketURL,
+        const rosWebSocketURL = serverConfig.rosbridge.websocket;
+        const rosWebSocket = RoslibService.instance.getConnection(rosWebSocketURL);
+        const rosModelPropertyService = RoslibService.instance.createService(
+          rosWebSocket,
           '/gazebo/get_model_propreties',
           'GetModelProperties'
         );
@@ -89,8 +89,10 @@ export default class DataVisualizerROSAdapter {
           robotProperties => {
             this.parseRobotModelTopics(robotProperties);
           },
-          error => {
-            DialogService.instance.rosError(error);
+          errorMessage => {
+            DialogService.instance.rosError({
+              message: errorMessage
+            });
           }
         );
       }
@@ -112,6 +114,8 @@ export default class DataVisualizerROSAdapter {
         }
       }
     }
+    this.sortedTopics = Object.keys(this.topics);
+    this.sortedTopics.sort();
   }
 
   addTopic(topicURL, rosType) {
@@ -130,8 +134,8 @@ export default class DataVisualizerROSAdapter {
     }
   }
 
-  getOrCreateConnection(server) {
-    return this.roslib.getOrCreateConnection(server);
+  getOrCreateConnectionTo(serverConfig) {
+    return RoslibService.instance.getConnection(serverConfig.rosbridge.websocket);
   }
 
   sendMessageAndTopics (message) {
@@ -159,7 +163,7 @@ export default class DataVisualizerROSAdapter {
           topicName = '/gazebo/model_states';
         }
         if (!(topicName in topicSubscribed))  {
-          let topicSubscriber = this.roslib.createTopic(
+          let topicSubscriber = RoslibService.instance.createTopic(
             this.rosConnection,
             topicName,
             topicType,

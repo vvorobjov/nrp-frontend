@@ -75,6 +75,17 @@ class RoslibService {
       )
     );
   };
+
+  requestService(modelName, additionalOptions) {
+    return new ROSLIB.Service(
+      _.extend(
+        {
+          modelName: modelName
+        },
+        additionalOptions
+      )
+    );
+  };
 }
 
 export default RoslibService;
