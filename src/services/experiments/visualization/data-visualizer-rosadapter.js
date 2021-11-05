@@ -27,7 +27,6 @@ export default class DataVisualizerROSAdapter {
     this.topics = [];
     this.rosConnection = undefined;
     this.modelPointsFrequency = 2;
-    this.topics = [];
     this.sortedTopics = [];
     this.loadSettingsWhenTopic = true;
   }
@@ -53,9 +52,9 @@ export default class DataVisualizerROSAdapter {
         this.topics[response.topics[i].topic] = response.topics[i].topicType;
       }
     }
+    await this.loadRobotTopics(serverURL, simulationID, serverConfig);
     this.sortedTopics = Object.keys(this.topics);
     this.sortedTopics.sort();
-    await this.loadRobotTopics(serverURL, simulationID, serverConfig);
     DataVisualizerService.instance.sendSortedSources(this.sortedTopics);
     if (this.loadSettingsWhenTopic) {
       this.loadSettingsWhenTopic = false;
@@ -74,14 +73,12 @@ export default class DataVisualizerROSAdapter {
         this.topics['/' + robot.robotId + '/model_state/angle.x'] = 'gazebo_msgs/ModelStates';
         this.topics['/' + robot.robotId + '/model_state/angle.y'] = 'gazebo_msgs/ModelStates';
         this.topics['/' + robot.robotId + '/model_state/angle.z'] = 'gazebo_msgs/ModelStates';
-        const request = RoslibService.instance.requestService({
-          model_name: robot.robotId
-        });
+        const request = RoslibService.instance.requestService(robot.robotId);
         const rosWebSocketURL = serverConfig.rosbridge.websocket;
-        const rosWebSocket = RoslibService.instance.getConnection(rosWebSocketURL);
+        this.rosConnection = RoslibService.instance.getConnection(rosWebSocketURL);
         const rosModelPropertyService = RoslibService.instance.createService(
-          rosWebSocket,
-          '/gazebo/get_model_propreties',
+          this.rosConnection,
+          '/gazebo/get_model_properties',
           'GetModelProperties'
         );
         rosModelPropertyService.callService(
@@ -114,8 +111,6 @@ export default class DataVisualizerROSAdapter {
         }
       }
     }
-    this.sortedTopics = Object.keys(this.topics);
-    this.sortedTopics.sort();
   }
 
   addTopic(topicURL, rosType) {
@@ -138,8 +133,12 @@ export default class DataVisualizerROSAdapter {
     return RoslibService.instance.getConnection(serverConfig.rosbridge.websocket);
   }
 
-  sendMessageAndTopics (message) {
-    DataVisualizerService.instance.sendMessageAndTopics(message, this.topics);
+  sendStandardMessage(message) {
+    DataVisualizerService.instance.sendStandardMessage(message, this.topics);
+  }
+
+  sendStateMessage (message) {
+    DataVisualizerService.instance.sendStateMessage(message, this.topics);
   }
 
   subscribeTopics(plotStructure) {
@@ -175,10 +174,14 @@ export default class DataVisualizerROSAdapter {
           );
           topicSubscribed[topicName] = true;
           if (topicType === 'gazebo_msgs/ModelStates') {
-            topicSubscriber.subscribe(this.stateMessage);
+            topicSubscriber.subscribe(message => {
+              this.sendStandardMessage(message);
+            });
           }
           else {
-            topicSubscriber.subscribe(this.standardMessage);
+            topicSubscriber.subscribe(message => {
+              this.sendStateMessage(message);
+            });
           }
           this.topicConnections = [...this.topicConnections, topicSubscriber];
         }
@@ -188,8 +191,12 @@ export default class DataVisualizerROSAdapter {
 
   unsubscribeTopics() {
     this.topicConnections.forEach(connection => {
-      connection.unsubscribe(this.stateMessage);
-      connection.unsubscribe(this.standardMessage);
+      connection.unsubscribe(message => {
+        this.sendStandardMessage(message);
+      });
+      connection.unsubscribe(message => {
+        this.sendStandardMessage(message);
+      });
     });
     this.topicConnections = [];
     this.rosConnection = undefined;
