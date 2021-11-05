@@ -18,10 +18,6 @@ class DataVisualizerService extends EventEmitter {
       throw new Error('Use ' + this.constructor.name + '.instance');
     }
     this.key = '';
-    this.adapter = 'ROS';
-    this.plotly = true;
-    this.plotlyConfig = {};
-    this.connection = undefined;
   }
 
   static get instance() {
@@ -40,7 +36,7 @@ class DataVisualizerService extends EventEmitter {
     return await SimulationService.instance.getState(serverURL, simulationID);
   }
 
-  async loadTopics(serverURL, simulationID, serverConfig) {
+  async loadSortedSources(serverURL, simulationID, serverConfig) {
     await DataVisualizerROSAdapter.instance.getTopics(serverURL, simulationID, serverConfig);
   }
 
@@ -53,9 +49,13 @@ class DataVisualizerService extends EventEmitter {
     this.emit(DataVisualizerService.EVENTS.SORTED_SOURCES, sortedSources);
   }
 
+  sendStandardMessage(message, topics) {
+    this.emit(DataVisualizerService.EVENTS.STANDARD_MESSAGE, { message, topics });
+  }
+
   // ROS specific function
-  sendMessageAndTopics (message, topics) {
-    this.emit(DataVisualizerService.EVENTS.MESSAGE_AND_TOPICS, {message, topics});
+  sendStateMessage (message, topics) {
+    this.emit(DataVisualizerService.EVENTS.STATE_MESSAGE, { message, topics });
   }
 
   saveSettings(keyContext, isStructure, isPlot, axisLabels, plotModel, plotStructure) {
@@ -78,23 +78,18 @@ class DataVisualizerService extends EventEmitter {
   }
 
   initializeConnection(plotStructure, serverConfig) {
-    //BUILD PARALLEL BRANCH HERE WITH DIFFERENT ADAPTER
-    //Parameters: plotStructure, server, adapter
-    if (this.adapter.name === 'ROS') {
-      this.connection = DataVisualizerROSAdapter.instance.getOrCreateConnectionTo(serverConfig);
-      DataVisualizerROSAdapter.instance.subscribeTopics(plotStructure);
-    }
+    DataVisualizerROSAdapter.instance.getOrCreateConnectionTo(serverConfig);
+    DataVisualizerROSAdapter.instance.subscribeTopics(plotStructure);
   }
 
   closeConnection() {
-    if (this.adapter.name === 'ROS') {
-      DataVisualizerROSAdapter.instance.unsubscribeTopics();
-    }
+    DataVisualizerROSAdapter.instance.unsubscribeTopics();
   }
 }
 
 DataVisualizerService.EVENTS = Object.freeze({
-  MESSAGE_AND_TOPICS:  'MESSAGE_AND_TOPICS',
+  STANDARD_MESSAGE: 'STANDARD_MESSAGE',
+  STATE_MESSAGE:  'STATE_MESSAGE',
   SETTINGS: 'SETTINGS',
   SORTED_SOURCES: 'SORTED_SOURCES'
 });

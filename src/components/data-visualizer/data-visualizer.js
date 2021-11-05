@@ -19,105 +19,106 @@ import '../main.css';
 import DataVisualizerService from '../../services/experiments/visualization/data-visualizer-service';
 import { EXPERIMENT_STATE } from '../../services/experiments/experiment-constants';
 
+const TYPES = [
+  {
+    title: 'Basic',
+    thumbnail: ChartBasic,
+    models: [
+      {
+        title: 'Line',
+        thumbnail: ChartLine,
+        dimensions: 2,
+        multi: true, // We can add several lines
+        hasAxis: true,
+        type: 'scatter',
+        mode: 'lines'
+      },
+      {
+        title: 'Pie',
+        thumbnail: ChartPie,
+        dimensions: 1,
+        multi: true,
+        hasAxis: false,
+        type: 'pie',
+        mergedDimensions: true,
+        positiveData: true
+      },
+      {
+        title: 'Scatter',
+        thumbnail: PlotScatter,
+        dimensions: 2,
+        multi: false,
+        hasAxis: true,
+        type: 'scatter',
+        mode: 'markers'
+      },
+      {
+        title: 'Bar',
+        thumbnail: ChartBar,
+        dimensions: 1,
+        multi: true,
+        hasAxis: false,
+        type: 'bar',
+        mergedDimensions: true,
+        mergedDimensionsUseXY: true
+      },
+      {
+        title: 'Filled Areas',
+        thumbnail: AreaFilled,
+        dimensions: 2,
+        multi: true,
+        hasAxis: true,
+        type: 'scatter',
+        fill: 'tozeroy'
+      },
+      {
+        title: 'Bubbles',
+        thumbnail: ChartBubble,
+        dimensions: 3,
+        multi: true,
+        hasAxis: true,
+        type: 'scatter',
+        mode: 'markers',
+        lastDimensionIsSize: true
+      }
+    ]
+  },
+  {
+    title: 'Stastical',
+    thumbnail: ChartStatistical,
+    models: [
+      {
+        title: 'Error Bars',
+        thumbnail: BarError,
+        dimensions: 3,
+        multi: true,
+        hasAxis: true,
+        type: 'scatter',
+        mode: 'lines',
+        lastDimensionIsYError: true
+      }
+    ]
+  },
+  {
+    title: '3D',
+    thumbnail: Chart3d,
+    models: [
+      {
+        title: 'Scatter 3D',
+        thumbnail: Scatter3d,
+        dimensions: 3,
+        multi: true,
+        hasAxis: true,
+        type: 'scatter3d',
+        mode: 'markers'
+      }
+    ]
+  }
+];
+
 export default class DataVisualizer extends React.Component {
   constructor(props) {
     super(props);
-    let types = [
-      {
-        title: 'Basic',
-        thumbnail: ChartBasic,
-        models: [
-          {
-            title: 'Line',
-            thumbnail: ChartLine,
-            dimensions: 2,
-            multi: true, // We can add several lines
-            hasAxis: true,
-            type: 'scatter',
-            mode: 'lines'
-          },
-          {
-            title: 'Pie',
-            thumbnail: ChartPie,
-            dimensions: 1,
-            multi: true,
-            hasAxis: false,
-            type: 'pie',
-            mergedDimensions: true,
-            valuesMustBePositive: true
-          },
-          {
-            title: 'Scatter',
-            thumbnail: PlotScatter,
-            dimensions: 2,
-            multi: false,
-            hasAxis: true,
-            type: 'scatter',
-            mode: 'markers'
-          },
-          {
-            title: 'Bar',
-            thumbnail: ChartBar,
-            dimensions: 1,
-            multi: true,
-            hasAxis: false,
-            type: 'bar',
-            mergedDimensions: true,
-            mergedDimensionsUseXY: true
-          },
-          {
-            title: 'Filled Areas',
-            thumbnail: AreaFilled,
-            dimensions: 2,
-            multi: true,
-            hasAxis: true,
-            type: 'scatter',
-            fill: 'tozeroy'
-          },
-          {
-            title: 'Bubbles',
-            thumbnail: ChartBubble,
-            dimensions: 3,
-            multi: true,
-            hasAxis: true,
-            type: 'scatter',
-            mode: 'markers',
-            lastDimensionIsSize: true
-          }
-        ]
-      },
-      {
-        title: 'Stastical',
-        thumbnail: ChartStatistical,
-        models: [
-          {
-            title: 'Error Bars',
-            thumbnail: BarError,
-            dimensions: 3,
-            multi: true,
-            hasAxis: true,
-            type: 'scatter',
-            mode: 'lines',
-            lastDimensionIsYError: true
-          }
-        ]
-      },
-      {
-        title: '3D',
-        thumbnail: Chart3d,
-        models: [
-          {
-            title: 'Scatter 3D',
-            thumbnail: Scatter3d,
-            dimensions: 3,
-            multi: true,
-            hasAxis: true,
-            type: 'scatter3d',
-            mode: 'markers'
-          }
-        ]
-      }
-    ];
     this.state = {
       isPlotVisible: false,
       isStructureVisible: false,
@@ -127,17 +128,15 @@ export default class DataVisualizer extends React.Component {
       plotModel: [],
       keyContext: undefined,
       layout: null,
-      hasAxis: false,
       modelStateLastTime: undefined,
       modelStateUpdateRate: 1.0 / 10.0,
       maxPoints: 500,
-      types: this.createModelsTypes(types),
+      types: this.createModelsTypes(TYPES),
       axisLabels: [],
       plotStructure: [],
       message: {},
       topics: [],
-      sortedSources: [],
-      timer: null
+      sortedSources: []
     };
 
     this.timer = null;
@@ -149,10 +148,15 @@ export default class DataVisualizer extends React.Component {
       keyContext: this.findKeyContext(document, 'plotid')
     });
 
-    //ROS specific function
-    this.loadMessageAndTopics = this.loadMessageAndTopics.bind(this);
+    this.parseStandardMessage = this.parseStandardMessage.bind(this);
     DataVisualizerService.instance.addListener(
-      DataVisualizerService.EVENTS.MESSAGE_AND_TOPICS, this.loadMessageAndTopics
+      DataVisualizerService.EVENTS.STANDARD_MESSAGE, this.parseStandardMessage
+    );
+
+    //ROS specific function
+    this.parseStateMessage = this.parseStateMessage.bind(this);
+    DataVisualizerService.instance.addListener(
+      DataVisualizerService.EVENTS.STATE_MESSAGE, this.parseStateMessage
     );
 
     this.loadSettings = this.loadSettings.bind(this);
@@ -160,9 +164,9 @@ export default class DataVisualizer extends React.Component {
       DataVisualizerService.EVENTS.SETTINGS, this.loadSettings
     );
 
-    this.loadSortedSources = this.loadSortedSources.bind(this);
+    this.saveSortedSources = this.saveSortedSources.bind(this);
     DataVisualizerService.instance.addListener(
-      DataVisualizerService.EVENTS.SORTED_SOURCES, this.loadSortedSources
+      DataVisualizerService.EVENTS.SORTED_SOURCES, this.saveSortedSources
     );
 
     this.timer = setTimeout(() =>{
@@ -173,9 +177,13 @@ export default class DataVisualizer extends React.Component {
   }
 
   componentWillUnmount() {
+    DataVisualizerService.instance.removeListener(
+      DataVisualizerService.EVENTS.MESSAGE, this.parseStandardMessage
+    );
+
     //ROS specific function
     DataVisualizerService.instance.removeListener(
-      DataVisualizerService.EVENTS.MESSAGE_AND_TOPICS, this.loadMessageAndTopics
+      DataVisualizerService.EVENTS.MESSAGE_AND_TOPICS, this.parseStateMessage
     );
 
     DataVisualizerService.instance.removeListener(
@@ -183,7 +191,7 @@ export default class DataVisualizer extends React.Component {
     );
 
     DataVisualizerService.instance.removeListener(
-      DataVisualizerService.EVENTS.SORTED_SOURCES, this.loadSortedSources
+      DataVisualizerService.EVENTS.SORTED_SOURCES, this.saveSortedSources
     );
 
     clearTimeout(this.timer);
@@ -199,20 +207,13 @@ export default class DataVisualizer extends React.Component {
     return types;
   }
 
-  loadMessageAndTopics(response) {
-    this.setState({
-      message: response.message,
-      topics: response.topics
-    });
-  }
-
-  loadSortedSources(sortedSources) {
+  saveSortedSources(sortedSources) {
     this.setState({ sortedSources: sortedSources });
   }
 
   loadSettings(settings) {
     DataVisualizerService.instance.setKey(this.state.keyContext);
-    if (!settings.plottingToolsData || this.state.keyContext in settings.plottingToolsData ) {
+    if (!settings.plottingToolsData || this.state.keyContext in settings.plottingToolsData) {
       return;
     }
     this.settings = settings.plottingToolsData[this.state.keyContext];
@@ -249,7 +250,11 @@ export default class DataVisualizer extends React.Component {
   }
 
   //ROS specific function
-  parseStateMessage() {
+  parseStateMessage(response) {
+    this.setState({
+      message: response.message,
+      topics: response.topics
+    });
     let currentTime = Date.now() / 1000.0;
     if (
       this.state.modelStateLastTime !== undefined &&
@@ -272,47 +277,47 @@ export default class DataVisualizer extends React.Component {
         dim++
       ) {
         let dimension = this.state.plotStructure.plotElements[i].dimensions[dim];
-        if (this.state.topics[dimension.source] === 'gazebo_msgs/Model/States') {
+        if (response.topics[dimension.source] === 'gazebo_msgs/Model/States') {
           //Search a message that matches (if any)
-          for (let j = 0; j < this.state.message.name.length; j++) {
-            if (dimension.source.startWith('/' + this.state.message.name[j])) {
-              let addValue = false;
-              let value = 0;
-              if (dimension.source.startWith('/' + this.state.message.name[j] + '/model_state/position')) {
-                addValue = true;
+          for (let j = 0; j < response.message.name.length; j++) {
+            if (dimension.source.startWith('/' + response.message.name[j])) {
+              let addData = false;
+              let data = 0;
+              if (dimension.source.startWith('/' + response.message.name[j] + '/model_state/position')) {
+                addData = true;
                 if (dimension.source.endWith('.x')) {
-                  value = this.state.message.pose[j].position.x;
+                  data = response.message.pose[j].position.x;
                 }
                 else if (dimension.source.endsWith('.y')) {
-                  value = this.state.message.pose[j].position.y;
+                  data = response.message.pose[j].position.y;
                 }
                 else if (dimension.source.endsWith('.z')) {
-                  value = this.state.message.pose[j].position.z;
+                  data = response.message.pose[j].position.z;
                 }
-                else if (dimension.source.startWith('/' + this.state.message.name[j] + '/model_state/angle')) {
+                else if (dimension.source.startWith('/' + response.message.name[j] + '/model_state/angle')) {
                   let q = new THREE.Quaternion(
-                    this.state.message.pose[j].orientation.x,
-                    this.state.message.pose[j].orientation.y,
-                    this.state.message.pose[j].orientation.z,
-                    this.state.message.pose[j].orientation.w
+                    response.message.pose[j].orientation.x,
+                    response.message.pose[j].orientation.y,
+                    response.message.pose[j].orientation.z,
+                    response.message.pose[j].orientation.w
                   );
                   let euler = new THREE.Euler();
                   euler.setFromQuaternion(q, 'XYZ');
-                  addValue = true;
+                  addData = true;
                   if (dimension.source.endsWith('.x')) {
-                    value = euler.x;
+                    data = euler.x;
                   }
                   else if (dimension.source.endsWith('.y')) {
-                    value = euler.y;
+                    data = euler.y;
                   }
                   else if (dimension.source.endsWith('.z')) {
-                    value = euler.z;
+                    data = euler.z;
                   }
                 }
-                if (addValue) {
+                if (addData) {
                   this.setState({ needPlotUpdate: true });
                   needUpdateTime = true;
-                  this.addValueToDimension(i, dim, dataElement, value);
+                  this.addDataToDimension(i, dim, dataElement, data);
                 }
                 break;
               }
@@ -326,7 +331,11 @@ export default class DataVisualizer extends React.Component {
     }
   }
 
-  parseStandardMessage() {
+  parseStandardMessage(response) {
+    this.setState({
+      message: response.message,
+      topics: response.topics
+    });
     let needUpdateTime = false;
     if (this.state.data === null) {
       return;
@@ -337,8 +346,8 @@ export default class DataVisualizer extends React.Component {
         : this.state.data[1];
       for (let dim = 0; dim < this.state.plotStructure.plotElements[i].dimensions.length; dim++) {
         let dimension = this.state.plotStructure.plotElements[i].dimensions[dim];
-        if (dimension.source === this.name) {
-          this.addValueToDimension(i, dim, dataElement, this.state.message.data);
+        if (dimension.source === response.message.name) {
+          this.addDataToDimension(i, dim, dataElement, response.message.data);
           needUpdateTime = true;
         }
       }
@@ -348,63 +357,62 @@ export default class DataVisualizer extends React.Component {
     }
   }
 
-  addValueToDimension(index, dataIndex, dataElement, data) {
-    let plotValues;
-    if (this.state.plotModel.valuesPositive) {
+  addDataToDimension(index, dataIndex, dataElement, data) {
+    let plotData;
+    if (this.state.plotModel.positiveData) {
       data = data < 0 ? -data : data;
     }
-
     if (this.state.plotModel.mergedDimensions) {
       if (this.state.plotModel.mergedDimensionsUseXY) {
-        plotValues = dataElement.y.slice(0);
-        plotValues[index] = data;
-        dataElement.values = plotValues;
+        plotData = dataElement.y.slice(0);
+        plotData[index] = data;
+        dataElement.data = plotData;
       }
       else {
-        plotValues = dataElement.y.slice(0);
-        plotValues[index] = data;
-        dataElement.values = plotValues;
+        plotData = dataElement.data.slice(0);
+        plotData[index] = data;
+        dataElement.data = plotData;
       }
     }
     else {
       switch(dataIndex) {
-      default: //case 0
-        plotValues = dataElement.x.slice(0);
-        plotValues.push(data);
-        if (plotValues.length > this.state.maxPoints) {
-          plotValues.splice(0, plotValues.length - this.state.maxPoints);
+      default: // case 0
+        plotData = dataElement.x.slice(0);
+        plotData.push(data);
+        if (plotData.length > this.state.maxPoints) {
+          plotData.splice(0, plotData.length - this.state.maxPoints);
         }
-        dataElement.x = plotValues;
+        dataElement.x = plotData;
         break;
 
       case 1:
-        plotValues = dataElement.y.slice(0);
-        plotValues.push(data);
-        if (plotValues.length > this.state.maxPoints) {
-          plotValues.splice(0, plotValues.length - this.state.maxPoints);
+        plotData = dataElement.y.slice(0);
+        plotData.push(data);
+        if (plotData.length > this.state.maxPoints) {
+          plotData.splice(0, plotData.length - this.state.maxPoints);
         }
-        dataElement.y = plotValues;
+        dataElement.y = plotData;
         break;
 
       case 2:
         if (this.state.plotModel.lastDimensionIsSize) {
-          plotValues = dataElement.marker.size.slice(0);
+          plotData = dataElement.marker.size.slice(0);
         }
         else if (this.state.plotModel.lastDimensionIsYError) {
-          plotValues = dataElement.error_y.array.slice(0);
+          plotData = dataElement.error_y.array.slice(0);
         }
         else {
-          plotValues = dataElement.z.slice(0);
+          plotData = dataElement.z.slice(0);
         }
-        plotValues.push(data);
-        if (plotValues.length > this.state.maxPoints) {
-          plotValues.splice(0, plotValues.length - this.state.maxPoints);
+        plotData.push(data);
+        if (plotData.length > this.state.maxPoints) {
+          plotData.splice(0, plotData.length - this.state.maxPoints);
         }
         if (this.state.plotModel.lastDimensionIsYError) {
-          dataElement.error_y.array = plotValues;
+          dataElement.error_y.array = plotData;
         }
         else {
-          dataElement.z = plotValues;
+          dataElement.z = plotData;
         }
         break;
       }
@@ -419,7 +427,7 @@ export default class DataVisualizer extends React.Component {
       for (let di = 0; di < this.state.plotStructure.plotElements[i].dimensions.length; di++) {
         let dimension = this.state.plotStructure.plotElements[i].dimensions[di];
         if (this.state.topics[dimension.source] === '_time') {
-          this.addValueToDimension(i, di, dataElement, this.props.timingTimeout);
+          this.addDataToDimension(i, di, dataElement, this.props.timingSimulationTime.toString());
         }
       }
     }
@@ -432,7 +440,7 @@ export default class DataVisualizer extends React.Component {
       plotModel: model,
       plotStructure: { axis: [], plotElements: [] }
     });
-    await DataVisualizerService.instance.loadTopics(this.props.serverURL,
+    await DataVisualizerService.instance.loadSortedSources(this.props.serverURL,
       this.props.simulationID, this.props.serverConfig);
     while (this.state.plotModel.dimensions < this.state.axisLabels.length) {
       this.setState(state => {
@@ -448,13 +456,10 @@ export default class DataVisualizer extends React.Component {
       isStructureVisible: false
     });
     this.setState( state => {
-      return {
-        config: {
-          ...state.config,
-          width: state.container.clientWidth < 280 ? 280 : state.container.clientWidth,
-          height: state.container.clientHeight < 280 ? 280 : state.container.clientHeight
-        }
-      };
+      let config = state.config;
+      config.width = state.container.clientWidth < 280 ? 280 : state.container.clientWidth;
+      config.height = state.container.clientHeight < 280 ? 280 : state.container.clientHeight;
+      return { config: config };
     });
     DataVisualizerService.instance.unregisterPlot(this.state.keyContext);
   }
@@ -480,24 +485,31 @@ export default class DataVisualizer extends React.Component {
           title: { text: this.state.plotStructure.axis[axis] }
         };
         switch (axis) {
-        default: //case 0
-          this.setState(
-            {...this.state.layout}.xaxis = axisTitle
-          );
+        default: // case 0
+          this.setState(state => {
+            let layout = state.layout;
+            layout.xaxis = axisTitle;
+            return { layout: layout };
+          });
           break;
         case 1:
-          this.setState(
-            {...this.state.layout}.yaxis = axisTitle
-          );
+          this.setState(state => {
+            let layout = state.layout;
+            layout.yaxis = axisTitle;
+            return { layout: layout };
+          });
           break;
         case 2:
-          this.setState(
-            {...this.state.layout}.zaxis = axisTitle
-          );
+          this.setState(state => {
+            let layout = state.layout;
+            layout.zaxis = axisTitle;
+            return { layout: layout };
+          });
+          break;
         }
       }
     }
-    this.setState({ data: [] });
+    let data = [];
     let newElement;
     for (
       let element = 0;
@@ -516,18 +528,18 @@ export default class DataVisualizer extends React.Component {
             newElement.y = [0.0];
           }
           else {
-            newElement.values = [0.001];
+            newElement.data = [0.001];
             newElement.labels = [label];
           }
         }
         else {
           if (plotModel.mergedDimensionsUseXY) {
-            newElement.x.values.push(label);
+            newElement.x.data.push(label);
             newElement.y.push(0.0);
           }
           else {
             newElement.labels.push(label);
-            newElement.values.push(0.001);
+            newElement.data.push(0.001);
           }
         }
       }
@@ -549,9 +561,9 @@ export default class DataVisualizer extends React.Component {
           dimension < this.state.plotStructure.plotElements[element].dimensions.length;
           dimension++
         ) {
-          //Empty values for now, will be updated by messages
+          // Empty data for now, will be updated by messages
           switch (dimension) {
-          default: //case 0
+          default: // case 0
             newElement.x = [];
             break;
           case 1:
@@ -578,9 +590,10 @@ export default class DataVisualizer extends React.Component {
             break;
           }
         }
-        this.state.data.push(newElement);
+        data.push(newElement);
       }
     }
+    this.setState({ data: data });
     this.startListening();
     if (hasSettings) {
       DataVisualizerService.instance.saveSettings(
@@ -645,7 +658,7 @@ export default class DataVisualizer extends React.Component {
     this.setState(state => {
       let plotStructure = state.plotStructure;
       plotStructure.axis[labelIndex] = axis;
-      return { plotStructure: plotStructure};
+      return { plotStructure: plotStructure };
     });
   }
 

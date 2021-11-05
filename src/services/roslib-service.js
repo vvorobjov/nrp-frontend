@@ -16,6 +16,7 @@ class RoslibService {
     }
 
     this.connections = new Map();
+    this.roslib = ROSLIB;
   }
 
   static get instance() {
@@ -76,15 +77,10 @@ class RoslibService {
     );
   };
 
-  requestService(modelName, additionalOptions) {
-    return new ROSLIB.Service(
-      _.extend(
-        {
-          modelName: modelName
-        },
-        additionalOptions
-      )
-    );
+  requestService(modelName) {
+    return new ROSLIB.ServiceRequest({
+      model_name: modelName
+    });
   };
 }
 

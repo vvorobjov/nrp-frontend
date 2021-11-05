@@ -4,11 +4,6 @@
 import '@testing-library/jest-dom';
 import 'jest-fetch-mock';
 import UserSettingsService from '../../../user/user-settings-service';
-import SimulationService from '../../execution/running-simulation-service';
-
-jest.mock('mapbox-gl/dist/mapbox-gl', () => ({
-  Map: () => ({})
-}));
 
 import DataVisualizerROSAdapter from '../data-visualizer-rosadapter';
 
@@ -36,5 +31,5 @@ test('getTopics set settings and send ROS topics', async () => {
 })
 
 test('sendTopics create, sort, load and send an array of topics, and send settings', () => {
-  
+  return;
 });

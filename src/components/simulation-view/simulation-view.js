@@ -53,9 +53,7 @@ export default class SimulationView extends React.Component {
 
     this.state = {
       modelFlexLayout: FlexLayout.Model.fromJson(jsonBaseLayout),
-      showLeaveDialog: false,
-      timingSimulationTime: 0,
-      timingTimeout: 0
+      showLeaveDialog: false
     };
 
     this.refLayout = React.createRef();
@@ -195,8 +193,8 @@ export default class SimulationView extends React.Component {
             <FlexLayout.Layout ref={this.refLayout} model={this.state.modelFlexLayout}
               factory={(node) => {
                 return SimulationToolsService.instance.flexlayoutNodeFactory(
-                  node, this.serverURL, this.serverConfig, this.simulationID,
-                  this.state.timingSimulationTime, this.state.timingTimeout
+                  node, this.serverURL, this.serverConfig,
+                  this.simulationID, this.state.timingSimulationTime
                 );
               }} />
           </div>
