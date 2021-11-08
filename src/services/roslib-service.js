@@ -1,7 +1,7 @@
 import * as ROSLIB from 'roslib';
 import _ from 'lodash';
 
-import AuthenticationService from './authentication-service.js';
+import AuthenticationService from './authentication-service';
 
 let _instance = null;
 const SINGLETON_ENFORCER = Symbol();
@@ -32,7 +32,7 @@ class RoslibService {
    */
   getConnection(url) {
     if (!this.connections.has(url)) {
-      let urlWithAuth = url + '?token=' + AuthenticationService.instance.getStoredToken();
+      let urlWithAuth = url + '?token=' + AuthenticationService.instance.getToken();
       this.connections.set(url, new ROSLIB.Ros({ url: urlWithAuth }));
     }
 
