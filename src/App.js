@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { HashRouter, Switch, Route } from 'react-router-dom';
+import { BrowserRouter, Switch, Route } from 'react-router-dom';
 
 import EntryPage from './components/entry-page/entry-page';
 import ErrorDialog from './components/dialog/error-dialog.js';
@@ -14,13 +14,13 @@ class App extends React.Component {
       <div>
         <ErrorDialog />
         <NotificationDialog/>
-        <HashRouter>
+        <BrowserRouter>
           <Switch>
             <Route path='/experiments-overview' component={ExperimentOverview} />
             <Route path='/simulation-view/:serverIP/:simulationID' component={SimulationView} />
             <Route path='/' component={EntryPage} />
           </Switch>
-        </HashRouter>
+        </BrowserRouter>
       </div>
     );
   }
