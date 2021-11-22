@@ -253,13 +253,11 @@ class ExperimentStorageService extends HttpService {
   async setFile(directoryPath, filename, data, byname = true, contentType = 'text/plain') {
     let directory = directoryPath.replaceAll('/', '%2F');
     const url = new URL(`${config.api.proxy.url}${endpoints.proxy.storage.url}/${directory}/${filename}`);
-    //console.info(url);
     url.searchParams.append('byname', byname);
 
     let requestOptions = {
       ...this.POSTOptions, ...{ headers: { 'Content-Type': contentType } }
     };
-    //console.info(requestOptions);
 
     if (contentType === 'text/plain') {
       return this.httpRequestPOST(url, data, requestOptions);
