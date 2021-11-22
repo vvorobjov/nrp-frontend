@@ -11,7 +11,7 @@ const scanStorageURL = `${config.api.proxy.url}${endpoints.proxy.storage.scanSto
  * The Import Experiment Service performs the requests (Extract),
  * processes data such as zip or folder (Transform),
  * and passes them to the Import Experiment Component (Load).
- * Errors are handled by communicating witht he Error Handler Service.
+ * Errors are handled by communicating with the Error Handler Service.
  */
 
 let _instance = null;
