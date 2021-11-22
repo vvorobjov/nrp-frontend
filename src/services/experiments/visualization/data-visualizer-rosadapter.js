@@ -130,7 +130,7 @@ export default class DataVisualizerROSAdapter {
   }
 
   getOrCreateConnectionTo(serverConfig) {
-    return RoslibService.instance.getConnection(serverConfig.rosbridge.websocket);
+    this.rosConnection = RoslibService.instance.getConnection(serverConfig.rosbridge.websocket);
   }
 
   sendStandardMessage(message) {
