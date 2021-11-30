@@ -40,17 +40,19 @@ test('getSimulationState returns the state of the experiment', async () => {
     .toBe(EXPERIMENT_STATE.INITIALIZED)
 });
 
-test('loadTopics gets ROS topics', async () => {
+test('loadSortedSources gets ROS topics', async () => {
   jest.spyOn(DataVisualizerROSAdapter.instance, 'getTopics').mockImplementation();
-  expect(await DataVisualizerService.instance.loadTopics('mock-server-url')).toBeUndefined();
+  expect(await DataVisualizerService.instance.loadSortedSources('mock-server-url')).toBeUndefined();
 });
 
-test('sendSettings set and send the settings to the data visualizer', () => {
+test('sendSettings sets and sends the settings to the data visualizer', () => {
   let onSendSettings = jest.fn();
   DataVisualizerService.instance.addListener(
     DataVisualizerService.EVENTS.SETTINGS, onSendSettings
   );
+
   DataVisualizerService.instance.sendSettings({ setting: 'mock-setting' });
+
   expect(DataVisualizerService.instance.settings).toStrictEqual({ setting: 'mock-setting' });
   expect(onSendSettings).toHaveBeenCalled();
   DataVisualizerService.instance.removeListener(
@@ -58,27 +60,31 @@ test('sendSettings set and send the settings to the data visualizer', () => {
   );
 });
 
-test('sendSortedSources send the sorted sources to the data visualizer', () => {
+test('sendSortedSources sends the sorted sources to the data visualizer', () => {
   let onSendSortedSources = jest.fn();
   DataVisualizerService.instance.addListener(
     DataVisualizerService.EVENTS.SORTED_SOURCES, onSendSortedSources
   );
+
   DataVisualizerService.instance.sendSortedSources('mock-sources');
+
   expect(onSendSortedSources).toHaveBeenCalled();
   DataVisualizerService.instance.removeListener(
     DataVisualizerService.EVENTS.SORTED_SOURCES, onSendSortedSources
   );
 });
 
-test('sendMessageAndTopics send messages and topics to the data visualizer', () => {
-  let onSendMessageAndTopics = jest.fn();
+test('sendStandardMessage sends standard message to the data visualizer', () => {
+  let onSendStandardMessage = jest.fn();
   DataVisualizerService.instance.addListener(
-    DataVisualizerService.EVENTS.MESSAGE_AND_TOPICS, onSendMessageAndTopics
+    DataVisualizerService.EVENTS.STANDARD_MESSAGE, onSendStandardMessage
   );
-  DataVisualizerService.instance.sendMessageAndTopics('mock-message', 'mock-topics');
-  expect(onSendMessageAndTopics).toHaveBeenCalled();
+
+  DataVisualizerService.instance.sendStandardMessage('mock-message', 'mock-topics');
+
+  expect(onSendStandardMessage).toHaveBeenCalled();
   DataVisualizerService.instance.removeListener(
-    DataVisualizerService.EVENTS.MESSAGE_AND_TOPICS, onSendMessageAndTopics
+    DataVisualizerService.STANDARD_MESSAGE, onSendStandardMessage
   );
 });
 
@@ -86,8 +92,10 @@ test('saveSettings set key, set settings and save settings', () => {
   jest.spyOn(UserSettingsService.instance, 'saveSettings').mockImplementation();
   jest.spyOn(DataVisualizerService.instance, 'setKey').mockImplementation();
   DataVisualizerService.instance.settings = { setting: 'mock-setting' };
+
   DataVisualizerService.instance.saveSettings('mock-key', 'mock-is-structure', 'mock-is-plot',
     'mock-axis-labels', 'mock-plot-model', 'mock-plot-structure');
+
   expect(DataVisualizerService.instance.setKey).toHaveBeenCalled();
   expect(DataVisualizerService.instance.settings.isStructure).toBe('mock-is-structure');
   expect(DataVisualizerService.instance.settings.isPlot).toBe('mock-is-plot');
@@ -103,24 +111,20 @@ test('unregisterPlot saves settings', () => {
   expect(UserSettingsService.instance.saveSettings).toHaveBeenCalled();
 });
 
-test('initializeConnection gets the server configuration, get/create a ROS connection and subscribe to ROS topics', () => {
-  jest.spyOn(ServerResourcesService.instance, 'getServerConfig').mockImplementation(() => {
-    return 'mock-server';
-  });
-  jest.spyOn(DataVisualizerROSAdapter.instance, 'getOrCreateConnectionTo').mockImplementation(() => {
+test('initializeConnection gets the server configuration, gets  a ROS connection and subscribe to ROS topics', () => {
+  jest.spyOn(DataVisualizerROSAdapter.instance, 'getConnection').mockImplementation(() => {
     return 'mock-connection';
   });
   jest.spyOn(DataVisualizerROSAdapter.instance, 'subscribeTopics').mockImplementation();
-  DataVisualizerService.instance.adapter = { name: 'ROS' };
+
   DataVisualizerService.instance.initializeConnection('mock-plot-structure', 'mock-simulation-id');
-  expect(ServerResourcesService.instance.getServerConfig).toHaveBeenCalled();
-  expect(DataVisualizerService.instance.connection).toBe('mock-connection');
+
+  expect(DataVisualizerROSAdapter.instance.getConnection).toHaveBeenCalled();
   expect(DataVisualizerROSAdapter.instance.subscribeTopics).toHaveBeenCalled();
 });
 
-test('closeConnection unsubscribe ROS topics', () => {
+test('closeConnection unsubscribes ROS topics', () => {
   jest.spyOn(DataVisualizerROSAdapter.instance, 'unsubscribeTopics').mockImplementation();
-  DataVisualizerService.instance.adapter = { name: 'ROS' };
   DataVisualizerService.instance.closeConnection();
   expect(DataVisualizerROSAdapter.instance.unsubscribeTopics).toHaveBeenCalled();
 })

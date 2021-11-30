@@ -1,0 +1,8 @@
+{
+  "topics" : [
+    {
+      "topic": "/client_count",
+      "topicType" :  "std_msgs/Int32"
+    }
+  ]
+}

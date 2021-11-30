@@ -440,8 +440,7 @@ export default class DataVisualizer extends React.Component {
       plotModel: model,
       plotStructure: { axis: [], plotElements: [] }
     });
-    await DataVisualizerService.instance.loadSortedSources(this.props.serverURL,
-      this.props.simulationID, this.props.serverConfig);
+    await DataVisualizerService.instance.loadSortedSources(this.props.serverURL, this.props.simulationID);
     while (this.state.plotModel.dimensions < this.state.axisLabels.length) {
       this.setState(state => {
         return { axisLabels: state.axisLabels.slice(0, -1) };
