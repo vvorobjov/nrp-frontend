@@ -181,7 +181,7 @@ class AuthenticationService {
         if (!keycloakClient.authenticated) {
           // User is not authenticated, run login
           keycloakClient
-            .login({ scope: 'openid profile email group clb.wiki.read' })
+            .login({ scope: 'openid profile email group team clb.wiki.read' }) //collab.drive, clb.wiki.write
             .then(() => {
               resolve(true);
             });
