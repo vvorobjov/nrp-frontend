@@ -1,0 +1,9 @@
+{
+  "plotElements": [{
+      "dimensions": [
+        { "source": "_time" },
+        { "source": "/0/model_state/position.x" },
+        {"source": "/client_count"}
+      ]
+    }]
+}

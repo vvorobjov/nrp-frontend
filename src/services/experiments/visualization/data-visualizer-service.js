@@ -8,7 +8,9 @@ let _instance = null;
 const SINGLETON_ENFORCER = Symbol();
 
 /**
- * Service taking care of data visualization operations and transition between the adaptor and the component
+ * Service taking care of data visualization operations, and transition between the adaptor and the component
+ * It communicates with the user settings and the simulation service and has parameter:
+ * - key: HTML component of data visualizer ('plotid')
  */
 class DataVisualizerService extends EventEmitter {
   constructor(enforcer) {
@@ -31,8 +33,8 @@ class DataVisualizerService extends EventEmitter {
     this.key = keyContext;
   }
 
-  async loadSortedSources(serverURL, simulationID, serverConfig) {
-    await DataVisualizerROSAdapter.instance.getTopics(serverURL, simulationID, serverConfig);
+  async loadSortedSources(serverURL, simulationID) {
+    await DataVisualizerROSAdapter.instance.getTopics(serverURL, simulationID);
   }
 
   sendSettings(settings) {
@@ -73,7 +75,7 @@ class DataVisualizerService extends EventEmitter {
   }
 
   initializeConnection(plotStructure, serverConfig) {
-    DataVisualizerROSAdapter.instance.getOrCreateConnectionTo(serverConfig);
+    DataVisualizerROSAdapter.instance.getConnection(serverConfig);
     DataVisualizerROSAdapter.instance.subscribeTopics(plotStructure);
   }
 
