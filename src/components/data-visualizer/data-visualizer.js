@@ -265,7 +265,6 @@ export default class DataVisualizer extends React.Component {
 
   //ROS specific function
   parseStateMessage(response) {
-    console.info('parseStateMessage');
     /*this.setState({
       message: response.message,
       topics: response.topics
