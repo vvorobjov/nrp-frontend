@@ -3,7 +3,6 @@ import { EventEmitter } from 'events';
 
 import UserSettingsService from '../../user/user-settings-service';
 import DataVisualizerROSAdapter from './data-visualizer-rosadapter';
-import SimulationService from '../execution/running-simulation-service';
 
 let _instance = null;
 const SINGLETON_ENFORCER = Symbol();
@@ -30,10 +29,6 @@ class DataVisualizerService extends EventEmitter {
 
   setKey(keyContext) {
     this.key = keyContext;
-  }
-
-  async getSimulationState(serverURL, simulationID) {
-    return await SimulationService.instance.getState(serverURL, simulationID);
   }
 
   async loadSortedSources(serverURL, simulationID, serverConfig) {

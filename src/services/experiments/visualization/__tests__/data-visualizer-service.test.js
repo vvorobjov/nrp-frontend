@@ -32,14 +32,6 @@ test('setKey sets the key of the data visualizer service', () => {
   expect(DataVisualizerService.instance.key).toBe('mock-key');
 });
 
-test('getSimulationState returns the state of the experiment', async () => {
-  jest.spyOn(SimulationService.instance, 'getState').mockImplementation(() => {
-    return Promise.resolve(EXPERIMENT_STATE.INITIALIZED);
-  })
-  expect(await DataVisualizerService.instance.getSimulationState('mock-server-url', 'mock-simulation-ID'))
-    .toBe(EXPERIMENT_STATE.INITIALIZED)
-});
-
 test('loadTopics gets ROS topics', async () => {
   jest.spyOn(DataVisualizerROSAdapter.instance, 'getTopics').mockImplementation();
   expect(await DataVisualizerService.instance.loadTopics('mock-server-url')).toBeUndefined();

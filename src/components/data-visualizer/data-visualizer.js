@@ -5,7 +5,7 @@ import ChartBasic from '../../assets/images/data-visualizer/basic_chart.png';
 import ChartLine from '../../assets/images/data-visualizer/line_chart.png';
 import ChartPie from '../../assets/images/data-visualizer/pie_chart.png';
 import PlotScatter from '../../assets/images/data-visualizer/scatter_plot.png';
-import  ChartBar from '../../assets/images/data-visualizer/bar_chart.png';
+import ChartBar from '../../assets/images/data-visualizer/bar_chart.png';
 import AreaFilled from '../../assets/images/data-visualizer/filled_area.png';
 import ChartBubble from '../../assets/images/data-visualizer/bubble_chart.png';
 import ChartStatistical from '../../assets/images/data-visualizer/statistical_chart.png';
@@ -17,6 +17,7 @@ import './data-visualizer.css';
 import '../main.css';
 
 import DataVisualizerService from '../../services/experiments/visualization/data-visualizer-service';
+import SimulationService from '../../services/experiments//execution/running-simulation-service';
 import { EXPERIMENT_STATE } from '../../services/experiments/experiment-constants';
 
 const TYPES = [
@@ -123,30 +124,41 @@ export default class DataVisualizer extends React.Component {
       isPlotVisible: false,
       isStructureVisible: false,
       config: {},
-      container: undefined,
       data: [],
       plotModel: [],
-      keyContext: undefined,
       layout: null,
-      modelStateLastTime: undefined,
-      modelStateUpdateRate: 1.0 / 10.0,
-      maxPoints: 500,
       types: this.createModelsTypes(TYPES),
       axisLabels: [],
       plotStructure: [],
-      message: {},
-      topics: [],
       sortedSources: []
+      // these don't seem to be reactive elements
+      //message: {},
+      //topics: [],
+      //modelStateLastTime: undefined,
+      //maxPoints: 500,
+      //modelStateUpdateRate: 0.1,
+      //keyContext: undefined,
+      //container: undefined,
     };
+
+    this.message = {}; //TODO: is this even necessary to save?
+    this.topics = []; //TODO: is this even necessary to save?
+    this.modelStateLastTime = undefined;
+    this.maxPoints = 500;
+    this.modelStateUpdateRate = 0.1;
+    this.keyContext = undefined;
+    this.container = undefined;
 
     this.timer = null;
   }
 
   async componentDidMount() {
-    this.setState({
-      container: document.getElementsByClassName('plot'),
+    /*this.setState({
+      container: document.getElementsByClassName('plot')
       keyContext: this.findKeyContext(document, 'plotid')
-    });
+    });*/
+    this.container = document.getElementsByClassName('plot');
+    this.keyContext = this.findKeyContext(document, 'plotid');
 
     this.parseStandardMessage = this.parseStandardMessage.bind(this);
     DataVisualizerService.instance.addListener(
@@ -178,12 +190,12 @@ export default class DataVisualizer extends React.Component {
 
   componentWillUnmount() {
     DataVisualizerService.instance.removeListener(
-      DataVisualizerService.EVENTS.MESSAGE, this.parseStandardMessage
+      DataVisualizerService.EVENTS.STANDARD_MESSAGE, this.parseStandardMessage
     );
 
     //ROS specific function
     DataVisualizerService.instance.removeListener(
-      DataVisualizerService.EVENTS.MESSAGE_AND_TOPICS, this.parseStateMessage
+      DataVisualizerService.EVENTS.STATE_MESSAGE, this.parseStateMessage
     );
 
     DataVisualizerService.instance.removeListener(
@@ -208,15 +220,17 @@ export default class DataVisualizer extends React.Component {
   }
 
   saveSortedSources(sortedSources) {
+    console.info('saveSortedSources');
     this.setState({ sortedSources: sortedSources });
   }
 
   loadSettings(settings) {
-    DataVisualizerService.instance.setKey(this.state.keyContext);
-    if (!settings.plottingToolsData || this.state.keyContext in settings.plottingToolsData) {
+    console.info('loadSettings');
+    DataVisualizerService.instance.setKey(this.keyContext);
+    if (!settings.plottingToolsData || this.keyContext in settings.plottingToolsData) {
       return;
     }
-    this.settings = settings.plottingToolsData[this.state.keyContext];
+    this.settings = settings.plottingToolsData[this.keyContext];
     this.setState({
       isStructureVisible: settings.structureSetupVisible,
       isPlotVisible: settings.plotVisible,
@@ -251,18 +265,23 @@ export default class DataVisualizer extends React.Component {
 
   //ROS specific function
   parseStateMessage(response) {
-    this.setState({
+    console.info('parseStateMessage');
+    /*this.setState({
       message: response.message,
       topics: response.topics
-    });
+    });*/
+    this.message = response.message;
+    this.topics = response.topics;
+
     let currentTime = Date.now() / 1000.0;
     if (
-      this.state.modelStateLastTime !== undefined &&
-      currentTime - this.state.modelStateLastTime < this.state.modelStateUpdateRate
+      this.modelStateLastTime !== undefined &&
+      currentTime - this.modelStateLastTime < this.modelStateUpdateRate
     ) {
       return;
     }
-    this.setState({ modelStateLastTime: currentTime });
+    //this.setState({ modelStateLastTime: currentTime });
+    this.modelStateLastTime = currentTime;
     let needUpdateTime = false;
     if (this.state.data === null) {
       return;
@@ -332,16 +351,21 @@ export default class DataVisualizer extends React.Component {
   }
 
   parseStandardMessage(response) {
-    this.setState({
+    console.info('parseStandardMessage');
+    /*console.info(this.state.data);*/
+    /*this.setState({
       message: response.message,
       topics: response.topics
-    });
+    });*/
+    this.message = response.message;
+    this.topics = response.topics;
     let needUpdateTime = false;
     if (this.state.data === null) {
       return;
     }
+
     for (let i = 0; i < this.state.plotStructure.plotElements.length; i++) {
-      let dataElement = this.plotModel.mergedDimensions
+      let dataElement = this.state.plotModel.mergedDimensions
         ? this.state.data[0]
         : this.state.data[1];
       for (let dim = 0; dim < this.state.plotStructure.plotElements[i].dimensions.length; dim++) {
@@ -352,6 +376,7 @@ export default class DataVisualizer extends React.Component {
         }
       }
     }
+
     if (needUpdateTime) {
       this.addTimePoint();
     }
@@ -379,8 +404,8 @@ export default class DataVisualizer extends React.Component {
       default: // case 0
         plotData = dataElement.x.slice(0);
         plotData.push(data);
-        if (plotData.length > this.state.maxPoints) {
-          plotData.splice(0, plotData.length - this.state.maxPoints);
+        if (plotData.length > this.maxPoints) {
+          plotData.splice(0, plotData.length - this.maxPoints);
         }
         dataElement.x = plotData;
         break;
@@ -388,8 +413,8 @@ export default class DataVisualizer extends React.Component {
       case 1:
         plotData = dataElement.y.slice(0);
         plotData.push(data);
-        if (plotData.length > this.state.maxPoints) {
-          plotData.splice(0, plotData.length - this.state.maxPoints);
+        if (plotData.length > this.maxPoints) {
+          plotData.splice(0, plotData.length - this.maxPoints);
         }
         dataElement.y = plotData;
         break;
@@ -405,8 +430,8 @@ export default class DataVisualizer extends React.Component {
           plotData = dataElement.z.slice(0);
         }
         plotData.push(data);
-        if (plotData.length > this.state.maxPoints) {
-          plotData.splice(0, plotData.length - this.state.maxPoints);
+        if (plotData.length > this.maxPoints) {
+          plotData.splice(0, plotData.length - this.maxPoints);
         }
         if (this.state.plotModel.lastDimensionIsYError) {
           dataElement.error_y.array = plotData;
@@ -434,47 +459,53 @@ export default class DataVisualizer extends React.Component {
   }
 
   async showStructure(model) {
+    await DataVisualizerService.instance.loadSortedSources(this.props.serverURL,
+      this.props.simulationID, this.props.serverConfig);
+    let axisLabels = ['X', 'Y', 'Z'];
+    while (model.dimensions < axisLabels.length) {
+      /*this.setState(state => {
+        return { axisLabels: state.axisLabels.slice(0, -1) };
+      });*/
+      axisLabels = axisLabels.slice(0, -1);
+    }
     this.setState({
       isStructureVisible: true,
-      axisLabels: ['X', 'Y', 'Z'],
+      axisLabels: axisLabels,
       plotModel: model,
       plotStructure: { axis: [], plotElements: [] }
     });
-    await DataVisualizerService.instance.loadSortedSources(this.props.serverURL,
-      this.props.simulationID, this.props.serverConfig);
-    while (this.state.plotModel.dimensions < this.state.axisLabels.length) {
-      this.setState(state => {
-        return { axisLabels: state.axisLabels.slice(0, -1) };
-      });
-    }
     this.addDefaultElement();
   }
 
   newPlot() {
-    this.setState({
+    console.info('newPlot, state:');
+    console.info(this.state);
+    /*this.setState({
       isPlotVisible: false,
       isStructureVisible: false
-    });
+    });*/
     this.setState( state => {
       let config = state.config;
-      config.width = state.container.clientWidth < 280 ? 280 : state.container.clientWidth;
-      config.height = state.container.clientHeight < 280 ? 280 : state.container.clientHeight;
-      return { config: config };
+      config.width = this.container.clientWidth < 280 ? 280 : this.container.clientWidth;
+      config.height = this.container.clientHeight < 280 ? 280 : this.container.clientHeight;
+
+      return {
+        config: config,
+        isPlotVisible: false,
+        isStructureVisible: false
+      };
     });
-    DataVisualizerService.instance.unregisterPlot(this.state.keyContext);
+    DataVisualizerService.instance.unregisterPlot(this.keyContext);
   }
 
   showPlot(hasSettings) {
-    DataVisualizerService.instance.unregisterPlot(this.state.keyContext);
-    this.setState({
-      isPlotVisible: true,
-      isStructureVisible: false,
-      layout: {
-        title: 'NRP Data Visualizer',
-        width: this.state.container.clientWidth < 280 ? 280 : this.state.container.clientWidth,
-        height: this.state.container.clientHeight < 280 ? 280 : this.state.container.clientHeight
-      }
-    });
+    DataVisualizerService.instance.unregisterPlot(this.keyContext);
+
+    let layout = {
+      title: 'NRP Data Visualizer',
+      width: this.container.clientWidth < 280 ? 280 : this.container.clientWidth,
+      height: this.container.clientHeight < 280 ? 280 : this.container.clientHeight
+    };
     if (this.state.plotModel.hasAxis) {
       for (
         let axis = 0;
@@ -486,29 +517,33 @@ export default class DataVisualizer extends React.Component {
         };
         switch (axis) {
         default: // case 0
-          this.setState(state => {
+          /*this.setState(state => {
             let layout = state.layout;
             layout.xaxis = axisTitle;
             return { layout: layout };
-          });
+          });*/
+          layout.xaxis = axisTitle;
           break;
         case 1:
-          this.setState(state => {
+          /*this.setState(state => {
             let layout = state.layout;
             layout.yaxis = axisTitle;
             return { layout: layout };
-          });
+          });*/
+          layout.yaxis = axisTitle;
           break;
         case 2:
-          this.setState(state => {
+          /*this.setState(state => {
             let layout = state.layout;
             layout.zaxis = axisTitle;
             return { layout: layout };
-          });
+          });*/
+          layout.zaxis = axisTitle;
           break;
         }
       }
     }
+
     let data = [];
     let newElement;
     for (
@@ -593,15 +628,21 @@ export default class DataVisualizer extends React.Component {
         data.push(newElement);
       }
     }
-    this.setState({ data: data });
+    this.setState({
+      isPlotVisible: true,
+      isStructureVisible: false,
+      layout: layout,
+      data: data
+    });
+    //this.setState({ data: data });
     this.startListening();
     if (hasSettings) {
       DataVisualizerService.instance.saveSettings(
-        this.state.keyContext, this.state.isStructureVisible, this.state.isPlotVisible,
+        this.keyContext, this.state.isStructureVisible, this.state.isPlotVisible,
         this.state.axisLabels, this.state.plotModel, this.state.plotStructure
       );
     }
-    DataVisualizerService.instance.unregisterPlot(this.state.keyContext);
+    DataVisualizerService.instance.unregisterPlot(this.keyContext);
   }
 
   startListening() {
@@ -614,7 +655,8 @@ export default class DataVisualizer extends React.Component {
   }
 
   addDefaultElement() {
-    let minimalPlot = { label: '', dimensions: [] };
+    // OLD, seems like inflationary setState calls
+    /*let minimalPlot = { label: '', dimensions: [] };
     for (let i = 0; i < this.state.plotModel.dimensions; i++) {
       this.setState(state => {
         minimalPlot.dimensions.push({ source: state.sortedSources[i] });
@@ -624,6 +666,19 @@ export default class DataVisualizer extends React.Component {
     this.setState(state => {
       return {
         plotStructure: { ...state.plotStructure, plotElements: [...state.plotStructure.plotElements, minimalPlot] }
+      };
+    });*/
+
+    let minimalPlot = { label: '', dimensions: [] };
+    for (let i = 0; i < this.state.plotModel.dimensions; i++) {
+      minimalPlot.dimensions.push({ source: this.state.sortedSources[i] });
+    }
+    this.setState(state => {
+      return {
+        plotStructure: {
+          ...state.plotStructure,
+          axis: [...state.plotStructure.axis, ''],
+          plotElements: [...state.plotStructure.plotElements, minimalPlot] }
       };
     });
   }
@@ -678,8 +733,8 @@ export default class DataVisualizer extends React.Component {
     });
   }
 
-  getSimulationState(serverURL, simulationID) {
-    DataVisualizerService.instance.getSimulationState(serverURL, simulationID);
+  async getSimulationState(serverURL, simulationID) {
+    return await SimulationService.instance.getState(serverURL, simulationID);
   }
 
   render() {
@@ -711,9 +766,9 @@ export default class DataVisualizer extends React.Component {
         {this.state.isPlotVisible && !this.state.isStructureVisible ?
           <div className="plot-title">
             <Plot id="plot"
-              data={this.state.data}
-              layout={this.state.layout}
-              config={this.state.config}
+              data={/*[]*/this.state.data}
+              layout={/*null*/this.state.layout}
+              config={/*{}*/this.state.config}
             />
             <div className="plot-button">
               <button className="nrp-btn nrp-btn-wide btn-default btn-md small-icon-button"
