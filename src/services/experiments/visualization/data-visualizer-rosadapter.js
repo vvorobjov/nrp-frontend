@@ -1,3 +1,5 @@
+import * as THREE from 'three';
+
 import SimulationService from '../execution/running-simulation-service';
 import UserSettingsService from '../../user/user-settings-service';
 import DataVisualizerService from './data-visualizer-service';
@@ -25,12 +27,14 @@ export default class DataVisualizerROSAdapter {
       'std_msgs/UInt32',
       'std_msgs/UInt64'
     ];
-    this.topicConnections = [];
-    this.topics = [];
+    this.subscribedTopics = [];
+    this.topics = {};
     this.rosConnection = undefined;
     this.modelPointsFrequency = 2;
     this.sortedTopics = [];
     this.loadSettingsWhenTopic = true;
+
+    console.info('DataVisualizerROSAdapter constructor done');
   }
 
   static get instance() {
@@ -69,12 +73,18 @@ export default class DataVisualizerROSAdapter {
     if (response.robots) {
       for (let i = 0; i < response.robots.length; i++) {
         const robot = response.robots[i];
-        this.topics['/' + robot.robotId + '/model_state/position.x'] = 'gazebo_msgs/ModelStates';
-        this.topics['/' + robot.robotId + '/model_state/position.y'] = 'gazebo_msgs/ModelStates';
-        this.topics['/' + robot.robotId + '/model_state/position.z'] = 'gazebo_msgs/ModelStates';
-        this.topics['/' + robot.robotId + '/model_state/angle.x'] = 'gazebo_msgs/ModelStates';
-        this.topics['/' + robot.robotId + '/model_state/angle.y'] = 'gazebo_msgs/ModelStates';
-        this.topics['/' + robot.robotId + '/model_state/angle.z'] = 'gazebo_msgs/ModelStates';
+        this.topics['/' + robot.robotId + '/model_state/position.x'] =
+          DataVisualizerROSAdapter.CONSTANTS.GAZEBO_TOPIC_TYPE_MODEL_STATES;
+        this.topics['/' + robot.robotId + '/model_state/position.y'] =
+          DataVisualizerROSAdapter.CONSTANTS.GAZEBO_TOPIC_TYPE_MODEL_STATES;
+        this.topics['/' + robot.robotId + '/model_state/position.z'] =
+          DataVisualizerROSAdapter.CONSTANTS.GAZEBO_TOPIC_TYPE_MODEL_STATES;
+        this.topics['/' + robot.robotId + '/model_state/angle.x'] =
+          DataVisualizerROSAdapter.CONSTANTS.GAZEBO_TOPIC_TYPE_MODEL_STATES;
+        this.topics['/' + robot.robotId + '/model_state/angle.y'] =
+          DataVisualizerROSAdapter.CONSTANTS.GAZEBO_TOPIC_TYPE_MODEL_STATES;
+        this.topics['/' + robot.robotId + '/model_state/angle.z'] =
+          DataVisualizerROSAdapter.CONSTANTS.GAZEBO_TOPIC_TYPE_MODEL_STATES;
       }
     }
   }
@@ -92,6 +102,9 @@ export default class DataVisualizerROSAdapter {
   }
 
   subscribeTopics(plotStructure) {
+    console.info('DV ROS - subscribeTopics');
+    console.info('plotStructure');
+    console.info(plotStructure);
     let topicSubscribed = {};
     for (
       let element = 0;
@@ -108,39 +121,43 @@ export default class DataVisualizerROSAdapter {
         if (topicType === '_time') {
           continue;
         }
-        if (topicType === 'gazebo_msgs/ModelStates') {
+        if (topicType === DataVisualizerROSAdapter.CONSTANTS.GAZEBO_TOPIC_TYPE_MODEL_STATES) {
           topicName = '/gazebo/model_states';
         }
         if (!(topicName in topicSubscribed))  {
-          let topicSubscriber = RoslibService.instance.createTopic(
+          let rosTopic = RoslibService.instance.createTopic(
             this.rosConnection,
             topicName,
             topicType,
-            topicType === 'gazebo_msgs/ModelStates'
+            topicType === DataVisualizerROSAdapter.CONSTANTS.GAZEBO_TOPIC_TYPE_MODEL_STATES
               ? {
                 throttleRate: 1.0 / this.modelPointsFrequency * 1000.0
               }
               : undefined
           );
           topicSubscribed[topicName] = true;
-          if (topicType === 'gazebo_msgs/ModelStates') {
-            topicSubscriber.subscribe(message => {
-              this.sendStandardMessage(message);
+          if (topicType === DataVisualizerROSAdapter.CONSTANTS.GAZEBO_TOPIC_TYPE_MODEL_STATES) {
+            rosTopic.subscribe(message => {
+              let translatedMessages = this.translateGazeboModelStatesMsg(message);
+              for (let message of translatedMessages) {
+                this.sendStandardMessage(message);
+              }
+              //this.sendStateMessage(translated);
             });
           }
           else {
-            topicSubscriber.subscribe(message => {
-              this.sendStateMessage(message);
+            rosTopic.subscribe(message => {
+              this.sendStandardMessage(message);
             });
           }
-          this.topicConnections = [...this.topicConnections, topicSubscriber];
+          this.subscribedTopics = [...this.subscribedTopics, rosTopic];
         }
       }
     }
   }
 
   unsubscribeTopics() {
-    this.topicConnections.forEach(connection => {
+    this.subscribedTopics.forEach(connection => {
       connection.unsubscribe(message => {
         this.sendStandardMessage(message);
       });
@@ -148,7 +165,78 @@ export default class DataVisualizerROSAdapter {
         this.sendStateMessage(message);
       });
     });
-    this.topicConnections = [];
+    this.subscribedTopics = [];
     this.rosConnection = undefined;
   }
+
+  translateGazeboModelStatesMsg(message) {
+    if (!this.translatedModelStateMessage) {
+      console.info('translateGazeboModelStatesMsg');
+      console.info('message');
+      console.info(message);
+      console.info('this.topics');
+      console.info(this.topics);
+
+      this.translatedModelStateMessage = true;
+    }
+
+    let translatedMessages = [];
+    for (let modelIndex = 0; modelIndex < message.name.length; modelIndex++) {
+      for (let topic of Object.keys(this.topics)) {
+        if (topic.startsWith('/' + message.name[modelIndex] + '/model_state')) {
+          let addData = false;
+          let data = 0;
+
+          if (topic.startsWith('/' + message.name[modelIndex] + '/model_state/position')) {
+            addData = true;
+            if (topic.endsWith('.x')) {
+              data = message.pose[modelIndex].position.x;
+            }
+            else if (topic.endsWith('.y')) {
+              data = message.pose[modelIndex].position.y;
+            }
+            else if (topic.endsWith('.z')) {
+              data = message.pose[modelIndex].position.z;
+            }
+          }
+          else if (topic.startsWith('/' + message.name[modelIndex] + '/model_state/angle')) {
+            addData = true;
+            let q = new THREE.Quaternion(
+              message.pose[modelIndex].orientation.x,
+              message.pose[modelIndex].orientation.y,
+              message.pose[modelIndex].orientation.z,
+              message.pose[modelIndex].orientation.w
+            );
+            let euler = new THREE.Euler();
+            euler.setFromQuaternion(q, 'XYZ');
+            if (topic.endsWith('.x')) {
+              data = euler.x;
+            }
+            else if (topic.endsWith('.y')) {
+              data = euler.y;
+            }
+            else if (topic.endsWith('.z')) {
+              data = euler.z;
+            }
+          }
+
+          if (addData) {
+            translatedMessages.push({
+              //TODO: this seems very unnecessary, is this how standard messages from ROS are also structured?
+              message: {
+                name: topic,
+                data: data
+              }
+            });
+          }
+        }
+      }
+    }
+
+    return translatedMessages;
+  }
 }
+
+DataVisualizerROSAdapter.CONSTANTS = Object.freeze({
+  GAZEBO_TOPIC_TYPE_MODEL_STATES: 'gazebo_msgs/ModelStates'
+});

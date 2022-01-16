@@ -295,6 +295,7 @@ export default class DataVisualizer extends React.Component {
         dim++
       ) {
         let dimension = this.state.plotStructure.plotElements[i].dimensions[dim];
+        // is 'gazebo_msgs/Model/States' spelled incorrectly? topic or topic type? 'gazebo_msgs/ModelStates'?
         if (response.topics[dimension.source] === 'gazebo_msgs/Model/States') {
           //Search a message that matches (if any)
           for (let j = 0; j < response.message.name.length; j++) {
@@ -350,7 +351,8 @@ export default class DataVisualizer extends React.Component {
   }
 
   parseStandardMessage(response) {
-    console.info('parseStandardMessage');
+    //console.info('parseStandardMessage');
+    //console.info(response);
     /*console.info(this.state.data);*/
     /*this.setState({
       message: response.message,
@@ -654,6 +656,7 @@ export default class DataVisualizer extends React.Component {
   }
 
   addDefaultElement() {
+    console.info('addDefaultElement');
     // OLD, seems like inflationary setState calls
     /*let minimalPlot = { label: '', dimensions: [] };
     for (let i = 0; i < this.state.plotModel.dimensions; i++) {
