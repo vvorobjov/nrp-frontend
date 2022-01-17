@@ -33,6 +33,8 @@ export default class DataVisualizerROSAdapter {
     this.modelPointsFrequency = 2;
     this.sortedTopics = [];
     this.loadSettingsWhenTopic = true;
+    this.modelStateLastTime = undefined;
+    this.modelStateUpdateRate = DataVisualizerROSAdapter.CONSTANTS.TOPIC_MODEL_STATES_UPDATE_RATE_DEFAULT;
 
     console.info('DataVisualizerROSAdapter constructor done');
   }
@@ -47,12 +49,14 @@ export default class DataVisualizerROSAdapter {
 
   async getTopics(serverURL, simulationID) {
     this.settings = UserSettingsService.instance.settingsData;
-    await this.sendTopics(await SimulationService.instance.getTopics(serverURL),
+    await this.updateTopics(await SimulationService.instance.getTopics(serverURL),
       serverURL, simulationID);
   }
 
-  async sendTopics(response, serverURL, simulationID) {
-    this.topics = { Time: '_time' };
+  async updateTopics(response, serverURL, simulationID) {
+    this.topics = {};
+    this.topics[DataVisualizerService.CONSTANTS.PLOT_DIMENSION_NAME_TIME] =
+      DataVisualizerROSAdapter.CONSTANTS.PSEUDO_TOPIC_TYPE_TIME;
     for (let i = 0; i < response.topics.length; i++) {
       if (this.supportedTypes.includes(response.topics[i].topicType)) {
         this.topics[response.topics[i].topic] = response.topics[i].topicType;
@@ -74,17 +78,17 @@ export default class DataVisualizerROSAdapter {
       for (let i = 0; i < response.robots.length; i++) {
         const robot = response.robots[i];
         this.topics['/' + robot.robotId + '/model_state/position.x'] =
-          DataVisualizerROSAdapter.CONSTANTS.GAZEBO_TOPIC_TYPE_MODEL_STATES;
+          DataVisualizerROSAdapter.CONSTANTS.TOPIC_TYPE_GAZEBO_MODEL_STATES;
         this.topics['/' + robot.robotId + '/model_state/position.y'] =
-          DataVisualizerROSAdapter.CONSTANTS.GAZEBO_TOPIC_TYPE_MODEL_STATES;
+          DataVisualizerROSAdapter.CONSTANTS.TOPIC_TYPE_GAZEBO_MODEL_STATES;
         this.topics['/' + robot.robotId + '/model_state/position.z'] =
-          DataVisualizerROSAdapter.CONSTANTS.GAZEBO_TOPIC_TYPE_MODEL_STATES;
+          DataVisualizerROSAdapter.CONSTANTS.TOPIC_TYPE_GAZEBO_MODEL_STATES;
         this.topics['/' + robot.robotId + '/model_state/angle.x'] =
-          DataVisualizerROSAdapter.CONSTANTS.GAZEBO_TOPIC_TYPE_MODEL_STATES;
+          DataVisualizerROSAdapter.CONSTANTS.TOPIC_TYPE_GAZEBO_MODEL_STATES;
         this.topics['/' + robot.robotId + '/model_state/angle.y'] =
-          DataVisualizerROSAdapter.CONSTANTS.GAZEBO_TOPIC_TYPE_MODEL_STATES;
+          DataVisualizerROSAdapter.CONSTANTS.TOPIC_TYPE_GAZEBO_MODEL_STATES;
         this.topics['/' + robot.robotId + '/model_state/angle.z'] =
-          DataVisualizerROSAdapter.CONSTANTS.GAZEBO_TOPIC_TYPE_MODEL_STATES;
+          DataVisualizerROSAdapter.CONSTANTS.TOPIC_TYPE_GAZEBO_MODEL_STATES;
       }
     }
   }
@@ -97,7 +101,7 @@ export default class DataVisualizerROSAdapter {
     DataVisualizerService.instance.sendStandardMessage(message, this.topics);
   }
 
-  sendStateMessage (message) {
+  sendStateMessage(message) {
     DataVisualizerService.instance.sendStateMessage(message, this.topics);
   }
 
@@ -118,10 +122,10 @@ export default class DataVisualizerROSAdapter {
       ) {
         let topicName = plotStructure.plotElements[element].dimensions[dimension].source;
         let topicType = this.topics[topicName];
-        if (topicType === '_time') {
+        if (topicType === DataVisualizerROSAdapter.CONSTANTS.PSEUDO_TOPIC_TYPE_TIME) {
           continue;
         }
-        if (topicType === DataVisualizerROSAdapter.CONSTANTS.GAZEBO_TOPIC_TYPE_MODEL_STATES) {
+        if (topicType === DataVisualizerROSAdapter.CONSTANTS.TOPIC_TYPE_GAZEBO_MODEL_STATES) {
           topicName = '/gazebo/model_states';
         }
         if (!(topicName in topicSubscribed))  {
@@ -129,18 +133,35 @@ export default class DataVisualizerROSAdapter {
             this.rosConnection,
             topicName,
             topicType,
-            topicType === DataVisualizerROSAdapter.CONSTANTS.GAZEBO_TOPIC_TYPE_MODEL_STATES
+            topicType === DataVisualizerROSAdapter.CONSTANTS.TOPIC_TYPE_GAZEBO_MODEL_STATES
               ? {
                 throttleRate: 1.0 / this.modelPointsFrequency * 1000.0
               }
               : undefined
           );
           topicSubscribed[topicName] = true;
-          if (topicType === DataVisualizerROSAdapter.CONSTANTS.GAZEBO_TOPIC_TYPE_MODEL_STATES) {
+          if (topicType === DataVisualizerROSAdapter.CONSTANTS.TOPIC_TYPE_GAZEBO_MODEL_STATES) {
             rosTopic.subscribe(message => {
+              //TODO: debug
+              if (!this.firstStandardMessageParsed) {
+                this.firstStandardMessageParsed = true;
+
+                console.info('subscribeTopics GAZEBO_TOPIC_TYPE_MODEL_STATES');
+                console.info('message');
+                console.info(message);
+              }
+
+              let currentTime = Date.now() / 1000.0;
+              if (this.modelStateLastTime !== undefined &&
+                currentTime - this.modelStateLastTime < this.modelStateUpdateRate) {
+                return;
+              }
+              this.modelStateLastTime = currentTime;
+
               let translatedMessages = this.translateGazeboModelStatesMsg(message);
               for (let message of translatedMessages) {
                 this.sendStandardMessage(message);
+                //this.sendStateMessage(message);
               }
               //this.sendStateMessage(translated);
             });
@@ -150,7 +171,7 @@ export default class DataVisualizerROSAdapter {
               this.sendStandardMessage(message);
             });
           }
-          this.subscribedTopics = [...this.subscribedTopics, rosTopic];
+          this.subscribedTopics.push(rosTopic);
         }
       }
     }
@@ -170,16 +191,6 @@ export default class DataVisualizerROSAdapter {
   }
 
   translateGazeboModelStatesMsg(message) {
-    if (!this.translatedModelStateMessage) {
-      console.info('translateGazeboModelStatesMsg');
-      console.info('message');
-      console.info(message);
-      console.info('this.topics');
-      console.info(this.topics);
-
-      this.translatedModelStateMessage = true;
-    }
-
     let translatedMessages = [];
     for (let modelIndex = 0; modelIndex < message.name.length; modelIndex++) {
       for (let topic of Object.keys(this.topics)) {
@@ -221,16 +232,32 @@ export default class DataVisualizerROSAdapter {
           }
 
           if (addData) {
-            translatedMessages.push({
+            /*translatedMessages.push({
               //TODO: this seems very unnecessary, is this how standard messages from ROS are also structured?
               message: {
                 name: topic,
                 data: data
               }
+            });*/
+            translatedMessages.push({
+              name: topic,
+              data: data
             });
           }
         }
       }
+    }
+
+    if (!this.firstModelStateMessageTranslated) {
+      console.info('translateGazeboModelStatesMsg');
+      console.info('message');
+      console.info(message);
+      console.info('this.topics');
+      console.info(this.topics);
+      console.info('translatedMessages');
+      console.info(translatedMessages);
+
+      this.firstModelStateMessageTranslated = true;
     }
 
     return translatedMessages;
@@ -238,5 +265,7 @@ export default class DataVisualizerROSAdapter {
 }
 
 DataVisualizerROSAdapter.CONSTANTS = Object.freeze({
-  GAZEBO_TOPIC_TYPE_MODEL_STATES: 'gazebo_msgs/ModelStates'
+  TOPIC_TYPE_GAZEBO_MODEL_STATES: 'gazebo_msgs/ModelStates',
+  PSEUDO_TOPIC_TYPE_TIME: '_time',
+  TOPIC_MODEL_STATES_UPDATE_RATE_DEFAULT: 0.1
 });

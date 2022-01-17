@@ -90,10 +90,14 @@ export default class SimulationView extends React.Component {
   }
 
   onStatusInfoROS(message) {
+    this.realTime = message.realTime;
+    this.simulationTime = message.simulationTime;
+    this.timeout = message.timeout;
+
     this.setState({
-      timingRealtime: timeDDHHMMSS(message.realTime),
-      timingSimulationTime: timeDDHHMMSS(message.simulationTime),
-      timingTimeout: timeDDHHMMSS(message.timeout)
+      displayRealtime: timeDDHHMMSS(message.realTime),
+      displaySimulationTime: timeDDHHMMSS(message.simulationTime),
+      displayTimeout: timeDDHHMMSS(message.timeout)
     });
   }
 
@@ -153,11 +157,11 @@ export default class SimulationView extends React.Component {
 
               <div className='simulation-view-time-info'>
                 <div>Simulation time:</div>
-                <div>{this.state.timingSimulationTime}</div>
+                <div>{this.state.displaySimulationTime}</div>
                 <div>Real time:</div>
-                <div>{this.state.timingRealtime}</div>
+                <div>{this.state.displayRealtime}</div>
                 <div>Real timeout:</div>
-                <div>{this.state.timingTimeout}</div>
+                <div>{this.state.displayTimeout}</div>
               </div>
             </div>
 
@@ -193,8 +197,7 @@ export default class SimulationView extends React.Component {
             <FlexLayout.Layout ref={this.refLayout} model={this.state.modelFlexLayout}
               factory={(node) => {
                 return SimulationToolsService.instance.flexlayoutNodeFactory(
-                  node, this.serverURL, this.serverConfig,
-                  this.simulationID, this.state.timingSimulationTime
+                  node, this.serverURL, this.serverConfig, this.simulationID
                 );
               }} />
           </div>

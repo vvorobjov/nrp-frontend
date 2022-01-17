@@ -91,4 +91,9 @@ DataVisualizerService.EVENTS = Object.freeze({
   SORTED_SOURCES: 'SORTED_SOURCES'
 });
 
+DataVisualizerService.CONSTANTS = Object.freeze({
+  PLOT_UPDATE_INTERVAL_DEFAULT_MS: 500,
+  PLOT_DIMENSION_NAME_TIME: 'Time'
+});
+
 export default DataVisualizerService;

@@ -17,7 +17,7 @@ import './data-visualizer.css';
 import '../main.css';
 
 import DataVisualizerService from '../../services/experiments/visualization/data-visualizer-service';
-import SimulationService from '../../services/experiments//execution/running-simulation-service';
+import RunningSimulationService from '../../services/experiments//execution/running-simulation-service';
 import { EXPERIMENT_STATE } from '../../services/experiments/experiment-constants';
 
 const TYPES = [
@@ -125,6 +125,7 @@ export default class DataVisualizer extends React.Component {
       isStructureVisible: false,
       config: {},
       data: [],
+      revision: 0,
       plotModel: [],
       layout: null,
       types: this.createModelsTypes(TYPES),
@@ -142,14 +143,14 @@ export default class DataVisualizer extends React.Component {
     };
 
     this.message = {}; //TODO: is this even necessary to save?
-    this.topics = []; //TODO: is this even necessary to save?
+    //this.topics = []; //TODO: is this even necessary to save?
     this.modelStateLastTime = undefined;
-    this.maxPoints = 500;
     this.modelStateUpdateRate = 0.1;
+    this.maxPoints = 500;
     this.keyContext = undefined;
     this.container = undefined;
 
-    this.timer = null;
+    this.intervalTriggerPlotUpdate = null;
   }
 
   async componentDidMount() {
@@ -181,11 +182,12 @@ export default class DataVisualizer extends React.Component {
       DataVisualizerService.EVENTS.SORTED_SOURCES, this.saveSortedSources
     );
 
-    this.timer = setTimeout(() =>{
+    //TODO: remove needPlotUpdate and revision from state?
+    this.intervalTriggerPlotUpdate = setInterval(() => {
       if (this.state.needPlotUpdate) {
-        this.setState({ needPlotUpdate: false });
+        this.setState({ needPlotUpdate: false, revision: this.state.revision++ });
       }
-    }, 500);
+    }, DataVisualizerService.CONSTANTS.PLOT_UPDATE_INTERVAL_DEFAULT_MS);
   }
 
   componentWillUnmount() {
@@ -206,7 +208,7 @@ export default class DataVisualizer extends React.Component {
       DataVisualizerService.EVENTS.SORTED_SOURCES, this.saveSortedSources
     );
 
-    clearTimeout(this.timer);
+    this.intervalTriggerPlotUpdate && clearInterval(this.intervalTriggerPlotUpdate);
   }
 
   createModelsTypes(types) {
@@ -270,7 +272,7 @@ export default class DataVisualizer extends React.Component {
       topics: response.topics
     });*/
     this.message = response.message;
-    this.topics = response.topics;
+    //this.topics = response.topics;
 
     let currentTime = Date.now() / 1000.0;
     if (
@@ -281,6 +283,7 @@ export default class DataVisualizer extends React.Component {
     }
     //this.setState({ modelStateLastTime: currentTime });
     this.modelStateLastTime = currentTime;
+
     let needUpdateTime = false;
     if (this.state.data === null) {
       return;
@@ -288,7 +291,7 @@ export default class DataVisualizer extends React.Component {
     for (let i = 0; i < this.state.plotStructure.plotElements.length; i++) {
       let dataElement = this.state.plotModel.mergedDimensions
         ? this.state.data[0]
-        : this.state.data[1];
+        : this.state.data[i];
       for (
         let dim = 0;
         dim < this.state.plotStructure.plotElements[i].dimensions.length;
@@ -351,15 +354,7 @@ export default class DataVisualizer extends React.Component {
   }
 
   parseStandardMessage(response) {
-    //console.info('parseStandardMessage');
-    //console.info(response);
-    /*console.info(this.state.data);*/
-    /*this.setState({
-      message: response.message,
-      topics: response.topics
-    });*/
-    this.message = response.message;
-    this.topics = response.topics;
+    //TODO: needs to parse multiple messages at once so it doesn't create multiple time entries
     let needUpdateTime = false;
     if (this.state.data === null) {
       return;
@@ -368,10 +363,11 @@ export default class DataVisualizer extends React.Component {
     for (let i = 0; i < this.state.plotStructure.plotElements.length; i++) {
       let dataElement = this.state.plotModel.mergedDimensions
         ? this.state.data[0]
-        : this.state.data[1];
+        : this.state.data[i];
       for (let dim = 0; dim < this.state.plotStructure.plotElements[i].dimensions.length; dim++) {
         let dimension = this.state.plotStructure.plotElements[i].dimensions[dim];
         if (dimension.source === response.message.name) {
+          this.setState({ needPlotUpdate: true });
           this.addDataToDimension(i, dim, dataElement, response.message.data);
           needUpdateTime = true;
         }
@@ -380,10 +376,36 @@ export default class DataVisualizer extends React.Component {
 
     if (needUpdateTime) {
       this.addTimePoint();
+
+      //TODO: debug
+      if (!this.firstStandardMessageParsedWithNewData) {
+        this.firstStandardMessageParsedWithNewData = true;
+
+        console.info('parseStandardMessage with time update');
+      }
+    }
+
+    //TODO: debug
+    if (!this.firstStandardMessageParsed) {
+      this.firstStandardMessageParsed = true;
+
+      console.info('parseStandardMessage');
+      console.info('response');
+      console.info(response);
+      console.info('this.state');
+      console.info(this.state);
     }
   }
 
   addDataToDimension(index, dataIndex, dataElement, data) {
+    //TODO: debug
+    if (!this.firstAddDataToDimension) {
+      this.firstAddDataToDimension = true;
+
+      console.info('addDataToDimension(index, dataIndex, dataElement, data)');
+      console.info([index, dataIndex, dataElement, data]);
+    }
+
     let plotData;
     if (this.state.plotModel.positiveData) {
       data = data < 0 ? -data : data;
@@ -449,11 +471,11 @@ export default class DataVisualizer extends React.Component {
     for (let i = 0; i < this.state.plotStructure.plotElements.length; i++) {
       let dataElement = this.state.plotModel.mergedDimensions
         ? this.state.data[0]
-        : this.state.data[1];
+        : this.state.data[i];
       for (let di = 0; di < this.state.plotStructure.plotElements[i].dimensions.length; di++) {
         let dimension = this.state.plotStructure.plotElements[i].dimensions[di];
-        if (this.state.topics[dimension.source] === '_time') {
-          this.addDataToDimension(i, di, dataElement, this.props.timingSimulationTime.toString());
+        if (dimension.source === DataVisualizerService.CONSTANTS.PLOT_DIMENSION_NAME_TIME) {
+          this.addDataToDimension(i, di, dataElement, RunningSimulationService.instance.simulationTime);
         }
       }
     }
@@ -736,7 +758,7 @@ export default class DataVisualizer extends React.Component {
   }
 
   async getSimulationState(serverURL, simulationID) {
-    return await SimulationService.instance.getState(serverURL, simulationID);
+    return await RunningSimulationService.instance.getState(serverURL, simulationID);
   }
 
   render() {
@@ -771,6 +793,7 @@ export default class DataVisualizer extends React.Component {
               data={/*[]*/this.state.data}
               layout={/*null*/this.state.layout}
               config={/*{}*/this.state.config}
+              revision={this.state.revision}
             />
             <div className="plot-button">
               <button className="nrp-btn nrp-btn-wide btn-default btn-md small-icon-button"

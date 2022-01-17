@@ -112,6 +112,10 @@ class SimulationService extends HttpService {
     rosStatusTopics.set(rosbridgeWebsocket, statusTopic);
 
     this.addRosStatusInfoCallback(rosbridgeWebsocket, (msg) => {
+      this.realTime = msg.realTime;
+      this.simulationTime = msg.simulationTime;
+      this.timeout = msg.timeout;
+
       if (msg.state && msg.state === EXPERIMENT_STATE.STOPPED) {
         this.stopRosStatusInformation(rosbridgeWebsocket);
       }

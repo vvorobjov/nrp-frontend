@@ -36,14 +36,13 @@ class SimulationToolsService {
     this.tools.set(id, toolConfig);
   }
 
-  flexlayoutNodeFactory(node, serverURL, serverConfig, simulationID, timingSimulationTime, timingTimeout) {
+  flexlayoutNodeFactory(node, serverURL, serverConfig, simulationID) {
     var component = node.getComponent();
 
     let toolConfig = this.tools.get(component);
     if (toolConfig && toolConfig.flexlayoutFactoryCb) {
       if (toolConfig.flexlayoutNode.name === 'Data Visualizer') {
-        return toolConfig.flexlayoutFactoryCb(serverURL, serverConfig,
-          simulationID, timingSimulationTime, timingTimeout);
+        return toolConfig.flexlayoutFactoryCb(serverURL, serverConfig, simulationID);
       }
       else {
         return toolConfig.flexlayoutFactoryCb();
@@ -106,9 +105,8 @@ SimulationToolsService.TOOLS = Object.freeze({
       'name': 'Data Visualizer',
       'component': 'data-visualizer'
     },
-    flexlayoutFactoryCb: (serverURL, serverConfig,  simulationID, timingSimulationTime, timingTimeout) =>  {
-      return <DataVisualizer serverURL={serverURL} serverConfig={serverConfig} simulationID={simulationID}
-        timingSimulationTime={timingSimulationTime} timingTimeout={timingTimeout}/>;
+    flexlayoutFactoryCb: (serverURL, serverConfig,  simulationID) =>  {
+      return <DataVisualizer serverURL={serverURL} serverConfig={serverConfig} simulationID={simulationID}/>;
     },
     getIcon: () => {
       return <span>Data Visualizer</span>;
