@@ -490,10 +490,12 @@ export default class DataVisualizer extends React.Component {
     } );
   }
 
-  changeAxis(labelIndex, axis) {
+  changeAxisLabel(axisIndex, label) {
+    console.info('changeAxisLabel(axisIndex, label)');
+    console.info([axisIndex, label]);
     this.setState(state => {
       let plotStructure = state.plotStructure;
-      plotStructure.axis[labelIndex] = axis;
+      plotStructure.axis[axisIndex] = label;
       return { plotStructure: plotStructure };
     });
   }
@@ -571,7 +573,7 @@ export default class DataVisualizer extends React.Component {
                     return (
                       <div className="label-container" key={labelIndex}>
                         <div className="label-title">{label}</div>
-                        <input required onChange={(axis) => this.changeAxis(labelIndex, axis)}/>
+                        <input required onChange={(event) => this.changeAxisLabel(labelIndex, event.target.value)}/>
                       </div>);
                   })}
                 </div>
