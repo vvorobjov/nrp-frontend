@@ -47,7 +47,7 @@ class DataVisualizerService extends EventEmitter {
   }
 
   sendStandardMessage(message, topics) {
-    this.emit(DataVisualizerService.EVENTS.STANDARD_MESSAGE, { message, topics });
+    this.emit(DataVisualizerService.EVENTS.STANDARD_MESSAGE, { dataList: message, topics });
   }
 
   // ROS specific function

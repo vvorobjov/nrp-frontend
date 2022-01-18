@@ -1,6 +1,5 @@
 import React from 'react';
 import Plot from 'react-plotly.js';
-import * as THREE from 'three';
 import ChartBasic from '../../assets/images/data-visualizer/basic_chart.png';
 import ChartLine from '../../assets/images/data-visualizer/line_chart.png';
 import ChartPie from '../../assets/images/data-visualizer/pie_chart.png';
@@ -124,31 +123,22 @@ export default class DataVisualizer extends React.Component {
       isPlotVisible: false,
       isStructureVisible: false,
       config: {},
-      data: [],
-      revision: 0,
       plotModel: [],
       layout: null,
       types: this.createModelsTypes(TYPES),
       axisLabels: [],
       plotStructure: [],
       sortedSources: []
-      // these don't seem to be reactive elements
-      //message: {},
-      //topics: [],
-      //modelStateLastTime: undefined,
-      //maxPoints: 500,
-      //modelStateUpdateRate: 0.1,
-      //keyContext: undefined,
-      //container: undefined,
     };
 
-    this.message = {}; //TODO: is this even necessary to save?
-    //this.topics = []; //TODO: is this even necessary to save?
     this.modelStateLastTime = undefined;
     this.modelStateUpdateRate = 0.1;
     this.maxPoints = 500;
     this.keyContext = undefined;
     this.container = undefined;
+    this.needPlotUpdate = false;
+    this.plotDataRevision = 0;
+    this.plotData = [];
 
     this.intervalTriggerPlotUpdate = null;
   }
@@ -167,10 +157,10 @@ export default class DataVisualizer extends React.Component {
     );
 
     //ROS specific function
-    this.parseStateMessage = this.parseStateMessage.bind(this);
+    /*this.parseStateMessage = this.parseStateMessage.bind(this);
     DataVisualizerService.instance.addListener(
       DataVisualizerService.EVENTS.STATE_MESSAGE, this.parseStateMessage
-    );
+    );*/
 
     this.loadSettings = this.loadSettings.bind(this);
     DataVisualizerService.instance.addListener(
@@ -182,10 +172,10 @@ export default class DataVisualizer extends React.Component {
       DataVisualizerService.EVENTS.SORTED_SOURCES, this.saveSortedSources
     );
 
-    //TODO: remove needPlotUpdate and revision from state?
     this.intervalTriggerPlotUpdate = setInterval(() => {
-      if (this.state.needPlotUpdate) {
-        this.setState({ needPlotUpdate: false, revision: this.state.revision++ });
+      if (this.needPlotUpdate) {
+        this.needPlotUpdate = false;
+        this.plotDataRevision = this.plotDataRevision + 1;
       }
     }, DataVisualizerService.CONSTANTS.PLOT_UPDATE_INTERVAL_DEFAULT_MS);
   }
@@ -196,9 +186,9 @@ export default class DataVisualizer extends React.Component {
     );
 
     //ROS specific function
-    DataVisualizerService.instance.removeListener(
+    /*DataVisualizerService.instance.removeListener(
       DataVisualizerService.EVENTS.STATE_MESSAGE, this.parseStateMessage
-    );
+    );*/
 
     DataVisualizerService.instance.removeListener(
       DataVisualizerService.EVENTS.SETTINGS, this.loadSettings
@@ -222,12 +212,10 @@ export default class DataVisualizer extends React.Component {
   }
 
   saveSortedSources(sortedSources) {
-    console.info('saveSortedSources');
     this.setState({ sortedSources: sortedSources });
   }
 
   loadSettings(settings) {
-    console.info('loadSettings');
     DataVisualizerService.instance.setKey(this.keyContext);
     if (!settings.plottingToolsData || this.keyContext in settings.plottingToolsData) {
       return;
@@ -265,202 +253,99 @@ export default class DataVisualizer extends React.Component {
     return this.findKeyContext(base.parentElement, rootKey);
   }
 
-  //ROS specific function
-  parseStateMessage(response) {
-    /*this.setState({
-      message: response.message,
-      topics: response.topics
-    });*/
-    this.message = response.message;
-    //this.topics = response.topics;
-
-    let currentTime = Date.now() / 1000.0;
-    if (
-      this.modelStateLastTime !== undefined &&
-      currentTime - this.modelStateLastTime < this.modelStateUpdateRate
-    ) {
-      return;
-    }
-    //this.setState({ modelStateLastTime: currentTime });
-    this.modelStateLastTime = currentTime;
-
+  parseStandardMessage(message) {
+    //TODO: needs to parse multiple messages at once so it doesn't create multiple time entries
     let needUpdateTime = false;
-    if (this.state.data === null) {
+    if (this.plotData === null) {
       return;
     }
+
     for (let i = 0; i < this.state.plotStructure.plotElements.length; i++) {
       let dataElement = this.state.plotModel.mergedDimensions
-        ? this.state.data[0]
-        : this.state.data[i];
-      for (
-        let dim = 0;
-        dim < this.state.plotStructure.plotElements[i].dimensions.length;
-        dim++
-      ) {
+        ? this.plotData[0]
+        : this.plotData[i];
+      for (let dim = 0; dim < this.state.plotStructure.plotElements[i].dimensions.length; dim++) {
         let dimension = this.state.plotStructure.plotElements[i].dimensions[dim];
-        // is 'gazebo_msgs/Model/States' spelled incorrectly? topic or topic type? 'gazebo_msgs/ModelStates'?
-        if (response.topics[dimension.source] === 'gazebo_msgs/Model/States') {
-          //Search a message that matches (if any)
-          for (let j = 0; j < response.message.name.length; j++) {
-            if (dimension.source.startWith('/' + response.message.name[j])) {
-              let addData = false;
-              let data = 0;
-              if (dimension.source.startWith('/' + response.message.name[j] + '/model_state/position')) {
-                addData = true;
-                if (dimension.source.endWith('.x')) {
-                  data = response.message.pose[j].position.x;
-                }
-                else if (dimension.source.endsWith('.y')) {
-                  data = response.message.pose[j].position.y;
-                }
-                else if (dimension.source.endsWith('.z')) {
-                  data = response.message.pose[j].position.z;
-                }
-                else if (dimension.source.startWith('/' + response.message.name[j] + '/model_state/angle')) {
-                  let q = new THREE.Quaternion(
-                    response.message.pose[j].orientation.x,
-                    response.message.pose[j].orientation.y,
-                    response.message.pose[j].orientation.z,
-                    response.message.pose[j].orientation.w
-                  );
-                  let euler = new THREE.Euler();
-                  euler.setFromQuaternion(q, 'XYZ');
-                  addData = true;
-                  if (dimension.source.endsWith('.x')) {
-                    data = euler.x;
-                  }
-                  else if (dimension.source.endsWith('.y')) {
-                    data = euler.y;
-                  }
-                  else if (dimension.source.endsWith('.z')) {
-                    data = euler.z;
-                  }
-                }
-                if (addData) {
-                  this.setState({ needPlotUpdate: true });
-                  needUpdateTime = true;
-                  this.addDataToDimension(i, dim, dataElement, data);
-                }
-                break;
-              }
-            }
+        for (let entry of message.dataList) {
+          if (dimension.source === entry.name) {
+            this.addDataToDimension(i, dim, dataElement, entry.data);
+            needUpdateTime = true;
           }
         }
       }
     }
-    if (needUpdateTime) {
-      this.addTimePoint();
-    }
-  }
-
-  parseStandardMessage(response) {
-    //TODO: needs to parse multiple messages at once so it doesn't create multiple time entries
-    let needUpdateTime = false;
-    if (this.state.data === null) {
-      return;
-    }
-
-    for (let i = 0; i < this.state.plotStructure.plotElements.length; i++) {
-      let dataElement = this.state.plotModel.mergedDimensions
-        ? this.state.data[0]
-        : this.state.data[i];
-      for (let dim = 0; dim < this.state.plotStructure.plotElements[i].dimensions.length; dim++) {
-        let dimension = this.state.plotStructure.plotElements[i].dimensions[dim];
-        if (dimension.source === response.message.name) {
-          this.setState({ needPlotUpdate: true });
-          this.addDataToDimension(i, dim, dataElement, response.message.data);
-          needUpdateTime = true;
-        }
-      }
-    }
 
     if (needUpdateTime) {
       this.addTimePoint();
+      this.needPlotUpdate = true;
 
       //TODO: debug
-      if (!this.firstStandardMessageParsedWithNewData) {
-        this.firstStandardMessageParsedWithNewData = true;
-
-        console.info('parseStandardMessage with time update');
+      if (!this.firstStandardMessageParsed) {
+        console.info('message');
+        console.info(message);
+        console.info('this.state');
+        console.info(this.state);
+        this.firstStandardMessageParsed = true;
       }
-    }
-
-    //TODO: debug
-    if (!this.firstStandardMessageParsed) {
-      this.firstStandardMessageParsed = true;
-
-      console.info('parseStandardMessage');
-      console.info('response');
-      console.info(response);
-      console.info('this.state');
-      console.info(this.state);
     }
   }
 
   addDataToDimension(index, dataIndex, dataElement, data) {
-    //TODO: debug
-    if (!this.firstAddDataToDimension) {
-      this.firstAddDataToDimension = true;
-
-      console.info('addDataToDimension(index, dataIndex, dataElement, data)');
-      console.info([index, dataIndex, dataElement, data]);
-    }
-
-    let plotData;
+    let tmpData;
     if (this.state.plotModel.positiveData) {
       data = data < 0 ? -data : data;
     }
     if (this.state.plotModel.mergedDimensions) {
       if (this.state.plotModel.mergedDimensionsUseXY) {
-        plotData = dataElement.y.slice(0);
-        plotData[index] = data;
-        dataElement.data = plotData;
+        tmpData = dataElement.y.slice(0);
+        tmpData[index] = data;
+        dataElement.data = tmpData;
       }
       else {
-        plotData = dataElement.data.slice(0);
-        plotData[index] = data;
-        dataElement.data = plotData;
+        tmpData = dataElement.data.slice(0);
+        tmpData[index] = data;
+        dataElement.data = tmpData;
       }
     }
     else {
       switch(dataIndex) {
       default: // case 0
-        plotData = dataElement.x.slice(0);
-        plotData.push(data);
-        if (plotData.length > this.maxPoints) {
-          plotData.splice(0, plotData.length - this.maxPoints);
+        tmpData = dataElement.x.slice(0);
+        tmpData.push(data);
+        if (tmpData.length > this.maxPoints) {
+          tmpData.splice(0, tmpData.length - this.maxPoints);
         }
-        dataElement.x = plotData;
+        dataElement.x = tmpData;
         break;
 
       case 1:
-        plotData = dataElement.y.slice(0);
-        plotData.push(data);
-        if (plotData.length > this.maxPoints) {
-          plotData.splice(0, plotData.length - this.maxPoints);
+        tmpData = dataElement.y.slice(0);
+        tmpData.push(data);
+        if (tmpData.length > this.maxPoints) {
+          tmpData.splice(0, tmpData.length - this.maxPoints);
         }
-        dataElement.y = plotData;
+        dataElement.y = tmpData;
         break;
 
       case 2:
         if (this.state.plotModel.lastDimensionIsSize) {
-          plotData = dataElement.marker.size.slice(0);
+          tmpData = dataElement.marker.size.slice(0);
         }
         else if (this.state.plotModel.lastDimensionIsYError) {
-          plotData = dataElement.error_y.array.slice(0);
+          tmpData = dataElement.error_y.array.slice(0);
         }
         else {
-          plotData = dataElement.z.slice(0);
+          tmpData = dataElement.z.slice(0);
         }
-        plotData.push(data);
-        if (plotData.length > this.maxPoints) {
-          plotData.splice(0, plotData.length - this.maxPoints);
+        tmpData.push(data);
+        if (tmpData.length > this.maxPoints) {
+          tmpData.splice(0, tmpData.length - this.maxPoints);
         }
         if (this.state.plotModel.lastDimensionIsYError) {
-          dataElement.error_y.array = plotData;
+          dataElement.error_y.array = tmpData;
         }
         else {
-          dataElement.z = plotData;
+          dataElement.z = tmpData;
         }
         break;
       }
@@ -470,8 +355,8 @@ export default class DataVisualizer extends React.Component {
   addTimePoint() {
     for (let i = 0; i < this.state.plotStructure.plotElements.length; i++) {
       let dataElement = this.state.plotModel.mergedDimensions
-        ? this.state.data[0]
-        : this.state.data[i];
+        ? this.plotData[0]
+        : this.plotData[i];
       for (let di = 0; di < this.state.plotStructure.plotElements[i].dimensions.length; di++) {
         let dimension = this.state.plotStructure.plotElements[i].dimensions[di];
         if (dimension.source === DataVisualizerService.CONSTANTS.PLOT_DIMENSION_NAME_TIME) {
@@ -501,12 +386,6 @@ export default class DataVisualizer extends React.Component {
   }
 
   newPlot() {
-    console.info('newPlot, state:');
-    console.info(this.state);
-    /*this.setState({
-      isPlotVisible: false,
-      isStructureVisible: false
-    });*/
     this.setState( state => {
       let config = state.config;
       config.width = this.container.clientWidth < 280 ? 280 : this.container.clientWidth;
@@ -654,10 +533,9 @@ export default class DataVisualizer extends React.Component {
     this.setState({
       isPlotVisible: true,
       isStructureVisible: false,
-      layout: layout,
-      data: data
+      layout: layout
     });
-    //this.setState({ data: data });
+    this.plotData = data;
     this.startListening();
     if (hasSettings) {
       DataVisualizerService.instance.saveSettings(
@@ -678,21 +556,6 @@ export default class DataVisualizer extends React.Component {
   }
 
   addDefaultElement() {
-    console.info('addDefaultElement');
-    // OLD, seems like inflationary setState calls
-    /*let minimalPlot = { label: '', dimensions: [] };
-    for (let i = 0; i < this.state.plotModel.dimensions; i++) {
-      this.setState(state => {
-        minimalPlot.dimensions.push({ source: state.sortedSources[i] });
-        return { plotStructure : { ...state.plotStructure, axis : [...state.plotStructure.axis, ''] } };
-      });
-    }
-    this.setState(state => {
-      return {
-        plotStructure: { ...state.plotStructure, plotElements: [...state.plotStructure.plotElements, minimalPlot] }
-      };
-    });*/
-
     let minimalPlot = { label: '', dimensions: [] };
     for (let i = 0; i < this.state.plotModel.dimensions; i++) {
       minimalPlot.dimensions.push({ source: this.state.sortedSources[i] });
@@ -790,10 +653,10 @@ export default class DataVisualizer extends React.Component {
         {this.state.isPlotVisible && !this.state.isStructureVisible ?
           <div className="plot-title">
             <Plot id="plot"
-              data={/*[]*/this.state.data}
-              layout={/*null*/this.state.layout}
-              config={/*{}*/this.state.config}
-              revision={this.state.revision}
+              data={this.plotData}
+              layout={this.state.layout}
+              config={this.state.config}
+              revision={this.plotDataRevision}
             />
             <div className="plot-button">
               <button className="nrp-btn nrp-btn-wide btn-default btn-md small-icon-button"

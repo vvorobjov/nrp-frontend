@@ -159,11 +159,12 @@ export default class DataVisualizerROSAdapter {
               this.modelStateLastTime = currentTime;
 
               let translatedMessages = this.translateGazeboModelStatesMsg(message);
-              for (let message of translatedMessages) {
+              /*for (let message of translatedMessages) {
                 this.sendStandardMessage(message);
                 //this.sendStateMessage(message);
-              }
+              }*/
               //this.sendStateMessage(translated);
+              this.sendStandardMessage(translatedMessages);
             });
           }
           else {
