@@ -292,19 +292,10 @@ export default class DataVisualizer extends React.Component {
   }
 
   newPlot() {
-    this.setState( state => {
-      /*let config = state.config;
-      config.width = this.container.clientWidth < 280 ? 280 : this.container.clientWidth;
-      config.height = this.container.clientHeight < 280 ? 280 : this.container.clientHeight;*/
-
-      return {
-        //config: config,
-        isPlotVisible: false,
-        isStructureVisible: false
-      };
+    this.setState({
+      isPlotVisible: false,
+      isStructureVisible: false
     });
-    this.plotConfig.width = this.container.clientWidth < 280 ? 280 : this.container.clientWidth;
-    this.plotConfig.height = this.container.clientHeight < 280 ? 280 : this.container.clientHeight;
 
     DataVisualizerService.instance.unregisterPlot(this.keyContext);
   }
