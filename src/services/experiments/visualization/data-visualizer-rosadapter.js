@@ -35,8 +35,6 @@ export default class DataVisualizerROSAdapter {
     this.loadSettingsWhenTopic = true;
     this.modelStateLastTime = undefined;
     this.modelStateUpdateRate = DataVisualizerROSAdapter.CONSTANTS.TOPIC_MODEL_STATES_UPDATE_RATE_DEFAULT;
-
-    console.info('DataVisualizerROSAdapter constructor done');
   }
 
   static get instance() {
@@ -106,9 +104,6 @@ export default class DataVisualizerROSAdapter {
   }
 
   subscribeTopics(plotStructure) {
-    console.info('DV ROS - subscribeTopics');
-    console.info('plotStructure');
-    console.info(plotStructure);
     let topicSubscribed = {};
     for (
       let element = 0;
@@ -142,15 +137,6 @@ export default class DataVisualizerROSAdapter {
           topicSubscribed[topicName] = true;
           if (topicType === DataVisualizerROSAdapter.CONSTANTS.TOPIC_TYPE_GAZEBO_MODEL_STATES) {
             rosTopic.subscribe(message => {
-              //TODO: debug
-              if (!this.firstStandardMessageParsed) {
-                this.firstStandardMessageParsed = true;
-
-                console.info('subscribeTopics GAZEBO_TOPIC_TYPE_MODEL_STATES');
-                console.info('message');
-                console.info(message);
-              }
-
               let currentTime = Date.now() / 1000.0;
               if (this.modelStateLastTime !== undefined &&
                 currentTime - this.modelStateLastTime < this.modelStateUpdateRate) {
@@ -159,17 +145,12 @@ export default class DataVisualizerROSAdapter {
               this.modelStateLastTime = currentTime;
 
               let translatedMessages = this.translateGazeboModelStatesMsg(message);
-              /*for (let message of translatedMessages) {
-                this.sendStandardMessage(message);
-                //this.sendStateMessage(message);
-              }*/
-              //this.sendStateMessage(translated);
               this.sendStandardMessage(translatedMessages);
             });
           }
           else {
             rosTopic.subscribe(message => {
-              this.sendStandardMessage(message);
+              this.sendStandardMessage([{name: topicName, data: message}]);
             });
           }
           this.subscribedTopics.push(rosTopic);
@@ -233,13 +214,6 @@ export default class DataVisualizerROSAdapter {
           }
 
           if (addData) {
-            /*translatedMessages.push({
-              //TODO: this seems very unnecessary, is this how standard messages from ROS are also structured?
-              message: {
-                name: topic,
-                data: data
-              }
-            });*/
             translatedMessages.push({
               name: topic,
               data: data
@@ -247,18 +221,6 @@ export default class DataVisualizerROSAdapter {
           }
         }
       }
-    }
-
-    if (!this.firstModelStateMessageTranslated) {
-      console.info('translateGazeboModelStatesMsg');
-      console.info('message');
-      console.info(message);
-      console.info('this.topics');
-      console.info(this.topics);
-      console.info('translatedMessages');
-      console.info(translatedMessages);
-
-      this.firstModelStateMessageTranslated = true;
     }
 
     return translatedMessages;

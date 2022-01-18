@@ -19,102 +19,6 @@ import DataVisualizerService from '../../services/experiments/visualization/data
 import RunningSimulationService from '../../services/experiments//execution/running-simulation-service';
 import { EXPERIMENT_STATE } from '../../services/experiments/experiment-constants';
 
-const TYPES = [
-  {
-    title: 'Basic',
-    thumbnail: ChartBasic,
-    models: [
-      {
-        title: 'Line',
-        thumbnail: ChartLine,
-        dimensions: 2,
-        multi: true, // We can add several lines
-        hasAxis: true,
-        type: 'scatter',
-        mode: 'lines'
-      },
-      {
-        title: 'Pie',
-        thumbnail: ChartPie,
-        dimensions: 1,
-        multi: true,
-        hasAxis: false,
-        type: 'pie',
-        mergedDimensions: true,
-        positiveData: true
-      },
-      {
-        title: 'Scatter',
-        thumbnail: PlotScatter,
-        dimensions: 2,
-        multi: false,
-        hasAxis: true,
-        type: 'scatter',
-        mode: 'markers'
-      },
-      {
-        title: 'Bar',
-        thumbnail: ChartBar,
-        dimensions: 1,
-        multi: true,
-        hasAxis: false,
-        type: 'bar',
-        mergedDimensions: true,
-        mergedDimensionsUseXY: true
-      },
-      {
-        title: 'Filled Areas',
-        thumbnail: AreaFilled,
-        dimensions: 2,
-        multi: true,
-        hasAxis: true,
-        type: 'scatter',
-        fill: 'tozeroy'
-      },
-      {
-        title: 'Bubbles',
-        thumbnail: ChartBubble,
-        dimensions: 3,
-        multi: true,
-        hasAxis: true,
-        type: 'scatter',
-        mode: 'markers',
-        lastDimensionIsSize: true
-      }
-    ]
-  },
-  {
-    title: 'Stastical',
-    thumbnail: ChartStatistical,
-    models: [
-      {
-        title: 'Error Bars',
-        thumbnail: BarError,
-        dimensions: 3,
-        multi: true,
-        hasAxis: true,
-        type: 'scatter',
-        mode: 'lines',
-        lastDimensionIsYError: true
-      }
-    ]
-  },
-  {
-    title: '3D',
-    thumbnail: Chart3d,
-    models: [
-      {
-        title: 'Scatter 3D',
-        thumbnail: Scatter3d,
-        dimensions: 3,
-        multi: true,
-        hasAxis: true,
-        type: 'scatter3d',
-        mode: 'markers'
-      }
-    ]
-  }
-];
 
 export default class DataVisualizer extends React.Component {
   constructor(props) {
@@ -122,10 +26,9 @@ export default class DataVisualizer extends React.Component {
     this.state = {
       isPlotVisible: false,
       isStructureVisible: false,
-      config: {},
+      //config: {},
       plotModel: [],
-      layout: null,
-      types: this.createModelsTypes(TYPES),
+      types: this.createModelsTypes(DataVisualizer.CONSTANTS.CHART_TYPES),
       axisLabels: [],
       plotStructure: [],
       sortedSources: []
@@ -139,6 +42,9 @@ export default class DataVisualizer extends React.Component {
     this.needPlotUpdate = false;
     this.plotDataRevision = 0;
     this.plotData = [];
+    this.plotLayout = null;
+    this.plotConfig = {};
+    //TODO: catch resize events and adjust plot, is plot size part of config or layout?
 
     this.intervalTriggerPlotUpdate = null;
   }
@@ -387,16 +293,19 @@ export default class DataVisualizer extends React.Component {
 
   newPlot() {
     this.setState( state => {
-      let config = state.config;
+      /*let config = state.config;
       config.width = this.container.clientWidth < 280 ? 280 : this.container.clientWidth;
-      config.height = this.container.clientHeight < 280 ? 280 : this.container.clientHeight;
+      config.height = this.container.clientHeight < 280 ? 280 : this.container.clientHeight;*/
 
       return {
-        config: config,
+        //config: config,
         isPlotVisible: false,
         isStructureVisible: false
       };
     });
+    this.plotConfig.width = this.container.clientWidth < 280 ? 280 : this.container.clientWidth;
+    this.plotConfig.height = this.container.clientHeight < 280 ? 280 : this.container.clientHeight;
+
     DataVisualizerService.instance.unregisterPlot(this.keyContext);
   }
 
@@ -404,42 +313,28 @@ export default class DataVisualizer extends React.Component {
     DataVisualizerService.instance.unregisterPlot(this.keyContext);
 
     let layout = {
-      title: 'NRP Data Visualizer',
-      width: this.container.clientWidth < 280 ? 280 : this.container.clientWidth,
-      height: this.container.clientHeight < 280 ? 280 : this.container.clientHeight
+      title: {
+        text: 'NRP Data Visualizer'
+      },
+      autosize: true
     };
     if (this.state.plotModel.hasAxis) {
       for (
-        let axis = 0;
-        axis < this.state.plotStructure.axis.length;
-        axis ++
+        let indexAxis = 0;
+        indexAxis < this.state.plotStructure.axis.length;
+        indexAxis ++
       ) {
         let axisTitle = {
-          title: { text: this.state.plotStructure.axis[axis] }
+          title: { text: this.state.plotStructure.axis[indexAxis] }
         };
-        switch (axis) {
+        switch (indexAxis) {
         default: // case 0
-          /*this.setState(state => {
-            let layout = state.layout;
-            layout.xaxis = axisTitle;
-            return { layout: layout };
-          });*/
           layout.xaxis = axisTitle;
           break;
         case 1:
-          /*this.setState(state => {
-            let layout = state.layout;
-            layout.yaxis = axisTitle;
-            return { layout: layout };
-          });*/
           layout.yaxis = axisTitle;
           break;
         case 2:
-          /*this.setState(state => {
-            let layout = state.layout;
-            layout.zaxis = axisTitle;
-            return { layout: layout };
-          });*/
           layout.zaxis = axisTitle;
           break;
         }
@@ -532,10 +427,11 @@ export default class DataVisualizer extends React.Component {
     }
     this.setState({
       isPlotVisible: true,
-      isStructureVisible: false,
-      layout: layout
+      isStructureVisible: false
     });
     this.plotData = data;
+    this.plotLayout = layout;
+
     this.startListening();
     if (hasSettings) {
       DataVisualizerService.instance.saveSettings(
@@ -544,6 +440,11 @@ export default class DataVisualizer extends React.Component {
       );
     }
     DataVisualizerService.instance.unregisterPlot(this.keyContext);
+
+    console.info('showPlot, state');
+    console.info(this.state);
+    console.info('showPlot, plotLayout');
+    console.info(this.plotLayout);
   }
 
   startListening() {
@@ -558,7 +459,9 @@ export default class DataVisualizer extends React.Component {
   addDefaultElement() {
     let minimalPlot = { label: '', dimensions: [] };
     for (let i = 0; i < this.state.plotModel.dimensions; i++) {
-      minimalPlot.dimensions.push({ source: this.state.sortedSources[i] });
+      let defaultSource = i === 0 ?
+        DataVisualizerService.CONSTANTS.PLOT_DIMENSION_NAME_TIME : this.state.sortedSources[i];
+      minimalPlot.dimensions.push({source: defaultSource});
     }
     this.setState(state => {
       return {
@@ -654,8 +557,8 @@ export default class DataVisualizer extends React.Component {
           <div className="plot-title">
             <Plot id="plot"
               data={this.plotData}
-              layout={this.state.layout}
-              config={this.state.config}
+              layout={this.plotLayout}
+              config={this.plotConfig}
               revision={this.plotDataRevision}
             />
             <div className="plot-button">
@@ -690,7 +593,7 @@ export default class DataVisualizer extends React.Component {
                   <div className="datasource-element" key={elementIndex}>
                     <div className="label-title">Label </div>
                     <input className="label-name" type="text" required
-                      onChange={(label) => this.changeLabel(elementIndex, label)}/>
+                      onChange={(newLabel) => this.changeLabel(elementIndex, newLabel)}/>
                     {element.dimensions.map((dimension, dimensionIndex) => {
                       return (
                         <div className="datasource-dimension" key={dimensionIndex}>
@@ -700,7 +603,9 @@ export default class DataVisualizer extends React.Component {
                             value={dimension.source}>
                             {this.state.sortedSources.map((source, sourceIndex) => {
                               return (
-                                <option value={source} key={sourceIndex}>{source}</option>
+                                <option value={source} key={sourceIndex}>
+                                  {source}
+                                </option>
                               );
                             })}
                           </select>
@@ -768,3 +673,102 @@ export default class DataVisualizer extends React.Component {
     );
   }
 }
+
+DataVisualizer.CONSTANTS = Object.freeze({
+  CHART_TYPES: [
+    {
+      title: 'Basic',
+      thumbnail: ChartBasic,
+      models: [
+        {
+          title: 'Line',
+          thumbnail: ChartLine,
+          dimensions: 2,
+          multi: true, // We can add several lines
+          hasAxis: true,
+          type: 'scatter',
+          mode: 'lines'
+        },
+        {
+          title: 'Pie',
+          thumbnail: ChartPie,
+          dimensions: 1,
+          multi: true,
+          hasAxis: false,
+          type: 'pie',
+          mergedDimensions: true,
+          positiveData: true
+        },
+        {
+          title: 'Scatter',
+          thumbnail: PlotScatter,
+          dimensions: 2,
+          multi: false,
+          hasAxis: true,
+          type: 'scatter',
+          mode: 'markers'
+        },
+        {
+          title: 'Bar',
+          thumbnail: ChartBar,
+          dimensions: 1,
+          multi: true,
+          hasAxis: false,
+          type: 'bar',
+          mergedDimensions: true,
+          mergedDimensionsUseXY: true
+        },
+        {
+          title: 'Filled Areas',
+          thumbnail: AreaFilled,
+          dimensions: 2,
+          multi: true,
+          hasAxis: true,
+          type: 'scatter',
+          fill: 'tozeroy'
+        },
+        {
+          title: 'Bubbles',
+          thumbnail: ChartBubble,
+          dimensions: 3,
+          multi: true,
+          hasAxis: true,
+          type: 'scatter',
+          mode: 'markers',
+          lastDimensionIsSize: true
+        }
+      ]
+    },
+    {
+      title: 'Stastical',
+      thumbnail: ChartStatistical,
+      models: [
+        {
+          title: 'Error Bars',
+          thumbnail: BarError,
+          dimensions: 3,
+          multi: true,
+          hasAxis: true,
+          type: 'scatter',
+          mode: 'lines',
+          lastDimensionIsYError: true
+        }
+      ]
+    },
+    {
+      title: '3D',
+      thumbnail: Chart3d,
+      models: [
+        {
+          title: 'Scatter 3D',
+          thumbnail: Scatter3d,
+          dimensions: 3,
+          multi: true,
+          hasAxis: true,
+          type: 'scatter3d',
+          mode: 'markers'
+        }
+      ]
+    }
+  ]
+});
