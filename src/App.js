@@ -1,5 +1,6 @@
 import React from 'react';
-import { HashRouter, Switch, Route } from 'react-router-dom';
+
+import { BrowserRouter, Switch, Route } from 'react-router-dom';
 
 import mqtt from 'mqtt';
 
@@ -34,13 +35,13 @@ class App extends React.Component {
       <div>
         <ErrorDialog />
         <NotificationDialog/>
-        <HashRouter>
+        <BrowserRouter>
           <Switch>
             <Route path='/experiments-overview' component={ExperimentOverview} />
             <Route path='/simulation-view/:serverIP/:simulationID' component={SimulationView} />
             <Route path='/' component={EntryPage} />
           </Switch>
-        </HashRouter>
+        </BrowserRouter>
       </div>
     );
   }
