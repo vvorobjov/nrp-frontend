@@ -4,6 +4,7 @@ import NrpHeader from '../nrp-header/nrp-header.js';
 
 import './entry-page.css';
 import PlaceholderImage from '../../assets/images/Artificial_Intelligence_2.jpg';
+import NrpCoreDashboard from '../nrp-core-dashboard/nrp-core-dashboard.js';
 
 export default class EntryPage extends React.Component {
   render() {
@@ -28,6 +29,10 @@ export default class EntryPage extends React.Component {
           <p>Experiment 2 Placeholder</p>
         </div>
         <div className='sidebar-right'></div>
+        <div>
+          <div><b>!!! NRP Core testing !!!</b></div>
+        </div>
+        <NrpCoreDashboard />
       </div>
     );
   }
