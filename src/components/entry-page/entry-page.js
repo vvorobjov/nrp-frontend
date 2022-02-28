@@ -14,7 +14,7 @@ export default class EntryPage extends React.Component {
           <NrpHeader title1='NEUROROBOTICS' title2='PLATFORM' />
         </div>
 
-        <div className='sidebar-left'></div>
+        {/*<div className='sidebar-left'></div>
         <div className='experiments-left'>
           <img
             src={PlaceholderImage}
@@ -28,7 +28,7 @@ export default class EntryPage extends React.Component {
           <p>Experiment 1 Placeholder</p>
           <p>Experiment 2 Placeholder</p>
         </div>
-        <div className='sidebar-right'></div>
+        <div className='sidebar-right'></div>*/}
         <div>
           <div><b>!!! NRP Core testing !!!</b></div>
         </div>

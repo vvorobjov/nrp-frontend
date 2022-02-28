@@ -1,6 +1,6 @@
 import React from 'react';
 
-import MqttClientService from '../../services/nrp-core/mqtt-client-service';
+import MqttClientService from '../../services/mqtt-client-service';
 
 export default class NrpCoreDashboard extends React.Component {
   constructor(props) {
