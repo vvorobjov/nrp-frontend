@@ -3,19 +3,19 @@ import React from 'react';
 import MqttClientService from '../../services/mqtt-client-service';
 
 export default class NrpCoreDashboard extends React.Component {
-  constructor(props) {
-    super(props);
-
-    this.mqttBrokerUrl = 'ws://' + window.location.hostname + ':1884';
-  }
 
   componentDidMount() {
     MqttClientService.instance.on(MqttClientService.EVENTS.CONNECTED, this.onMqttClientConnected);
-    MqttClientService.instance.connect(this.mqttBrokerUrl);
+    MqttClientService.instance.connect();
   }
 
   onMqttClientConnected(mqttClient) {
     mqttClient.subscribe('#', (err) => {
+      if (err) {
+        console.error(err);
+      }
+    });
+    mqttClient.subscribe('$SYS/#', (err) => {
       if (err) {
         console.error(err);
       }

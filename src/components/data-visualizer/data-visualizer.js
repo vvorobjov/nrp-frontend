@@ -118,6 +118,7 @@ export default class DataVisualizer extends React.Component {
   }
 
   saveSortedSources(sortedSources) {
+    console.info(['datavis sorted sources', sortedSources]);
     this.setState({ sortedSources: sortedSources });
   }
 

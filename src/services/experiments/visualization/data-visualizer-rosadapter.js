@@ -4,6 +4,7 @@ import SimulationService from '../execution/running-simulation-service';
 import UserSettingsService from '../../user/user-settings-service';
 import DataVisualizerService from './data-visualizer-service';
 import RoslibService from '../../roslib-service';
+import IDataVisualizerAdapter from './interface-data-visualizer-adapter';
 
 let _instance = null;
 const SINGLETON_ENFORCER = Symbol();
@@ -14,12 +15,14 @@ const SINGLETON_ENFORCER = Symbol();
  * - supported types: data (Float and Int)
  * - model points frequency: update rate (2)
  */
-export default class DataVisualizerROSAdapter {
+export default class DataVisualizerROSAdapter extends IDataVisualizerAdapter {
   constructor(enforcer) {
+    super();
+
     if (enforcer !== SINGLETON_ENFORCER) {
       throw new Error('Use ' + this.constructor.name + '.instance');
     }
-    this.supportedTypes =  [
+    this.supportedTypes = [
       'std_msgs/Float32',
       'std_msgs/Float64',
       'std_msgs/Int32',
@@ -45,19 +48,15 @@ export default class DataVisualizerROSAdapter {
     return _instance;
   }
 
-  async getTopics(serverURL, simulationID) {
-    this.settings = UserSettingsService.instance.settingsData;
-    await this.updateTopics(await SimulationService.instance.getTopics(serverURL),
-      serverURL, simulationID);
-  }
+  async updateDataSources(serverURL, simulationID) {
+    let simulationTopics = await SimulationService.instance.getTopics(serverURL);
 
-  async updateTopics(response, serverURL, simulationID) {
     this.topics = {};
     this.topics[DataVisualizerService.CONSTANTS.PLOT_DIMENSION_NAME_TIME] =
       DataVisualizerROSAdapter.CONSTANTS.PSEUDO_TOPIC_TYPE_TIME;
-    for (let i = 0; i < response.topics.length; i++) {
-      if (this.supportedTypes.includes(response.topics[i].topicType)) {
-        this.topics[response.topics[i].topic] = response.topics[i].topicType;
+    for (let i = 0; i < simulationTopics.topics.length; i++) {
+      if (this.supportedTypes.includes(simulationTopics.topics[i].topicType)) {
+        this.topics[simulationTopics.topics[i].topic] = simulationTopics.topics[i].topicType;
       }
     }
     await this.loadRobotTopics(serverURL, simulationID);
@@ -66,7 +65,7 @@ export default class DataVisualizerROSAdapter {
     DataVisualizerService.instance.sendSortedSources(this.sortedTopics);
     if (this.loadSettingsWhenTopic) {
       this.loadSettingsWhenTopic = false;
-      DataVisualizerService.instance.sendSettings(this.settings);
+      DataVisualizerService.instance.sendSettings(UserSettingsService.instance.settingsData);
     }
   }
 
@@ -91,7 +90,7 @@ export default class DataVisualizerROSAdapter {
     }
   }
 
-  getConnection(serverConfig) {
+  connect(serverConfig) {
     this.rosConnection = RoslibService.instance.getConnection(serverConfig.rosbridge.websocket);
   }
 

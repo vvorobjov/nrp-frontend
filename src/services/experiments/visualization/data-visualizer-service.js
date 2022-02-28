@@ -8,7 +8,7 @@ let _instance = null;
 const SINGLETON_ENFORCER = Symbol();
 
 /**
- * Service taking care of data visualization operations, and transition between the adaptor and the component
+ * Service taking care of data visualization operations, and transition between the adaptor and the react component
  * It communicates with the user settings and the simulation service and has parameter:
  * - key: HTML component of data visualizer ('plotid')
  */
@@ -19,6 +19,7 @@ class DataVisualizerService extends EventEmitter {
       throw new Error('Use ' + this.constructor.name + '.instance');
     }
     this.key = '';
+    this.sortedDataSources = [];
   }
 
   static get instance() {
@@ -34,7 +35,7 @@ class DataVisualizerService extends EventEmitter {
   }
 
   async loadSortedSources(serverURL, simulationID) {
-    await DataVisualizerROSAdapter.instance.getTopics(serverURL, simulationID);
+    await DataVisualizerROSAdapter.instance.updateDataSources(serverURL, simulationID);
   }
 
   sendSettings(settings) {
@@ -43,7 +44,11 @@ class DataVisualizerService extends EventEmitter {
   }
 
   sendSortedSources(sortedSources) {
-    this.emit(DataVisualizerService.EVENTS.SORTED_SOURCES, sortedSources);
+    for (let source of sortedSources) {
+      !this.sortedDataSources.includes(source) && this.sortedDataSources.push(source);
+    }
+    this.sortedDataSources.sort();
+    this.emit(DataVisualizerService.EVENTS.SORTED_SOURCES, this.sortedDataSources);
   }
 
   sendStandardMessage(message, topics) {
@@ -75,7 +80,7 @@ class DataVisualizerService extends EventEmitter {
   }
 
   initializeConnection(plotStructure, serverConfig) {
-    DataVisualizerROSAdapter.instance.getConnection(serverConfig);
+    DataVisualizerROSAdapter.instance.connect(serverConfig);
     DataVisualizerROSAdapter.instance.subscribeTopics(plotStructure);
   }
 
