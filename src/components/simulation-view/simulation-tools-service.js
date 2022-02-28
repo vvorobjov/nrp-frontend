@@ -1,4 +1,6 @@
 import DataVisualizer from '../data-visualizer/data-visualizer.js';
+import NrpCoreDashboard from '../nrp-core-dashboard/nrp-core-dashboard';
+
 
 let _instance = null;
 const SINGLETON_ENFORCER = Symbol();
@@ -16,6 +18,7 @@ class SimulationToolsService {
     for (const toolEntry in SimulationToolsService.TOOLS) {
       this.registerToolConfig(SimulationToolsService.TOOLS[toolEntry]);
     }
+    this.registerToolConfig(NrpCoreDashboard.CONSTANTS.TOOL_CONFIG);
   }
 
   static get instance() {
@@ -27,6 +30,8 @@ class SimulationToolsService {
   }
 
   registerToolConfig(toolConfig) {
+    console.info('registerToolConfig');
+    console.info(toolConfig);
     let id = toolConfig.flexlayoutNode.component;
     if (this.tools.has(id)) {
       console.warn('SimulationToolsService.registerToolConfig() - tool with ID ' + id + ' already exists');
