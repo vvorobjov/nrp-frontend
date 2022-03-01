@@ -64,10 +64,11 @@ class ExperimentExecutionService extends HttpService {
     let progressCallback = (msg) => {
       if (msg && msg.progress) {
         if (msg.progress.done) {
-          DialogService.instance.progressNotification({message:'The experiment is loading'});
+          DialogService.instance.info({title: 'Experiment Start', message: 'Experiment loaded'});
         }
         else {
-          DialogService.instance.progressNotification({
+          DialogService.instance.info({
+            title: 'Experiment Start',
             message: msg.progress.task,
             details: msg.progress.subtask
           });

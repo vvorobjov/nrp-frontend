@@ -36,7 +36,7 @@ test('should emit an event on network error', () => {
     DialogService.EVENTS.Error,
     confirmNetworkError
   );
-  DialogService.instance.networkError(NetworkError);
+  DialogService.instance.networkError(NetworkError.message);
   DialogService.instance.removeListener(
     DialogService.EVENTS.Error,
     confirmNetworkError
@@ -84,7 +84,7 @@ test('should emit an event on simulation error', () => {
 });
 
 test('should emit an event on progress notification', () => {
-  jest.spyOn(DialogService.instance, 'progressNotification').mockImplementation(() => {
+  jest.spyOn(DialogService.instance, 'info').mockImplementation(() => {
     return Promise.resolve();
   });
   let ProgressNotification = MockDialog;
@@ -104,7 +104,7 @@ test('should emit an event on progress notification', () => {
 });
 
 test('should emit an event on warning notification', () => {
-  jest.spyOn(DialogService.instance, 'warningNotification').mockImplementation(() => {
+  jest.spyOn(DialogService.instance, 'warning').mockImplementation(() => {
     return Promise.resolve();
   });
   let WarningNotification = MockDialog;

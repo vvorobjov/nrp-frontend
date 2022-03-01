@@ -5,7 +5,7 @@ import DialogService from '../../services/dialog-service.js';
 
 import './notification-dialog.css';
 
-class NotificationDialog extends React.Component{
+export default class NotificationDialog extends React.Component{
   constructor(props){
     super(props);
     this.state = {
@@ -29,8 +29,11 @@ class NotificationDialog extends React.Component{
   onNotification(notification) {
     // avoid duplicates
     var isIn = false;
-    this.state.notifications.forEach((notif) =>{
-      if (notification.type===notif.type && notification.message===notif.message){
+    this.state.notifications.forEach((oldNotification) =>{
+      if (notification.type === oldNotification.type &&
+        notification.title === oldNotification.title &&
+        notification.message === oldNotification.message &&
+        notification.details === oldNotification.details){
         isIn = true;
       }
     });
@@ -49,6 +52,30 @@ class NotificationDialog extends React.Component{
     });
   }
 
+  getNotificationDelay(notification) {
+    switch (notification.type) {
+    case DialogService.CONSTANTS.INFO:
+      return 10000;
+    case DialogService.CONSTANTS.WARNING:
+      return 60000;
+    default:
+      return -1;
+    }
+  }
+
+  getAutohide(notification) {
+    switch (notification.type) {
+    case DialogService.CONSTANTS.INFO:
+    case DialogService.CONSTANTS.WARNING:
+      return true;
+    case DialogService.CONSTANTS.ERROR:
+    case DialogService.CONSTANTS.CRITICAL:
+      return false;
+    default:
+      return true;
+    }
+  }
+
   render(){
     let notifications = this.state.notifications;
     return(
@@ -59,9 +86,9 @@ class NotificationDialog extends React.Component{
               return (
                 <li key={index} className='no-style'>
                   <Toast className='toast-width' onClose={(index) => this.handleClose(index)}
-                    delay={notification.type==='Warning'? 60000: 10000} autohide>
-                    <Toast.Header className={notification.type==='Warning'? 'warning': 'info'} >
-                      <strong className='mr-auto'>{notification.type}</strong>
+                    delay={this.getNotificationDelay(notification)} autohide={this.getAutohide(notification)}>
+                    <Toast.Header className={notification.type}>
+                      <strong>{notification.title}</strong>
                     </Toast.Header>
                     <Toast.Body>
                       <h6>{notification.message}</h6>
@@ -78,5 +105,3 @@ class NotificationDialog extends React.Component{
     );
   }
 }
-
-export default NotificationDialog;

@@ -44,7 +44,7 @@ class SimulationService extends HttpService {
       cachedConfigFiles = response.resources;
     }
     catch (error) {
-      DialogService.instance.networkError(error);
+      DialogService.instance.networkError(error.toString());
     }
 
     return cachedConfigFiles;
@@ -162,7 +162,7 @@ class SimulationService extends HttpService {
       return response;
     }
     catch (error) {
-      DialogService.instance.networkError(error);
+      DialogService.instance.networkError(error.toString());
     }
   }
 
@@ -196,7 +196,7 @@ class SimulationService extends HttpService {
       return response;
     }
     catch (error) {
-      DialogService.instance.networkError(error);
+      DialogService.instance.networkError(error.toString());
     }
   }
 }

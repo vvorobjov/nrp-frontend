@@ -43,7 +43,7 @@ class RemoteExperimentFilesService extends HttpService {
 
   notifyNotSupported() {
     if (!this.isSupported()){
-      DialogService.instance.warningNotification({
+      DialogService.instance.warning({
         message : 'The remote experiment file system is not supported on ' + browserName()
       });
     }

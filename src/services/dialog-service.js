@@ -28,40 +28,47 @@ class DialogService extends EventEmitter {
     return _instance;
   }
 
+  info(notification) {
+    notification.type = DialogService.CONSTANTS.INFO;
+    this.emit(DialogService.EVENTS.NOTIFICATION, notification);
+  }
+
+  warning(notification) {
+    notification.type = DialogService.CONSTANTS.WARNING;
+    this.emit(DialogService.EVENTS.NOTIFICATION, notification);
+  }
+
+  error(notification) {
+    notification.type = DialogService.CONSTANTS.ERROR;
+    this.emit(DialogService.EVENTS.NOTIFICATION, notification);
+  }
+
+  /* special error callbacks */
+
   // HTTP request error
-  networkError(error) {
-    error.type = 'Network Error';
-    this.emit(DialogService.EVENTS.ERROR, error);
+  networkError(message) {
+    this.error({ title: 'Network Error', message: message });
   }
 
   // Handling data error
-  dataError(error){
-    error.type = 'Data Error';
-    this.emit(DialogService.EVENTS.ERROR, error);
+  dataError(message){
+    this.error({ title: 'Data Error', message: message });
   }
 
-  simulationError(error) {
-    error.type = 'Simulation Error';
-    this.emit(DialogService.EVENTS.ERROR, error);
-  }
-
-  progressNotification(notification) {
-    notification.type = 'Progress Status';
-    this.emit(DialogService.EVENTS.NOTIFICATION, notification);
-  }
-
-  warningNotification(notification) {
-    notification.type = 'Warning';
-    this.emit(DialogService.EVENTS.NOTIFICATION, notification);
+  simulationError(message) {
+    this.error({ title: 'Simulation Error', message: message });
   }
 }
 
 DialogService.EVENTS = Object.freeze({
-  ERROR: 'ERROR'
+  NOTIFICATION: 'NOTIFICATION'
 });
 
-DialogService.EVENTS = Object.freeze({
-  NOTIFICATION: 'NOTIFICATION'
+DialogService.CONSTANTS = Object.freeze({
+  CRITICAL: 'critical',
+  ERROR: 'error',
+  WARNING: 'warning',
+  INFO: 'info'
 });
 
 export default DialogService;
