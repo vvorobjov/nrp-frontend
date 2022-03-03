@@ -91,6 +91,18 @@ export default class MqttClientService extends EventEmitter {
       console.error(error);
     }
   }
+
+  onNewTopic(topic) {
+
+  }
+
+  subscribe(topic, onMessageCallback) {
+    if (topic.endsWith('/#')) {
+    }
+    else if (topic.includes('/+')) {
+
+    }
+  }
 }
 
 MqttClientService.EVENTS = Object.freeze({

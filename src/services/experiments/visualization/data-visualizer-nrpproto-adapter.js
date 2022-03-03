@@ -60,6 +60,16 @@ export default class DataVisualizerNrpProtoAdapter extends IDataVisualizerAdapte
     }
   }
 
+  getPrimitiveDataSourcesFromDataPackMessage(topic, message) {
+    let dataSourceIdentifier = topic;
+    let parentObject = message[message.data];
+    for (const propertyName in parentObject) {
+      dataSourceIdentifier += '.' + propertyName;
+      let propertyType = typeof parentObject[propertyName];
+      console.info(dataSourceIdentifier + ' = ' + propertyType);
+    }
+  }
+
   connect(serverConfig) {
     this.rosConnection = MqttClientService.instance.connect(/*serverConfig.mqttBrokerURL*/);
   }
