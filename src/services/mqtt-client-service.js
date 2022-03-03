@@ -1,7 +1,9 @@
 import mqtt from 'mqtt';
 import { EventEmitter } from 'events';
 
-import * as proto from 'nrp-jsproto/nrp-engine_msgs-protobufjs';
+//import * as proto from 'nrp-jsproto/nrp-engine_msgs-protobufjs';
+import { DataPackMessage } from 'nrp-jsproto/engine_msgs_pb';
+import jspb from 'google-protobuf';
 
 let _instance = null;
 const SINGLETON_ENFORCER = Symbol();
@@ -16,7 +18,7 @@ export default class MqttClientService extends EventEmitter {
       throw new Error('Use ' + this.constructor.name + '.instance');
     }
 
-    console.info(proto);
+    console.info(DataPackMessage);
   }
 
   static get instance() {
@@ -44,8 +46,8 @@ export default class MqttClientService extends EventEmitter {
   }
 
   onMessage(topic, payload, packet) {
-    console.info('MQTT message: [topic, payload, packet]');
-    console.info([topic, payload, packet]);
+    /*console.info('MQTT message: [topic, payload, packet]');
+    console.info([topic, payload, packet]);*/
 
     try {
       if (topic.endsWith('/type')) {
@@ -53,13 +55,33 @@ export default class MqttClientService extends EventEmitter {
         console.info('"' + topic + '" message format = ' + msg);
       }
       else {
-        let msg = proto.Engine.DataPackMessage.decode(payload);
+        //let msg = proto.Engine.DataPackMessage.decode(payload);
+        let msg = DataPackMessage.deserializeBinary(payload);
         console.info('DataPackMessage');
         console.info(msg);
+
+        console.info(['getDataPackMessageOneofCaseString', MqttClientService.getDataPackMessageOneofCaseString(msg)]);
+        console.info(['getProtoOneofData', MqttClientService.getProtoOneofData(msg, msg.getDataCase())]);
+
+        let msgObject = msg.toObject();
+        console.info(msgObject);
+        //console.info(['msg.computeOneofCase', jspb.Message.computeOneofCase(msg, msg.getDataCase())]);
       }
     }
     catch (error) {
       console.error(error);
+    }
+  }
+
+  static getProtoOneofData(protoMsg, oneofCaseNumber) {
+    return jspb.Message.getField(protoMsg, oneofCaseNumber);
+  }
+
+  static getDataPackMessageOneofCaseString(protoMsg) {
+    for (let dataCase in DataPackMessage.DataCase) {
+      if (DataPackMessage.DataCase[dataCase] === protoMsg.getDataCase()) {
+        return dataCase;
+      }
     }
   }
 }
