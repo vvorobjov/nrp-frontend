@@ -161,16 +161,33 @@ export default class DataVisualizer extends React.Component {
   }
 
   parseStandardMessage(message) {
-    //TODO: needs to parse multiple messages at once so it doesn't create multiple time entries
+    function smoothOut (vector) {
+      //This function fixes the problem of repeated x values, which was leading to vertical lines in the plot
+      var index = 0;
+      var index_value = vector[0];
+      for (let a = 0; a <= vector.length; a++) {
+        if (vector[a] !== index_value) {
+          for (let b = index; b < a; b++) {
+            vector[b] = vector[b] + (vector[a] - index_value)/(a - index)*(b - index);
+          }
+          index_value = vector[a];
+          index = a;
+        }
+        if (a === vector.length - 1) {
+          return vector;
+        }
+      }
+    }
+
     let needUpdateTime = false;
     if (this.plotData === null) {
       return;
     }
-
     for (let i = 0; i < this.state.plotStructure.plotElements.length; i++) {
       let dataElement = this.state.plotModel.mergedDimensions
         ? this.plotData[0]
         : this.plotData[i];
+      smoothOut(dataElement.x);
       for (let dim = 0; dim < this.state.plotStructure.plotElements[i].dimensions.length; dim++) {
         let dimension = this.state.plotStructure.plotElements[i].dimensions[dim];
         for (let entry of message.dataList) {
@@ -306,7 +323,7 @@ export default class DataVisualizer extends React.Component {
 
     let layout = {
       title: {
-        text: 'NRP Data Visualizer'
+        text: 'NRP '
       },
       autosize: true
     };
@@ -434,7 +451,6 @@ export default class DataVisualizer extends React.Component {
     DataVisualizerService.instance.unregisterPlot(this.keyContext);
 
     console.info('showPlot, state');
-    console.info(this.state);
     console.info('showPlot, plotLayout');
     console.info(this.plotLayout);
   }
@@ -523,11 +539,11 @@ export default class DataVisualizer extends React.Component {
 
   render() {
     return (
-      // data visualizer = dv
+      //  = dv
       <div className="dv-container">
         {!this.state.isPlotVisible && !this.state.isStructureVisible ?
           <div className="dv-header">
-            <h3>Data Visualizer</h3>
+            <h3></h3>
             <hr/>
             <div className="dv-toolbar">
               {this.state.types.map((type, typeIndex) => {
@@ -565,7 +581,7 @@ export default class DataVisualizer extends React.Component {
           : null}
         {this.state.isStructureVisible ?
           <div className="structure-container">
-            <h3>Data Visualizer</h3>
+            <h3></h3>
             {this.state.plotModel.hasAxis ?
               <div className="axis-container">
                 <div className="axis-title">Axis Labels</div>
