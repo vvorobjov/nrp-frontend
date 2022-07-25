@@ -46,10 +46,10 @@ export default class MqttClientService extends EventEmitter {
   }
 
   onMessage(topic, payload, packet) {
-    /*console.info('MQTT message: [topic, payload, packet]');
-    console.info([topic, payload, packet]);*/
+    console.info('MQTT message: [topic, payload, packet]');
+    console.info([topic, payload, packet]);
 
-    try {
+    /*try {
       if (topic.endsWith('/type')) {
         let msg = String(payload);
         console.info('"' + topic + '" message format = ' + msg);
@@ -70,7 +70,7 @@ export default class MqttClientService extends EventEmitter {
     }
     catch (error) {
       console.error(error);
-    }
+    }*/
   }
 
   static getProtoOneofData(protoMsg, oneofCaseNumber) {
