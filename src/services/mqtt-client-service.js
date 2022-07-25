@@ -2,7 +2,7 @@ import mqtt from 'mqtt';
 import { EventEmitter } from 'events';
 
 //import * as proto from 'nrp-jsproto/nrp-engine_msgs-protobufjs';
-import { DataPackMessage } from 'nrp-jsproto/engine_msgs_pb';
+import { DataPackMessage } from 'nrp-jsproto/engine_grpc_pb';
 import jspb from 'google-protobuf';
 
 let _instance = null;

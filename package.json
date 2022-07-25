@@ -21,7 +21,7 @@
     "jquery": "3.6.0",
     "jszip": "3.2.0",
     "mqtt": "4.3.5",
-    "nrp-jsproto": "1.1.1-alpha.13",
+    "nrp-jsproto": "1.1.1-alpha.20",
     "protobufjs": "6.11.2",
     "react": "^17.0.1",
     "react-bootstrap": "1.4.0",
