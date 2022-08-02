@@ -15,11 +15,12 @@ export default class NrpCoreDashboard extends React.Component {
   }
 
   onMqttClientConnected(mqttClient) {
-    mqttClient.subscribe('#', (err) => {
-      if (err) {
-        console.error(err);
-      }
-    });
+    mqttClient.subscribeToTopic('test_topic');
+    //mqttClient.subscribe('#', (err) => {
+    //  if (err) {
+    //    console.error(err);
+    //  }
+    //};
   }
 
   render() {

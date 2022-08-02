@@ -1,7 +1,10 @@
 import mqtt from 'mqtt';
 import { EventEmitter } from 'events';
 
-import * as proto from 'nrp-jsproto/nrp-engine_msgs-protobufjs';
+//import * as proto from 'nrp-jsproto/nrp-engine_msgs-protobuf.js';
+import { DataPackMessage } from '../../node_modules/nrp-jsproto/engine_grpc_pb.js';
+import jspb from 'google-protobuf';
+//import { hasSubscribers } from 'diagnostics_channel';
 
 let _instance = null;
 const SINGLETON_ENFORCER = Symbol();
@@ -16,7 +19,9 @@ export default class MqttClientService extends EventEmitter {
       throw new Error('Use ' + this.constructor.name + '.instance');
     }
 
-    console.info(proto);
+    this.subTokensMap = new Map();
+
+    console.info(DataPackMessage);
   }
 
   static get instance() {
@@ -60,6 +65,39 @@ export default class MqttClientService extends EventEmitter {
     }
     catch (error) {
       console.error(error);
+    }
+  }
+
+  subscribeToTopic(topic, callback=Function()){
+    const token = {
+      topic: topic,
+      callback: callback
+    };
+    if (this.subTokensMap.has(token.topic)){
+      this.subTokensMap.set(
+        token.topic,
+        [this.subTokensMap.get(token.topic), token]
+      );
+    }
+    else{
+      this.subTokensMap.set(
+        token.topic,
+        token
+      );
+    }
+    console.info('You have been subscribed to topic ' + topic);
+    return token;
+  }
+
+  static getProtoOneofData(protoMsg, oneofCaseNumber) {
+    return jspb.Message.getField(protoMsg, oneofCaseNumber);
+  }
+
+  static getDataPackMessageOneofCaseString(protoMsg) {
+    for (let dataCase in DataPackMessage.DataCase) {
+      if (DataPackMessage.DataCase[dataCase] === protoMsg.getDataCase()) {
+        return dataCase;
+      }
     }
   }
 }
