@@ -1,7 +1,7 @@
 import mqtt from 'mqtt';
 import { EventEmitter } from 'events';
 
-import * as proto from 'nrp-jsproto/nrp-engine_msgs-protobufjs';
+//import * as proto from 'nrp-jsproto/engine_grpc_pb';
 
 let _instance = null;
 const SINGLETON_ENFORCER = Symbol();
@@ -16,7 +16,7 @@ export default class MqttClientService extends EventEmitter {
       throw new Error('Use ' + this.constructor.name + '.instance');
     }
 
-    console.info(proto);
+    //console.info(proto);
   }
 
   static get instance() {
@@ -47,20 +47,9 @@ export default class MqttClientService extends EventEmitter {
     console.info('MQTT message: [topic, payload, packet]');
     console.info([topic, payload, packet]);
 
-    try {
-      if (topic.endsWith('/type')) {
-        let msg = String(payload);
-        console.info('"' + topic + '" message format = ' + msg);
-      }
-      else {
-        let msg = proto.Engine.DataPackMessage.decode(payload);
-        console.info('DataPackMessage');
-        console.info(msg);
-      }
-    }
-    catch (error) {
-      console.error(error);
-    }
+    // step 0: deserialize the payload => messageData
+    // step 1: pick subs based on topic => subs
+    // step 2: foreach(sub) {sub.callback(messageData, topic);}
   }
 }
 

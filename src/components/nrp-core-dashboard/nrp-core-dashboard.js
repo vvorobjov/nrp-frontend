@@ -1,6 +1,8 @@
+import { DomainDisabledOutlined } from '@material-ui/icons';
 import React from 'react';
 
 import MqttClientService from '../../services/mqtt-client-service';
+import ExperimentStorageService from '../../services/experiments/files/experiment-storage-service';
 
 export default class NrpCoreDashboard extends React.Component {
   constructor(props) {
@@ -22,10 +24,18 @@ export default class NrpCoreDashboard extends React.Component {
     });
   }
 
+  async triggerProxyScanStorage() {
+    let result = await ExperimentStorageService.instance.scanStorage();
+    console.info('triggerProxyScanStorage:');
+    console.info(result);
+  }
+
   render() {
     return (
       <div>
         {this.mqttBrokerUrl}
+        <br />
+        <button onClick={this.triggerProxyScanStorage}>Proxy Scan Storage</button>
       </div>
     );
   }
