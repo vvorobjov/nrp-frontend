@@ -76,7 +76,7 @@ class ExperimentStorageService extends HttpService {
         let experimentList = await (await this.httpRequestGET(storageExperimentsURL)).json();
         console.info(['ExperimentStorageService.getExperiments()', experimentList]);
         // filter out experiments with incomplete configuration (probably storage corruption)
-        experimentList = experimentList.filter(experiment => experiment.configuration.experimentFile);
+        experimentList = experimentList.filter(experiment => experiment.configuration);
         this.sortExperiments(experimentList);
         await this.fillExperimentDetails(experimentList);
         this.experiments = experimentList;
@@ -132,15 +132,15 @@ class ExperimentStorageService extends HttpService {
   async fillExperimentDetails(experimentList) {
     let experimentUpdates = [];
     experimentList.forEach(experiment => {
-      if (!experiment.configuration.brainProcesses && experiment.configuration.bibiConfSrc) {
+      /*if (!experiment.configuration.brainProcesses && experiment.configuration.bibiConfSrc) {
         experiment.configuration.brainProcesses = 1;
-      }
+      }*/
 
       // retrieve the experiment thumbnail
-      experimentUpdates.push(this.getThumbnail(experiment.name, experiment.configuration.thumbnail)
+      /*experimentUpdates.push(this.getThumbnail(experiment.name, experiment.configuration.thumbnail)
         .then(thumbnail => {
           experiment.thumbnailURL = URL.createObjectURL(thumbnail);
-        }));
+        }));*/
 
       experiment.rights = EXPERIMENT_RIGHTS.OWNED;
       experiment.rights.launch = (experiment.private && experiment.owned) || !experiment.private;

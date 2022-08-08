@@ -1,4 +1,3 @@
-import { DomainDisabledOutlined } from '@material-ui/icons';
 import React from 'react';
 
 import MqttClientService from '../../services/mqtt-client-service';
