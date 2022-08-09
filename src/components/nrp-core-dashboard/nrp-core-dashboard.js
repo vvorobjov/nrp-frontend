@@ -1,6 +1,7 @@
 import React from 'react';
 
 import MqttClientService from '../../services/mqtt-client-service';
+//import subscribeToTopic from MqttClientService;
 
 export default class NrpCoreDashboard extends React.Component {
   constructor(props) {
@@ -14,13 +15,15 @@ export default class NrpCoreDashboard extends React.Component {
     MqttClientService.instance.connect(this.mqttBrokerUrl);
   }
 
-  onMqttClientConnected(mqttClient) {
-    mqttClient.subscribeToTopic('test_topic');
-    //mqttClient.subscribe('#', (err) => {
-    //  if (err) {
-    //    console.error(err);
-    //  }
-    //};
+  onMqttClientConnected(MqttClient) {
+    MqttClient.subscribe('#', (err) => {
+      if (err) {
+        console.error(err);
+      }
+    });
+    // As a test to make sure MqttClientService can subscribe to multiple topics at once we use these two for testing
+    let token = MqttClientService.instance.subscribeToTopic('test_topic', (param1) => (console.info(param1)));
+    token = MqttClientService.instance.subscribeToTopic('test_topic_proto', (param1) => (console.info(param1)));
   }
 
   render() {
