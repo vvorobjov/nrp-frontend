@@ -13,8 +13,6 @@ export default class MqttClientService extends EventEmitter {
     if (enforcer !== SINGLETON_ENFORCER) {
       throw new Error('Use ' + this.constructor.name + '.instance');
     }
-
-    console.info(proto);
   }
 
   static get instance() {
