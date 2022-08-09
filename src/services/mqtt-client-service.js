@@ -47,7 +47,7 @@ export default class MqttClientService extends EventEmitter {
     console.info('MQTT message: [topic, payload, packet]');
     console.info([topic, payload, packet]);
 
-    try {
+    /*try {
       if (topic.endsWith('/type')) {
         let msg = String(payload);
         console.info('"' + topic + '" message format = ' + msg);
@@ -60,7 +60,7 @@ export default class MqttClientService extends EventEmitter {
     }
     catch (error) {
       console.error(error);
-    }
+    }*/
   }
 }
 
