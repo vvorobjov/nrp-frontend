@@ -1,8 +1,6 @@
 import mqtt from 'mqtt';
 import { EventEmitter } from 'events';
 
-import * as proto from 'nrp-jsproto/nrp-engine_msgs-protobufjs';
-
 let _instance = null;
 const SINGLETON_ENFORCER = Symbol();
 
