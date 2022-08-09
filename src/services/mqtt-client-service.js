@@ -1,6 +1,8 @@
 import mqtt from 'mqtt';
 import { EventEmitter } from 'events';
 
+//import DataPackMessage from 'nrp-jsproto/engine_grpc_pb';
+
 let _instance = null;
 const SINGLETON_ENFORCER = Symbol();
 
@@ -13,6 +15,8 @@ export default class MqttClientService extends EventEmitter {
     if (enforcer !== SINGLETON_ENFORCER) {
       throw new Error('Use ' + this.constructor.name + '.instance');
     }
+
+    //console.info(['DataPackMessage', DataPackMessage]);
   }
 
   static get instance() {
@@ -49,7 +53,7 @@ export default class MqttClientService extends EventEmitter {
         console.info('"' + topic + '" message format = ' + msg);
       }
       else {
-        let msg = proto.Engine.DataPackMessage.decode(payload);
+        let msg = DataPackMessage.deserializeBinary(payload);
         console.info('DataPackMessage');
         console.info(msg);
       }
