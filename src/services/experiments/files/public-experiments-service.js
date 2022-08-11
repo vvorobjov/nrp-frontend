@@ -86,8 +86,8 @@ class PublicExperimentsService extends HttpService {
   sortExperiments(experimentList) {
     experimentList = experimentList.sort(
       (a, b) => {
-        let nameA = a.configuration.name.toLowerCase();
-        let nameB = b.configuration.name.toLowerCase();
+        let nameA = a.configuration.SimulationName.toLowerCase();
+        let nameB = b.configuration.SimulationName.toLowerCase();
         if (nameA < nameB) {
           return -1;
         }
