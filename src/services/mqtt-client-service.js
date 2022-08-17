@@ -52,20 +52,20 @@ export default class MqttClientService extends EventEmitter {
     console.info('MQTT message: [topic, payload, packet]');
     console.info([topic, payload, packet]);
 
-    try {
+    /*try {
       if (topic.endsWith('/type')) {
         let msg = String(payload);
         console.info('"' + topic + '" message format = ' + msg);
       }
       else {
-        let msg = proto.Engine.DataPackMessage.decode(payload);
+        let msg = DataPackMessage.deserializeBinary(payload);
         console.info('DataPackMessage');
         console.info(msg);
       }
     }
     catch (error) {
       console.error(error);
-    }
+    }*/
   }
 
   subscribeToTopic(topic, callback=Function()){
