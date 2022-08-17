@@ -21,9 +21,12 @@ export default class NrpCoreDashboard extends React.Component {
         console.error(err);
       }
     });
-    // As a test to make sure MqttClientService can subscribe to multiple topics at once we use these two for testing
-    let token = MqttClientService.instance.subscribeToTopic('test_topic', (param1) => (console.info(param1)));
-    token = MqttClientService.instance.subscribeToTopic('test_topic_proto', (param1) => (console.info(param1)));
+    // As a test to make sure MqttClientService can subscribe to multiple topics (and the same topic) at once
+    let token1 = MqttClientService.instance.subscribeToTopic('test_topic', (param1) => (console.info(param1)));
+    let token2 = MqttClientService.instance.subscribeToTopic('test_topic', (param1) => (console.info(param1)));
+    let token3 = MqttClientService.instance.subscribeToTopic('test_topic', (param1) => (console.info(param1)));
+    let token4 = MqttClientService.instance.subscribeToTopic('test_topic_proto', (param1) => (console.info(param1)));
+    //TODO: test unsubscribe once implemented
   }
 
   render() {

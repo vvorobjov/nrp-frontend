@@ -4,7 +4,6 @@ import { EventEmitter } from 'events';
 //import * as proto from 'nrp-jsproto/nrp-engine_msgs-protobuf.js';
 //import { DataPackMessage } from 'nrp-jsproto/nrp-engine_msgs-protobuf.js';
 import jspb from '../../node_modules/google-protobuf/google-protobuf';
-import { hasSubscribers } from 'diagnostics_channel';
 
 let _instance = null;
 const SINGLETON_ENFORCER = Symbol();
@@ -20,8 +19,6 @@ export default class MqttClientService extends EventEmitter {
     }
 
     this.subTokensMap = new Map();
-
-    //console.info(DataPackMessage);
   }
 
   static get instance() {
@@ -53,11 +50,11 @@ export default class MqttClientService extends EventEmitter {
   onMessage(topic, payload, packet) {
     //console.info('MQTT message: [topic, payload, packet]');
     //console.info([topic, payload, packet]);
-    //Deserializatin of Data must happen here
     //Now we see which callbacks have been assigned for a topic
     if (typeof this.subTokensMap.get(topic) !== 'undefined') {
       for (var token in this.subTokensMap.get(topic)){
-        if (typeof token.callback === 'function' && payload !== 'undefined'){
+        if (typeof token.callback === 'function' && payload !== 'undefined') {
+          //Deserializatin of Data must happen here
           token.callback(payload);
         }
       };
@@ -80,21 +77,23 @@ export default class MqttClientService extends EventEmitter {
   }
 
   //callback should have args topic, payload
-  subscribeToTopic(topic, callback=Function()){
+  subscribeToTopic(topic, callback) {
+    if (typeof callback !== 'function') {
+      console.error('trying to subscribe to topic "' + topic + '", but no callback function given!');
+      return;
+    }
+
     const token = {
       topic: topic,
       callback: callback
     };
     if (this.subTokensMap.has(token.topic)){
-      this.subTokensMap.set(
-        token.topic,
-        [this.subTokensMap.get(token.topic), token]
-      );
+      this.subTokensMap.get(token.topic).push(token);
     }
     else{
       this.subTokensMap.set(
         token.topic,
-        token
+        [token]
       );
     }
     console.info('You have been subscribed to topic ' + topic);
