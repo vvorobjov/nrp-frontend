@@ -100,6 +100,20 @@ export default class MqttClientService extends EventEmitter {
     return token;
   }
 
+  unsubscribe(unsubToken) {
+    if (this.subTokensMap.has(unsubToken.topic)){
+      this.subTokensMap.get(unsubToken.topic).forEach(token => {
+        if (token === unsubToken){
+          this.subTokensMap.get(unsubToken.topic).pop(token);
+          console.info('You have been unsubscribed from topic ' + unsubToken.topic);
+        };
+      });
+    }
+    else{
+      console.info('The topic ' + unsubToken.topic + ' was not found');
+    }
+  }
+
   static getProtoOneofData(protoMsg, oneofCaseNumber) {
     return jspb.Message.getField(protoMsg, oneofCaseNumber);
   }
