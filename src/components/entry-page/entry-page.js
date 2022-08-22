@@ -5,6 +5,7 @@ import NrpHeader from '../nrp-header/nrp-header.js';
 import './entry-page.css';
 import PlaceholderImage from '../../assets/images/Artificial_Intelligence_2.jpg';
 import NrpCoreDashboard from '../nrp-core-dashboard/nrp-core-dashboard.js';
+import TransceiverFunctionEditor from '../tf-editor/tf-editor';
 
 export default class EntryPage extends React.Component {
   render() {
@@ -33,6 +34,7 @@ export default class EntryPage extends React.Component {
           <div><b>!!! NRP Core testing !!!</b></div>
         </div>
         <NrpCoreDashboard />
+        <TransceiverFunctionEditor />
       </div>
     );
   }
