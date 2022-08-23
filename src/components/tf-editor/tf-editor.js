@@ -1,5 +1,6 @@
 import React from 'react';
 import CodeMirror from '@uiw/react-codemirror';
+import { Modal, Button } from 'react-bootstrap';
 
 import ExperimentStorageService from '../../services/experiments/files/experiment-storage-service';
 
@@ -13,7 +14,7 @@ export default class TransceiverFunctionEditor extends React.Component {
     this.state = {
       selectedFilename: this.testListTfFiles[0],
       code: '',
-      unsavedChanges: false
+      showDialogUnsavedChanges: false
     };
   }
 
@@ -22,27 +23,57 @@ export default class TransceiverFunctionEditor extends React.Component {
   }
 
   onChangeSelectedFile(event) {
-    //TODO: check for unsaved changes
     let filename = event.target.value;
-    console.info('onChangeSelectedFile');
-    console.info(filename);
-    this.setState({selectedFilename: filename});
-    this.loadFileContent(filename);
+    if (this.hasUnsavedChanges) {
+      this.pendingFileChange = {
+        newFilename: filename,
+        oldFilename: this.state.selectedFilename
+      };
+      this.setState({showDialogUnsavedChanges: true});
+    }
+    else {
+      this.loadFileContent(filename);
+    }
+  }
+
+  onUnsavedChangesDiscard() {
+    this.loadFileContent(this.pendingFileChange.newFilename);
+  }
+
+  async onUnsavedChangesSave() {
+    let success = await this.saveTF();
+    if (success) {
+      this.loadFileContent(this.pendingFileChange.newFilename);
+    }
   }
 
   async loadFileContent(filename) {
-    let fileBlob = await ExperimentStorageService.instance.getBlob('mqtt_simple_1', filename, true);
-    let fileContent = await fileBlob.text();
-    this.setState({code: fileContent});
+    let fileContent = await ExperimentStorageService.instance.getFileText(this.props.experimentId, filename);
+    this.fileLoading = true;
+    this.setState({selectedFilename: filename, code: fileContent, showDialogUnsavedChanges: false});
   }
 
-  onChangeCodemirror(change) {
-    //console.info('onChangeCodemirror');
-    //console.info(change);
+  onChangeCodemirror(change, viewUpdate) {
+    //console.info(['onChangeCodemirror', viewUpdate]);
+    this.setState({code: change});
+    this.hasUnsavedChanges = !this.fileLoading;
+    this.fileLoading = false;
+    console.info(['this.hasUnsavedChanges', this.hasUnsavedChanges]);
   }
 
-  onClickSave() {
-    console.info('Save clicked!');
+  // setFile(directoryPath, filename, data, byname = true, contentType = 'text/plain')
+  async saveTF() {
+    let response = await ExperimentStorageService.instance.setFile(
+      this.props.experimentId, this.state.selectedFilename, this.state.code);
+    if (response.ok) {
+      this.hasUnsavedChanges = false;
+      return true;
+    }
+    else {
+      console.error('Error trying to save TF!');
+      console.error(response);
+      return false;
+    }
   }
 
   render() {
@@ -56,8 +87,36 @@ export default class TransceiverFunctionEditor extends React.Component {
             return (<option key={file} value={file}>{file}</option>);
           })}
         </select>
-        <button onClick={this.onClickSave}>Save</button>
-        <CodeMirror value={this.state.code} maxHeight="100%" onChange={(change) => this.onChangeCodemirror(change)}/>
+        <button onClick={() => this.saveTF()}>Save</button>
+        <CodeMirror
+          value={this.state.code}
+          maxHeight="100%"
+          onChange={(change, viewUpdate) => this.onChangeCodemirror(change, viewUpdate)}/>
+        {this.state.showDialogUnsavedChanges ?
+          <div>
+            <Modal show={this.state.showDialogUnsavedChanges}
+              onHide={() => this.setState({showDialogUnsavedChanges: false})}>
+              <Modal.Header>
+                <Modal.Title>Unsaved Changes</Modal.Title>
+              </Modal.Header>
+              <Modal.Body>You have unsaved changes for "{this.pendingFileChange.oldFilename}".
+              What would you like to do?</Modal.Body>
+              <Modal.Footer>
+                <div>
+                  <Button variant="danger" onClick={() => this.setState({showDialogUnsavedChanges: false})}>
+                  Cancel
+                  </Button>
+                  <Button variant="danger" onClick={() => this.onUnsavedChangesDiscard()}>
+                  Discard changes
+                  </Button>
+                  <Button variant="light" onClick={() => this.onUnsavedChangesSave()}>
+                  Save
+                  </Button>
+                </div>
+              </Modal.Footer>
+            </Modal>
+          </div>
+          : null}
       </div>
     );
   }
