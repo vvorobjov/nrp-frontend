@@ -106,7 +106,7 @@ export default class ExperimentOverview extends React.Component {
 
   onUpdatePublicExperiments(publicExperiments) {
     this.setState({
-      publicExperiments: publicExperiments.filter(exp => exp.configuration.maturity === 'production')
+      publicExperiments: publicExperiments //.filter(exp => exp.configuration.maturity === 'production')
     });
   }
 
