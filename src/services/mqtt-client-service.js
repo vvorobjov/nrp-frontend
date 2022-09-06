@@ -47,15 +47,18 @@ export default class MqttClientService extends EventEmitter {
   }
 
   onMessage(topic, payload, packet) {
+    if (typeof payload === 'undefined') {
+      return;
+    }
+
     //console.info('MQTT message: [topic, payload, packet]');
     //console.info([topic, payload, packet]);
     //Now we see which callbacks have been assigned for a topic
-    if (typeof this.subTokensMap.get(topic) !== 'undefined') {
-      for (var token in this.subTokensMap.get(topic)){
-        if (typeof token.callback === 'function' && payload !== 'undefined') {
-          //Deserializatin of Data must happen here
-          token.callback(payload);
-        }
+    let subTokens = this.subTokensMap.get(topic);
+    if (typeof subTokens !== 'undefined') {
+      for (var token of subTokens) {
+        //Deserializatin of Data must happen here
+        token.callback(payload);
       };
     };
 
@@ -95,22 +98,25 @@ export default class MqttClientService extends EventEmitter {
         [token]
       );
     }
-    console.info('You have been subscribed to topic ' + topic);
-    console.info(this.subTokensMap);
+    //console.info('You have been subscribed to topic ' + topic);
+    //console.info(this.subTokensMap);
     return token;
   }
 
   unsubscribe(unsubToken) {
     if (this.subTokensMap.has(unsubToken.topic)){
-      this.subTokensMap.get(unsubToken.topic).forEach(token => {
-        if (token === unsubToken){
-          this.subTokensMap.get(unsubToken.topic).pop(token);
-          console.info('You have been unsubscribed from topic ' + unsubToken.topic);
-        };
-      });
+      let tokens = this.subTokensMap.get(unsubToken.topic);
+      let index = tokens.indexOf(unsubToken);
+      if (index !== -1) {
+        tokens.splice(index, 1);
+        //console.info('You have been unsubscribed from topic ' + unsubToken.topic);
+      }
+      else {
+        console.warn('Your provided token could not be found in the subscription list');
+      }
     }
     else{
-      console.info('The topic ' + unsubToken.topic + ' was not found');
+      console.warn('The topic ' + unsubToken.topic + ' was not found');
     }
   }
 
