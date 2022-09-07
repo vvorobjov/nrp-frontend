@@ -57,14 +57,12 @@ export default class TransceiverFunctionEditor extends React.Component {
   }
 
   onChangeCodemirror(change, viewUpdate) {
-    //console.info(['onChangeCodemirror', viewUpdate]);
     this.setState({code: change});
     this.hasUnsavedChanges = !this.fileLoading;
     this.fileLoading = false;
     if (this.hasUnsavedChanges) {
       this.setState({textChanges: 'unsaved changes'});
     }
-    console.info(['this.hasUnsavedChanges', this.hasUnsavedChanges]);
   }
 
   async saveTF() {

@@ -33,7 +33,7 @@ export default class EntryPage extends React.Component {
           <div><b>!!! NRP Core testing !!!</b></div>
         </div>
         <NrpCoreDashboard />
-        <TransceiverFunctionEditor experimentId='mqtt_simple_1'/>
+        {/*<TransceiverFunctionEditor experimentId='mqtt_simple_1'/>*/}
       </div>
     );
   }
