@@ -2,6 +2,7 @@ import React from 'react';
 import { FaTrash, FaFileExport, FaShareAlt, FaClone } from 'react-icons/fa';
 import { RiPlayFill, RiPlayLine, RiPlayList2Fill } from 'react-icons/ri';
 import { VscTriangleUp, VscTriangleDown } from 'react-icons/vsc';
+import { AiFillExperiment } from 'react-icons/ai';
 import { GoFileSubmodule } from 'react-icons/go';
 
 import timeDDHHMMSS from '../../utility/time-filter.js';
@@ -167,21 +168,21 @@ export default class ExperimentListElement extends React.Component {
                     disabled={this.isLaunchDisabled()}
                     className='nrp-btn btn-default'
                     title={this.launchButtonTitle} >
-                    <RiPlayFill className='icon' />Launch
+                    <AiFillExperiment className='icon' />Open
                   </button>
                   : null}
 
-                {exp.rights.launch /*&& config.brainProcesses > 1*/ ?
+                {/*exp.rights.launch && config.brainProcesses > 1 ?
                   <button className='nrp-btn btn-default'>
                     <RiPlayLine className='icon' />Launch in Single Process Mode
                   </button>
-                  : null}
+                  : null*/}
 
-                {exp.rights.launch /*&& this.props.availableServers.length > 1*/ ?
+                {/*exp.rights.launch && this.props.availableServers.length > 1 ?
                   <button className='nrp-btn btn-default' >
                     <RiPlayList2Fill className='icon' />Launch Multiple
                   </button>
-                  : null}
+                : null*/}
 
                 {/* isPrivateExperiment */}
                 {exp.rights.delete ?
