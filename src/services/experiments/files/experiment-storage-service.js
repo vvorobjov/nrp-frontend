@@ -188,6 +188,19 @@ class ExperimentStorageService extends HttpService {
 
 
   /**
+   * Gets a file from the storage as text.
+   * @param {string} experimentName - name of the experiment
+   * @param {string} filename - name of the file
+   * @param {Boolean} byName - whether to check for the file by name or not (default TRUE)
+   *
+   * @returns {Blob} the contents of the file as text
+   */
+  async getFileText(experimentName, filename, byName = true) {
+    return await (await this.getBlob(experimentName, filename, byName)).text();
+  }
+
+
+  /**
    * Deletes an experiment entity (folder or file) from the storage.
    * Called by other functions, not to be called independently.
    *
