@@ -15,8 +15,8 @@ export default class NrpCoreDashboard extends React.Component {
     MqttClientService.instance.connect(this.mqttBrokerUrl);
   }
 
-  onMqttClientConnected(mqttClient) {
-    mqttClient.subscribe('#', (err) => {
+  onMqttClientConnected(MqttClient) {
+    MqttClient.subscribe('#', (err) => {
       if (err) {
         console.error(err);
       }
