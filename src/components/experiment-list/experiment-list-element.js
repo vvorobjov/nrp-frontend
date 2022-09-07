@@ -11,7 +11,7 @@ import PublicExperimentsService from '../../services/experiments/files/public-ex
 import ExperimentStorageService from '../../services/experiments/files/experiment-storage-service.js';
 
 import SimulationDetails from './simulation-details';
-import ExperimentOverview from '../experiment-overview/experiment-overview.js';
+import ExperimentOverview from '../experiments-overview/experiments-overview.js';
 
 import './experiment-list-element.css';
 import '../main.css';
