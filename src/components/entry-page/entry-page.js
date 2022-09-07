@@ -4,7 +4,7 @@ import NrpHeader from '../nrp-header/nrp-header.js';
 
 import './entry-page.css';
 import NrpCoreDashboard from '../nrp-core-dashboard/nrp-core-dashboard.js';
-import TransceiverFunctionEditor from '../tf-editor/tf-editor';
+//import TransceiverFunctionEditor from '../tf-editor/tf-editor';
 
 export default class EntryPage extends React.Component {
   render() {
