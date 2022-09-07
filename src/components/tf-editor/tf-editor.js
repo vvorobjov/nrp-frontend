@@ -5,6 +5,8 @@ import { Modal, Button } from 'react-bootstrap';
 import ExperimentStorageService from '../../services/experiments/files/experiment-storage-service';
 
 
+import './tf-editor.css';
+
 export default class TransceiverFunctionEditor extends React.Component {
 
   constructor(props) {
@@ -14,6 +16,7 @@ export default class TransceiverFunctionEditor extends React.Component {
     this.state = {
       selectedFilename: this.testListTfFiles[0],
       code: '',
+      textChanges: '',
       showDialogUnsavedChanges: false
     };
   }
@@ -58,6 +61,9 @@ export default class TransceiverFunctionEditor extends React.Component {
     this.setState({code: change});
     this.hasUnsavedChanges = !this.fileLoading;
     this.fileLoading = false;
+    if (this.hasUnsavedChanges) {
+      this.setState({textChanges: 'unsaved changes'});
+    }
     console.info(['this.hasUnsavedChanges', this.hasUnsavedChanges]);
   }
 
@@ -67,6 +73,10 @@ export default class TransceiverFunctionEditor extends React.Component {
       this.props.experimentId, this.state.selectedFilename, this.state.code);
     if (response.ok) {
       this.hasUnsavedChanges = false;
+      this.setState({textChanges: 'saved'});
+      setTimeout(() => {
+        this.setState({textChanges: ''});
+      }, 3000);
       return true;
     }
     else {
@@ -78,16 +88,29 @@ export default class TransceiverFunctionEditor extends React.Component {
 
   render() {
     return (
-      <div>
-        <select
-          name="selectTFFile"
-          value={this.state.selectedFilename}
-          onChange={(event) => this.onChangeSelectedFile(event)}>
-          {this.testListTfFiles.map(file => {
-            return (<option key={file} value={file}>{file}</option>);
-          })}
-        </select>
-        <button onClick={() => this.saveTF()}>Save</button>
+      <div className='tf-editor-container'>
+        <div className='tf-editor-header'>
+          <div className='tf-editor-icon'>TF</div>
+          <div className='tf-editor-file-ui'>
+            <select
+              className='tf-editor-file-ui-item'
+              name="selectTFFile"
+              value={this.state.selectedFilename}
+              onChange={(event) => this.onChangeSelectedFile(event)}>
+              {this.testListTfFiles.map(file => {
+                return (<option key={file} value={file}>{file}</option>);
+              })}
+            </select>
+            <button className='tf-editor-file-ui-item' onClick={() => this.saveTF()}>Save</button>
+            <div className={this.hasUnsavedChanges ?
+              'tf-editor-text-unsaved' : 'tf-editor-text-saved'}>
+              {this.state.textChanges}
+            </div>
+            {/*<div className='tf-editor-ui-save'>
+            </div>*/}
+          </div>
+        </div>
+
         <CodeMirror
           value={this.state.code}
           maxHeight="100%"

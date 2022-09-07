@@ -3,7 +3,6 @@ import React from 'react';
 import NrpHeader from '../nrp-header/nrp-header.js';
 
 import './entry-page.css';
-import PlaceholderImage from '../../assets/images/Artificial_Intelligence_2.jpg';
 import NrpCoreDashboard from '../nrp-core-dashboard/nrp-core-dashboard.js';
 import TransceiverFunctionEditor from '../tf-editor/tf-editor';
 
