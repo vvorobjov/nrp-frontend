@@ -25,7 +25,9 @@ export default class NrpCoreDashboard extends React.Component {
     let token2 = MqttClientService.instance.subscribeToTopic('test_topic', (param1) => (console.info(param1)));
     let token3 = MqttClientService.instance.subscribeToTopic('test_topic', (param1) => (console.info(param1)));
     let token4 = MqttClientService.instance.subscribeToTopic('test_topic_proto', (param1) => (console.info(param1)));
-    //TODO: test unsubscribe once implemented
+
+    // Test unsubscribe
+    MqttClientService.instance.unsubscribe(token3);
   }
 
   render() {
