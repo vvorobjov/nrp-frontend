@@ -67,7 +67,6 @@ export default class TransceiverFunctionEditor extends React.Component {
     console.info(['this.hasUnsavedChanges', this.hasUnsavedChanges]);
   }
 
-  // setFile(directoryPath, filename, data, byname = true, contentType = 'text/plain')
   async saveTF() {
     let response = await ExperimentStorageService.instance.setFile(
       this.props.experimentId, this.state.selectedFilename, this.state.code);
@@ -106,15 +105,15 @@ export default class TransceiverFunctionEditor extends React.Component {
               'tf-editor-text-unsaved' : 'tf-editor-text-saved'}>
               {this.state.textChanges}
             </div>
-            {/*<div className='tf-editor-ui-save'>
-            </div>*/}
           </div>
         </div>
 
-        <CodeMirror
-          value={this.state.code}
-          maxHeight="100%"
-          onChange={(change, viewUpdate) => this.onChangeCodemirror(change, viewUpdate)}/>
+        <div className='tf-editor-codemirror-container'>
+          <CodeMirror
+            value={this.state.code}
+            onChange={(change, viewUpdate) => this.onChangeCodemirror(change, viewUpdate)}/>
+        </div>
+
         {this.state.showDialogUnsavedChanges ?
           <div>
             <Modal show={this.state.showDialogUnsavedChanges}

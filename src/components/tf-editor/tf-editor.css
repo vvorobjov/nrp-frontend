@@ -1,7 +1,3 @@
-.tf-editor-container {
-  margin: 10px;
-}
-
 .tf-editor-header {
   display: flex;
   flex-direction: row;
@@ -41,4 +37,8 @@
 
 .tf-editor-text-unsaved {
   color: orange;
+}
+
+.tf-editor-codemirror-container {
+  overflow: scroll;
 }
