@@ -96,6 +96,7 @@ export default class ExperimentOverview extends React.Component {
   };
 
   onUpdateStorageExperiments(storageExperiments) {
+    console.info(this.state.storageExperiments);
     let joinableExperiments = storageExperiments.filter(
       experiment => experiment.joinableServers && experiment.joinableServers.length > 0);
     this.setState({
@@ -118,6 +119,8 @@ export default class ExperimentOverview extends React.Component {
   }
 
   render() {
+
+    console.info(this.state.storageExperiments);
     return (
       <div className='experiment-overview-wrapper'>
         <div className='experiment-overview-header'>
@@ -141,7 +144,8 @@ export default class ExperimentOverview extends React.Component {
             <ImportExperimentButtons />
             <ExperimentList experiments={this.state.storageExperiments}
               availableServers={this.state.availableServers}
-              startingExperiment={this.state.startingExperiment} />
+              startingExperiment={this.state.startingExperiment}
+              selectExperimentOverviewTab={(index) => this.setState({ selectedTabIndex: index })}/>
           </TabPanel>
           {/* New Experiment */}
           <TabPanel>
