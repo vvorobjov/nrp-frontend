@@ -96,9 +96,8 @@ export default class ExperimentOverview extends React.Component {
   };
 
   onUpdateStorageExperiments(storageExperiments) {
-    console.info(this.state.storageExperiments);
-    let joinableExperiments = storageExperiments.filter(
-      experiment => experiment.joinableServers && experiment.joinableServers.length > 0);
+    let joinableExperiments = storageExperiments/*.filter(
+      experiment => experiment.joinableServers && experiment.joinableServers.length > 0)*/;
     this.setState({
       storageExperiments: storageExperiments,
       joinableExperiments: joinableExperiments

@@ -1,6 +1,7 @@
 import React from 'react';
 
 import MqttClientService from '../../services/mqtt-client-service';
+import ExperimentStorageService from '../../services/experiments/files/experiment-storage-service';
 
 export default class NrpCoreDashboard extends React.Component {
   constructor(props) {
@@ -20,18 +21,20 @@ export default class NrpCoreDashboard extends React.Component {
         console.error(err);
       }
     });
-    // As a test to make sure MqttClientService can subscribe to multiple topics (and the same topic) at once
-    let token1 = MqttClientService.instance.subscribeToTopic('test_topic', (param1) => (console.info(param1)));
-    let token2 = MqttClientService.instance.subscribeToTopic('test_topic', (param1) => (console.info(param1)));
-    let token3 = MqttClientService.instance.subscribeToTopic('test_topic', (param1) => (console.info(param1)));
-    let token4 = MqttClientService.instance.subscribeToTopic('test_topic_proto', (param1) => (console.info(param1)));
-    //TODO: test unsubscribe once implemented
+  }
+
+  async triggerProxyScanStorage() {
+    let result = await ExperimentStorageService.instance.scanStorage();
+    console.info('triggerProxyScanStorage:');
+    console.info(result);
   }
 
   render() {
     return (
       <div>
         {this.mqttBrokerUrl}
+        <br />
+        <button onClick={this.triggerProxyScanStorage}>Proxy Scan Storage</button>
       </div>
     );
   }

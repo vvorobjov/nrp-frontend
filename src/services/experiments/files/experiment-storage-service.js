@@ -5,8 +5,11 @@ import endpoints from '../../proxy/data/endpoints.json';
 import config from '../../../config.json';
 import DialogService from '../../dialog-service.js';
 
-const storageURL = `${config.api.proxy.url}${endpoints.proxy.storage.url}`;
-const storageExperimentsURL = `${config.api.proxy.url}${endpoints.proxy.storage.experiments.url}`;
+const PROXY_URL = config.api.proxy.url;
+const SCAN_STORAGE_URL = `${PROXY_URL}${endpoints.proxy.storage.scanStorage.url}`;
+const storageURL = `${PROXY_URL}${endpoints.proxy.storage.url}`;
+const storageExperimentsURL = `${PROXY_URL}${endpoints.proxy.storage.experiments.url}`;
+
 
 let _instance = null;
 const SINGLETON_ENFORCER = Symbol();
@@ -71,8 +74,9 @@ class ExperimentStorageService extends HttpService {
     if (!this.experiments || forceUpdate) {
       try {
         let experimentList = await (await this.httpRequestGET(storageExperimentsURL)).json();
+        console.info(['ExperimentStorageService.getExperiments()', experimentList]);
         // filter out experiments with incomplete configuration (probably storage corruption)
-        experimentList = experimentList.filter(experiment => experiment.configuration.experimentFile);
+        experimentList = experimentList.filter(experiment => experiment.configuration);
         this.sortExperiments(experimentList);
         await this.fillExperimentDetails(experimentList);
         this.experiments = experimentList;
@@ -129,15 +133,15 @@ class ExperimentStorageService extends HttpService {
   async fillExperimentDetails(experimentList) {
     let experimentUpdates = [];
     experimentList.forEach(experiment => {
-      if (!experiment.configuration.brainProcesses && experiment.configuration.bibiConfSrc) {
+      /*if (!experiment.configuration.brainProcesses && experiment.configuration.bibiConfSrc) {
         experiment.configuration.brainProcesses = 1;
-      }
+      }*/
 
       // retrieve the experiment thumbnail
-      experimentUpdates.push(this.getThumbnail(experiment.name, experiment.configuration.thumbnail)
+      /*experimentUpdates.push(this.getThumbnail(experiment.name, experiment.configuration.thumbnail)
         .then(thumbnail => {
           experiment.thumbnailURL = URL.createObjectURL(thumbnail);
-        }));
+        }));*/
 
       experiment.rights = EXPERIMENT_RIGHTS.OWNED;
       experiment.rights.launch = (experiment.private && experiment.owned) || !experiment.private;
@@ -185,6 +189,19 @@ class ExperimentStorageService extends HttpService {
    */
   async getBlob(experimentName, filename, byName) {
     return await (await this.getFile(experimentName, filename, byName)).blob();
+  }
+
+
+  /**
+   * Gets a file from the storage as text.
+   * @param {string} experimentName - name of the experiment
+   * @param {string} filename - name of the file
+   * @param {Boolean} byName - whether to check for the file by name or not (default TRUE)
+   *
+   * @returns {Blob} the contents of the file as text
+   */
+  async getFileText(experimentName, filename, byName = true) {
+    return await (await this.getBlob(experimentName, filename, byName)).text();
   }
 
 
@@ -275,6 +292,14 @@ class ExperimentStorageService extends HttpService {
       return new Error('Content-Type for setFile request not specified,' +
         'please make sure that the contentType and the body type match.');
     }
+  }
+
+  /**
+   * Trigger proxy to scan storage.
+   * @returns {promise} Result
+   */
+  async scanStorage() {
+    return await (await this.httpRequestPOST(SCAN_STORAGE_URL)).json();
   }
 }
 
