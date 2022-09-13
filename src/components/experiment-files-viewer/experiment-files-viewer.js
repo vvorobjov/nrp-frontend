@@ -170,7 +170,7 @@ export default class ExperimentFilesViewer extends React.Component {
                           });
                         }
                       }}>
-                      {experiment.configuration.name}
+                      {experiment.configuration.SimulationName}
                       <div className='experiment-li-buttons'>
                         <button className='nrp-btn'
                           disabled={!RemoteExperimentFilesService.instance.localSyncDirectoryHandle

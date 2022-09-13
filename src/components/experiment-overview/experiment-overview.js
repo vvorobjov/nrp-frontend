@@ -118,8 +118,6 @@ export default class ExperimentOverview extends React.Component {
   }
 
   render() {
-
-    console.info(this.state.storageExperiments);
     return (
       <div className='experiment-overview-wrapper'>
         <div className='experiment-overview-header'>
