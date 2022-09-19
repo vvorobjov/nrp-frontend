@@ -59,7 +59,7 @@ export default class ExperimentWorkbench extends React.Component {
   }
 
   async componentDidMount() {
-    await this.updateSimulationInfo();
+    //await this.updateSimulationInfo();
     let experiments = await ExperimentStorageService.instance.getExperiments();
     this.experimentInfo = experiments.find(experiment => experiment.id === this.experimentID);
     console.info('ExperimentWorkbench - experimentInfo');
@@ -68,7 +68,7 @@ export default class ExperimentWorkbench extends React.Component {
     let experimentName = this.experimentInfo.configuration.name;
     this.setState({experimentName: experimentName});
 
-    let server = this.experimentInfo.joinableServers.find(
+    /*let server = this.experimentInfo.joinableServers.find(
       server => server.runningSimulation.creationUniqueID === this.state.simulationInfo.creationUniqueID);
     this.serverConfig = await ServerResourcesService.instance.getServerConfig(server.server);
     console.info('this.serverConfig');
@@ -78,15 +78,15 @@ export default class ExperimentWorkbench extends React.Component {
       (data) => {
         this.onStatusInfoROS(data);
       }
-    );
+    );*/
   }
 
-  async updateSimulationInfo() {
+  /*async updateSimulationInfo() {
     let simInfo = await RunningSimulationService.instance.getInfo(this.serverURL, this.simulationID);
     this.setState({simulationInfo: simInfo});
     console.info('SimulationView.updateSimulationInfo - simulationInfo');
     console.info(this.state.simulationInfo);
-  }
+  }*/
 
   onStatusInfoROS(message) {
     this.setState({

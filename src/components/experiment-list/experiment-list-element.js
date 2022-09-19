@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { FaTrash, FaFileExport, FaShareAlt, FaClone } from 'react-icons/fa';
 import { RiPlayFill, RiPlayLine, RiPlayList2Fill } from 'react-icons/ri';
 import { VscTriangleUp, VscTriangleDown } from 'react-icons/vsc';
@@ -161,15 +162,16 @@ export default class ExperimentListElement extends React.Component {
             }}>
               <div className='btn-group' role='group' >
                 {exp.rights.launch ?
-                  <button
-                    onClick={() => {
-                      ExperimentExecutionService.instance.startNewExperiment(exp, false);
-                    }}
+                  /*<button
+                    onClick={() => this.openExperimentWorkbench(exp)}
                     disabled={this.isLaunchDisabled()}
                     className='nrp-btn btn-default'
                     title={this.launchButtonTitle} >
                     <AiFillExperiment className='icon' />Open
-                  </button>
+                </button>*/
+                  <Link to={'/experiment/' + exp.id} className="nrp-btn btn-default" disabled={this.isLaunchDisabled()}>
+                    <AiFillExperiment className='icon' />Open
+                  </Link>
                   : null}
 
                 {/*exp.rights.launch && config.brainProcesses > 1 ?
