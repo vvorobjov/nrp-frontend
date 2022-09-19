@@ -7,22 +7,22 @@ const SINGLETON_ENFORCER = Symbol();
 /**
  * Service handling server resources for simulating experiments.
  */
-class SimulationToolsService {
+class ExperimentToolsService {
   constructor(enforcer) {
     if (enforcer !== SINGLETON_ENFORCER) {
       throw new Error('Use ' + this.constructor.name + '.instance');
     }
 
     this.tools = new Map();
-    for (const toolEntry in SimulationToolsService.TOOLS) {
-      this.registerToolConfig(SimulationToolsService.TOOLS[toolEntry]);
+    for (const toolEntry in ExperimentToolsService.TOOLS) {
+      this.registerToolConfig(ExperimentToolsService.TOOLS[toolEntry]);
     }
     this.registerToolConfig(NrpCoreDashboard.CONSTANTS.TOOL_CONFIG);
   }
 
   static get instance() {
     if (_instance == null) {
-      _instance = new SimulationToolsService(SINGLETON_ENFORCER);
+      _instance = new ExperimentToolsService(SINGLETON_ENFORCER);
     }
 
     return _instance;
@@ -62,7 +62,7 @@ class SimulationToolsService {
   }
 }
 
-SimulationToolsService.TOOLS = Object.freeze({
+ExperimentToolsService.TOOLS = Object.freeze({
   NEST_DESKTOP: {
     singleton: true,
     flexlayoutNode: {
@@ -99,11 +99,11 @@ SimulationToolsService.TOOLS = Object.freeze({
   }
 });
 
-SimulationToolsService.CONSTANTS = Object.freeze({
+ExperimentToolsService.CONSTANTS = Object.freeze({
   CATEGORY: {
     EXTERNAL_IFRAME: 'EXTERNAL_IFRAME',
     REACT_COMPONENT: 'REACT_COMPONENT'
   }
 });
 
-export default SimulationToolsService;
+export default ExperimentToolsService;
