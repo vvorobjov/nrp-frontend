@@ -119,7 +119,7 @@ export default class ExperimentListElement extends React.Component {
         <div className='list-entry-middle flex-container up-down'>
           <div className='flex-container left-right title-line'>
             <div className='h4'>
-              {config.name}
+              {config.SimulationName}
             </div>
             {exp.joinableServers.length > 0 ?
               <div className='exp-title-sim-info'>
@@ -128,9 +128,9 @@ export default class ExperimentListElement extends React.Component {
               : null}
           </div>
           <div>
-            {!this.state.selected && config.description.length > SHORT_DESCRIPTION_LENGTH ?
-              config.description.substr(0, SHORT_DESCRIPTION_LENGTH) + ' ...' :
-              config.description}
+            {!this.state.selected && config.SimDescription.length > SHORT_DESCRIPTION_LENGTH ?
+              config.SimDescription.substr(0, SHORT_DESCRIPTION_LENGTH) + ' ...' :
+              config.SimDescription}
             <br />
           </div>
 
@@ -138,14 +138,14 @@ export default class ExperimentListElement extends React.Component {
             <div className='experiment-details' >
               <i>
                 Timeout:
-                {timeDDHHMMSS(config.timeout)}
+                {timeDDHHMMSS(config.SimulationTimeout)}
                 ({(config.timeoutType === 'simulation' ? 'simulation' : 'real')} time)
               </i>
               <br />
-              <i>
+              {/*<i>
                 Brain processes: {config.brainProcesses}
               </i>
-              <br />
+              <br />*/}
               <div style={{ display: 'flex' }}>
                 <i style={{ marginTop: '4px' }}>Server status: </i>
                 <i className={'server-icon ' + this.getServerStatusClass()}

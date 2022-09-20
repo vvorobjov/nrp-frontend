@@ -1,7 +1,8 @@
 import mqtt from 'mqtt';
 import { EventEmitter } from 'events';
 
-import * as proto from 'nrp-jsproto/nrp-engine_msgs-protobufjs';
+//import { DataPackMessage } from 'nrp-jsproto/engine_grpc_pb';
+import jspb from '../../node_modules/google-protobuf/google-protobuf';
 
 let _instance = null;
 const SINGLETON_ENFORCER = Symbol();
@@ -15,7 +16,8 @@ export default class MqttClientService extends EventEmitter {
     if (enforcer !== SINGLETON_ENFORCER) {
       throw new Error('Use ' + this.constructor.name + '.instance');
     }
-    this.defaultBrokerURL = 'ws://' + window.location.hostname + ':1884'; //TODO: move to config once set in place
+
+    this.subTokensMap = new Map();
   }
 
   static get instance() {
@@ -54,55 +56,90 @@ export default class MqttClientService extends EventEmitter {
   }
 
   onMessage(topic, payload, packet) {
-    /*console.info('MQTT message: [topic, payload, packet]');
-    console.info([topic, payload, packet]);*/
-
-    //TODO: this is actually highly inefficient and fundamentally relies on being subsribed to '#' and '$SYS/#'
-    // meaning you also receive every message, whether relevant or not.
-    // unfortunately mosquitto doesn't offer a listing of topics, this should be discussed.
-    // possibly a reserved topic is introduced that holds information on all available topics
-    // e.g. $SYS/topics or <client-id>/topics.
-    if (topic.startsWith('$SYS')) {
-      if (!this.topicsSYS.includes(topic)) {
-        this.topicsSYS.push(topic);
-        this.topicsSYS.sort();
-        console.info(['topicsSYS', this.topicsSYS]);
-      }
-    }
-    else {
-      if (!this.topics.includes(topic)) {
-        this.topics.push(topic);
-        this.topics.sort();
-        console.info(['topics', this.topics]);
-      }
+    if (typeof payload === 'undefined') {
+      return;
     }
 
-    try {
+    //console.info('MQTT message: [topic, payload, packet]');
+    //console.info([topic, payload, packet]);
+    //Now we see which callbacks have been assigned for a topic
+    let subTokens = this.subTokensMap.get(topic);
+    if (typeof subTokens !== 'undefined') {
+      for (var token of subTokens) {
+        //Deserializatin of Data must happen here
+        token.callback(payload);
+      };
+    };
+
+    /*try {
       if (topic.endsWith('/type')) {
         let msg = String(payload);
         console.info('"' + topic + '" message format = ' + msg);
       }
-      else if (!topic.startsWith('$SYS')) {
-        let msg = proto.Engine.DataPackMessage.decode(payload);
-        console.info(['DataPackMessage', msg]);
+      else {
+        let msg = DataPackMessage.deserializeBinary(payload);
+        console.info('DataPackMessage');
+        console.info(msg);
       }
     }
     catch (error) {
       console.error(error);
+    }*/
+  }
+
+  //callback should have args topic, payload
+  subscribeToTopic(topic, callback) {
+    if (typeof callback !== 'function') {
+      console.error('trying to subscribe to topic "' + topic + '", but no callback function given!');
+      return;
+    }
+
+    const token = {
+      topic: topic,
+      callback: callback
+    };
+    if (this.subTokensMap.has(token.topic)){
+      this.subTokensMap.get(token.topic).push(token);
+    }
+    else{
+      this.subTokensMap.set(
+        token.topic,
+        [token]
+      );
+    }
+    //console.info('You have been subscribed to topic ' + topic);
+    //console.info(this.subTokensMap);
+    return token;
+  }
+
+  unsubscribe(unsubToken) {
+    if (this.subTokensMap.has(unsubToken.topic)){
+      let tokens = this.subTokensMap.get(unsubToken.topic);
+      let index = tokens.indexOf(unsubToken);
+      if (index !== -1) {
+        tokens.splice(index, 1);
+        //console.info('You have been unsubscribed from topic ' + unsubToken.topic);
+      }
+      else {
+        console.warn('Your provided token could not be found in the subscription list');
+      }
+    }
+    else{
+      console.warn('The topic ' + unsubToken.topic + ' was not found');
     }
   }
 
-  onNewTopic(topic) {
-
+  static getProtoOneofData(protoMsg, oneofCaseNumber) {
+    return jspb.Message.getField(protoMsg, oneofCaseNumber);
   }
 
-  subscribe(topic, onMessageCallback) {
-    if (topic.endsWith('/#')) {
+  /*static getDataPackMessageOneofCaseString(protoMsg) {
+    for (let dataCase in DataPackMessage.DataCase) {
+      if (DataPackMessage.DataCase[dataCase] === protoMsg.getDataCase()) {
+        return dataCase;
+      }
     }
-    else if (topic.includes('/+')) {
-
-    }
-  }
+  }*/
 }
 
 MqttClientService.EVENTS = Object.freeze({

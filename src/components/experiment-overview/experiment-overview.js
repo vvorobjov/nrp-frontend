@@ -96,8 +96,8 @@ export default class ExperimentOverview extends React.Component {
   };
 
   onUpdateStorageExperiments(storageExperiments) {
-    let joinableExperiments = storageExperiments.filter(
-      experiment => experiment.joinableServers && experiment.joinableServers.length > 0);
+    let joinableExperiments = storageExperiments/*.filter(
+      experiment => experiment.joinableServers && experiment.joinableServers.length > 0)*/;
     this.setState({
       storageExperiments: storageExperiments,
       joinableExperiments: joinableExperiments
@@ -106,7 +106,7 @@ export default class ExperimentOverview extends React.Component {
 
   onUpdatePublicExperiments(publicExperiments) {
     this.setState({
-      publicExperiments: publicExperiments.filter(exp => exp.configuration.maturity === 'production')
+      publicExperiments: publicExperiments //.filter(exp => exp.configuration.maturity === 'production')
     });
   }
 
