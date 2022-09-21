@@ -9,6 +9,8 @@ import endpoints from '../../../proxy/data/endpoints.json';
 import config from '../../../../config.json';
 import MockExperiments from '../../../../mocks/mock_experiments.json';
 
+import { EXPERIMENT_RIGHTS } from '../../experiment-constants';
+
 const proxyEndpoint = endpoints.proxy;
 const experimentsUrl = `${config.api.proxy.url}${proxyEndpoint.storage.experiments.url}`;
 
@@ -121,6 +123,6 @@ test('sorts the local experiment list by display name', async () => {
 test('fills missing experiment details', async () => {
   const experiments = await ExperimentStorageService.instance.getExperiments(true);
   experiments.forEach(experiment => {
-    expect(experiment.configuration.brainProcesses).toBe(1);
+    expect(experiment.rights).toBe(EXPERIMENT_RIGHTS.OWNED);
   });
 });

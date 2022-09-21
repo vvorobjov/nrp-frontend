@@ -7,6 +7,10 @@ import 'jest-fetch-mock';
 import * as ROSLIB from 'roslib';
 import RoslibService from '../roslib-service';
 
+/*beforeEach(() => {
+  jest.spyOn(console, 'warn').mockImplementation(() => {});
+});*/
+
 test('makes sure that invoking the constructor fails with the right message', () => {
   expect(() => {
     new RoslibService();

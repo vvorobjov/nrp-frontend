@@ -11,8 +11,8 @@ const mockURL = 'http://test.url';
 
 test('has a generic request interface', async () => {
   let mockAuthToken = 'test-auth-token';
-  jest.spyOn(AuthenticationService.instance, 'getStoredToken').mockReturnValue(mockAuthToken);
-  jest.spyOn(AuthenticationService.instance, 'openAuthenticationPage').mockImplementation();
+  jest.spyOn(AuthenticationService.instance, 'getToken').mockReturnValue(mockAuthToken);
+  //jest.spyOn(AuthenticationService.instance, 'openAuthenticationPage').mockImplementation();
   let mockFetchReturnValue = {
     ok: true
   };

@@ -33,7 +33,7 @@ class RoslibService {
   getConnection(url) {
     if (!this.connections.has(url)) {
       let urlWithAuth = url + '?token=' + AuthenticationService.instance.getToken();
-      this.connections.set(url, new ROSLIB.Ros({ url: urlWithAuth }));
+      this.connections.set(url, new ROSLIB.Ros({ url: urlWithAuth, encoding: 'ascii' }));
     }
 
     return this.connections.get(url);

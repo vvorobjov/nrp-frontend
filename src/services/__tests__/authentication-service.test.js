@@ -80,3 +80,28 @@ test('can redirect to the authentication page', () => {
   expect(window.location.href).toBe(AuthenticationService.instance.PROXY_URL + authURL +
     `&client_id=${AuthenticationService.instance.CLIENT_ID}&redirect_uri=${encodeURIComponent(orginalLocationURL)}`);
 });
+
+test('init() with OIDC enabled', async () => {
+  jest.spyOn(AuthenticationService.instance, 'authCollab').mockResolvedValue();
+  AuthenticationService.instance.oidcEnabled = true;
+
+  AuthenticationService.instance.init();
+  await AuthenticationService.instance.promiseInitialized;
+  expect(AuthenticationService.instance.authCollab).toHaveBeenCalled();
+  expect(AuthenticationService.instance.initialized).toBeTruthy();
+});
+
+test('init() with OIDC enabled, failed collab authentication', async () => {
+  jest.spyOn(AuthenticationService.instance, 'authCollab').mockRejectedValue('failed');
+  AuthenticationService.instance.oidcEnabled = true;
+
+  try  {
+    AuthenticationService.instance.init();
+    await AuthenticationService.instance.promiseInitialized;
+  }
+  catch (error) {
+    //console.error(error);
+  }
+  expect(AuthenticationService.instance.authCollab).toHaveBeenCalled();
+  expect(AuthenticationService.instance.initialized).toBeFalsy();
+});

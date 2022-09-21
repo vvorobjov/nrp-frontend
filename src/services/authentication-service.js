@@ -41,7 +41,9 @@ class AuthenticationService {
     if (this.oidcEnabled) {
       this.authCollab().then(() => {
         this.initialized = true;
-      });
+      })/*.catch(() => {
+        return;
+      })*/;
     }
     else {
       this.checkForNewLocalTokenToStore();
