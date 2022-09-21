@@ -1,7 +1,9 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { FaTrash, FaFileExport, FaShareAlt, FaClone } from 'react-icons/fa';
 import { RiPlayFill, RiPlayLine, RiPlayList2Fill } from 'react-icons/ri';
 import { VscTriangleUp, VscTriangleDown } from 'react-icons/vsc';
+import { AiFillExperiment } from 'react-icons/ai';
 import { GoFileSubmodule } from 'react-icons/go';
 
 import timeDDHHMMSS from '../../utility/time-filter.js';
@@ -10,7 +12,7 @@ import PublicExperimentsService from '../../services/experiments/files/public-ex
 import ExperimentStorageService from '../../services/experiments/files/experiment-storage-service.js';
 
 import SimulationDetails from './simulation-details';
-import ExperimentOverview from '../experiment-overview/experiment-overview.js';
+import ExperimentOverview from '../experiments-overview/experiments-overview.js';
 
 import './experiment-list-element.css';
 import '../main.css';
@@ -160,28 +162,29 @@ export default class ExperimentListElement extends React.Component {
             }}>
               <div className='btn-group' role='group' >
                 {exp.rights.launch ?
-                  <button
-                    onClick={() => {
-                      ExperimentExecutionService.instance.startNewExperiment(exp, false);
-                    }}
+                  /*<button
+                    onClick={() => this.openExperimentWorkbench(exp)}
                     disabled={this.isLaunchDisabled()}
                     className='nrp-btn btn-default'
                     title={this.launchButtonTitle} >
-                    <RiPlayFill className='icon' />Launch
-                  </button>
+                    <AiFillExperiment className='icon' />Open
+                </button>*/
+                  <Link to={'/experiment/' + exp.id} className="nrp-btn btn-default" disabled={this.isLaunchDisabled()}>
+                    <AiFillExperiment className='icon' />Open
+                  </Link>
                   : null}
 
-                {exp.rights.launch /*&& config.brainProcesses > 1*/ ?
+                {/*exp.rights.launch && config.brainProcesses > 1 ?
                   <button className='nrp-btn btn-default'>
                     <RiPlayLine className='icon' />Launch in Single Process Mode
                   </button>
-                  : null}
+                  : null*/}
 
-                {exp.rights.launch /*&& this.props.availableServers.length > 1*/ ?
+                {/*exp.rights.launch && this.props.availableServers.length > 1 ?
                   <button className='nrp-btn btn-default' >
                     <RiPlayList2Fill className='icon' />Launch Multiple
                   </button>
-                  : null}
+                : null*/}
 
                 {/* isPrivateExperiment */}
                 {exp.rights.delete ?

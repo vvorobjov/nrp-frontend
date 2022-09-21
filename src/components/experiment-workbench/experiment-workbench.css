@@ -1,0 +1,80 @@
+.simulation-view-wrapper {
+  display: grid;
+  grid-template-rows: auto auto;
+  grid-template-columns: 68px auto;
+  grid-template-areas: 
+      "simulation-view-header simulation-view-header"
+      "simulation-view-sidebar simulation-view-mainview";
+}
+
+.simulation-view-header {
+  grid-area: simulation-view-header;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  background-color: yellow;
+  padding: 3px;
+}
+
+.simulation-view-sidebar {
+  padding: 2px;
+  grid-area: simulation-view-sidebar;
+  background-color: green;
+}
+
+.simulation-view-mainview {
+  grid-area: simulation-view-mainview;
+  background-color: red;
+}
+
+.flexlayout__layout {
+  position: relative;
+  height: calc(100vh - 63px);
+}
+
+.flexlayout__tab {
+  overflow: hidden;
+}
+
+.simulation-view-controls {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+.simulation-view-control-buttons {
+  padding: 0px 10px 0px 10px;
+}
+
+.simulation-view-time-info {
+  display: grid;
+  gap: 3px;
+  grid-template-rows: repeat(3, 1fr);
+  grid-template-columns: repeat(2, 1fr);
+
+  padding: 0px 10px 0px 10px;
+
+  font-size: 0.7em;
+}
+
+.simulation-view-experiment-title {
+  padding: 0px 10px 0px 10px;
+  font-weight: bold;
+}
+
+.simulation-tool-button {
+  width: 60px;
+  height: 60px;
+  margin: 2px;
+  padding: 2px;
+  font-size: 0.7em;
+  color: black;
+  font-weight: bold;
+  background-color: lightgray;
+}
+
+iframe {
+  width: 100%;
+  height: 100%;
+}
