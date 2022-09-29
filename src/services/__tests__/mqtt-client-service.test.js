@@ -2,6 +2,8 @@
  * @jest-environment jsdom
 */
 import '@testing-library/jest-dom';
+import { MqttClient } from 'mqtt';
+//import test from 'node:test';
 
 import MqttClientService from '../mqtt-client-service';
 
@@ -69,4 +71,45 @@ test('sub/unsub', async () => {
   expect(sub1Token.callback).toHaveBeenCalledTimes(1);
   expect(sub2Token.callback).toHaveBeenCalledTimes(2);
   expect(sub3Token.callback).toHaveBeenCalledTimes(3);
+});
+
+test('undefinedPayload', async () => {
+  let topicA = 'topic/A';
+
+  let sub1Callback = jest.fn();
+  let sub1Token = subscribeTopicAndValidate(topicA, sub1Callback);
+  MqttClientService.instance.onMessage(topicA, undefined);
+  unsubscribeAndValidate(sub1Token);
+  expect(sub1Token.callback).toHaveBeenCalledTimes(0);
+});
+
+test('CallbackIsNotFunction', async () => {
+  let topicA = 'topic/A';
+
+  let sub1Callback = undefined;
+  let token = MqttClientService.instance.subscribeToTopic(topicA, sub1Callback);
+  expect(token === undefined).toBeTruthy();
+});
+
+test('noToken/noTopic', async () => {
+  let topicA = 'topic/A';
+  let topicB = 'topic/B';
+  let topicC = 'topic/C';
+
+  let sub1Callback = jest.fn();
+  let sub1Token = MqttClientService.instance.subscribeToTopic(topicA, sub1Callback);
+  const sub2Token = {
+    topic: topicB,
+    callback: jest.fn()
+  };
+
+  MqttClientService.instance.unsubscribe(sub2Token);
+  expect(MqttClientService.instance.subTokensMap.get(topicA).length).toBe(1);
+  expect(MqttClientService.instance.subTokensMap.get(topicB).length).toBe(0);
+
+  sub1Token.topic = topicC;
+  MqttClientService.instance.unsubscribe(sub1Token);
+  expect(MqttClientService.instance.subTokensMap.get(topicA).length).toBe(1);
+  expect(MqttClientService.instance.subTokensMap.get(topicB).length).toBe(0);
+  expect(MqttClientService.instance.subTokensMap.get(topicC) === undefined).toBeTruthy();
 });
