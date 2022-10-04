@@ -8,7 +8,9 @@
     "collectCoverageFrom": [
       "src/services/**/*.js"
     ],
-    "testMatch": ["**/roslib-service.test.js"]
+    "testMatch": [
+      "**/roslib-service.test.js"
+    ]
   },
   "version": "0.1.0",
   "private": true,
