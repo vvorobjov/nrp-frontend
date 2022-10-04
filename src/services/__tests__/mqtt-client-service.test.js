@@ -2,10 +2,14 @@
  * @jest-environment jsdom
 */
 import '@testing-library/jest-dom';
-import { MqttClient } from 'mqtt';
-//import test from 'node:test';
+import mqtt from 'mqtt';
+import { EventEmitter } from 'stream';
 
 import MqttClientService from '../mqtt-client-service';
+
+
+jest.genMockFromModule('mqtt');
+jest.mock('mqtt');
 
 let subscribeTopicAndValidate = (topic, callback) => {
   let token = MqttClientService.instance.subscribeToTopic(topic, callback);
@@ -21,6 +25,52 @@ let unsubscribeAndValidate = (token) => {
   MqttClientService.instance.unsubscribe(token);
   expect(MqttClientService.instance.subTokensMap.get(token.topic).includes(token)).toBeFalsy();
 };
+
+
+
+beforeEach(() => {
+  // hide console output for tests
+  jest.spyOn(console, 'error').mockImplementation(() => {});
+  jest.spyOn(console, 'warn').mockImplementation(() => {});
+  jest.spyOn(console, 'info').mockImplementation(() => {});
+});
+
+test('makes sure that invoking the constructor fails with the right message', () => {
+  expect(() => {
+    new MqttClientService();
+  }).toThrow(Error);
+  expect(() => {
+    new MqttClientService();
+  }).toThrowError(Error('Use MqttClientService.instance'));
+});
+
+test('connect, event callbacks',  () => {
+  mqtt.connect.mockImplementation(() => {
+    return new EventEmitter();
+  });
+  jest.spyOn(MqttClientService.instance, 'onError');
+  jest.spyOn(MqttClientService.instance, 'onMessage');
+
+  let connectEventFired = false;
+  MqttClientService.instance.on(MqttClientService.EVENTS.CONNECTED, () => {
+    connectEventFired = true;
+  });
+
+  MqttClientService.instance.connect('test-url');
+  let client = MqttClientService.instance.client;
+  expect(client).toBeDefined();
+  client.emit('connect');
+  const mockError = {};
+  client.emit('error', mockError);
+  const mockMessage = {};
+  client.emit('message', mockMessage);
+
+  expect(connectEventFired).toBeTruthy();
+  expect(MqttClientService.instance.onError).toHaveBeenCalledTimes(1);
+  expect(MqttClientService.instance.onError).toHaveBeenCalledWith(mockError);
+  expect(MqttClientService.instance.onMessage).toHaveBeenCalledTimes(1);
+  expect(MqttClientService.instance.onMessage).toHaveBeenCalledWith(mockMessage);
+});
 
 test('sub/unsub', async () => {
   let topicA = 'topic/A';

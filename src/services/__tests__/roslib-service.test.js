@@ -7,9 +7,9 @@ import 'jest-fetch-mock';
 import * as ROSLIB from 'roslib';
 import RoslibService from '../roslib-service';
 
-/*beforeEach(() => {
-  jest.spyOn(console, 'warn').mockImplementation(() => {});
-});*/
+
+jest.genMockFromModule('roslib');
+jest.mock('roslib');
 
 test('makes sure that invoking the constructor fails with the right message', () => {
   expect(() => {
@@ -27,7 +27,7 @@ test('the experiments service instance always refers to the same object', () => 
 });
 
 test('can provide ROS connections', () => {
-  jest.spyOn(ROSLIB, 'Ros').mockReturnValue({});
+  jest.spyOn(ROSLIB, 'Ros');
   let connection1 = RoslibService.instance.getConnection('test-ros-ws-url');
   let connection2 = RoslibService.instance.getConnection('test-ros-ws-url');
   expect(connection1).toBe(connection2);

@@ -120,9 +120,9 @@ export default class MqttClientService extends EventEmitter {
     }
   }
 
-  static getProtoOneofData(protoMsg, oneofCaseNumber) {
+  /*static getProtoOneofData(protoMsg, oneofCaseNumber) {
     return jspb.Message.getField(protoMsg, oneofCaseNumber);
-  }
+  }*/
 
   /*static getDataPackMessageOneofCaseString(protoMsg) {
     for (let dataCase in DataPackMessage.DataCase) {
