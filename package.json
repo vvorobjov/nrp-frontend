@@ -9,7 +9,8 @@
       "src/services/**/*.js"
     ],
     "testMatch": [
-      "**/roslib-service.test.js"
+      "**/roslib-service.test.js",
+      "**/mqtt-client-service.test.js"
     ]
   },
   "version": "0.1.0",
