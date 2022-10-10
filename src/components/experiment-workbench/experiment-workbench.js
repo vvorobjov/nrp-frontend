@@ -6,17 +6,17 @@ import { GiExitDoor } from 'react-icons/gi';
 import { TiMediaRecord } from 'react-icons/ti';
 import { VscDebugRestart } from 'react-icons/vsc';
 
-import ExperimentToolsService from './simulation-tools-service';
+import ExperimentToolsService from './experiment-tools-service';
 import ServerResourcesService from '../../services/experiments/execution/server-resources-service.js';
 import ExperimentStorageService from '../../services/experiments/files/experiment-storage-service';
 import RunningSimulationService from '../../services/experiments/execution/running-simulation-service';
 import { EXPERIMENT_STATE } from '../../services/experiments/experiment-constants';
 import timeDDHHMMSS from '../../utility/time-filter';
 
-import LeaveSimulationDialog from './leave-simulation-dialog';
+import LeaveWorkbenchDialog from './leave-workbench-dialog';
 
 import '../../../node_modules/flexlayout-react/style/light.css';
-import './simulation-view.css';
+import './experiment-workbench.css';
 
 const jsonBaseLayout = {
   global: {},
@@ -41,14 +41,13 @@ const jsonBaseLayout = {
   }
 };
 
-export default class SimulationView extends React.Component {
+export default class ExperimentWorkbench extends React.Component {
   constructor(props) {
     super(props);
 
-    const {serverIP, simulationID} = props.match.params;
+    const {experimentID} = props.match.params;
     //console.info('SimulationView ' + serverIP + ' ' + simulationID);
-    this.serverIP = serverIP;
-    this.simulationID = simulationID;
+    this.experimentID = experimentID;
     this.serverURL = 'http://' + this.serverIP + ':8080'; // this should probably be part of some config
 
     this.state = {
@@ -60,16 +59,16 @@ export default class SimulationView extends React.Component {
   }
 
   async componentDidMount() {
-    await this.updateSimulationInfo();
+    //await this.updateSimulationInfo();
     let experiments = await ExperimentStorageService.instance.getExperiments();
-    this.experimentInfo = experiments.find(experiment => experiment.id === this.state.simulationInfo.experimentID);
-    console.info('SimulationView - experimentInfo');
+    this.experimentInfo = experiments.find(experiment => experiment.id === this.experimentID);
+    console.info('ExperimentWorkbench - experimentInfo');
     console.info(this.experimentInfo);
 
-    let experimentName = this.experimentInfo.configuration.SimulationName;
+    let experimentName = this.experimentInfo.configuration.name;
     this.setState({experimentName: experimentName});
 
-    let server = this.experimentInfo.joinableServers.find(
+    /*let server = this.experimentInfo.joinableServers.find(
       server => server.runningSimulation.creationUniqueID === this.state.simulationInfo.creationUniqueID);
     this.serverConfig = await ServerResourcesService.instance.getServerConfig(server.server);
     console.info('this.serverConfig');
@@ -79,15 +78,15 @@ export default class SimulationView extends React.Component {
       (data) => {
         this.onStatusInfoROS(data);
       }
-    );
+    );*/
   }
 
-  async updateSimulationInfo() {
+  /*async updateSimulationInfo() {
     let simInfo = await RunningSimulationService.instance.getInfo(this.serverURL, this.simulationID);
     this.setState({simulationInfo: simInfo});
     console.info('SimulationView.updateSimulationInfo - simulationInfo');
     console.info(this.state.simulationInfo);
-  }
+  }*/
 
   onStatusInfoROS(message) {
     this.setState({
@@ -114,7 +113,7 @@ export default class SimulationView extends React.Component {
     this.setState({showLeaveDialog: show});
   }
 
-  leaveSimulation() {
+  leaveWorkbench() {
     this.props.history.push({
       pathname: '/experiments-overview'
     });
@@ -123,15 +122,15 @@ export default class SimulationView extends React.Component {
   render() {
     return (
       <div>
-        <LeaveSimulationDialog visible={this.state.showLeaveDialog}
+        <LeaveWorkbenchDialog visible={this.state.showLeaveDialog}
           setVisibility={(visible) => this.showLeaveDialog(visible)}
           stopSimulation={async () => {
             await RunningSimulationService.instance.updateState(this.serverURL, this.simulationID,
               EXPERIMENT_STATE.STOPPED);
-            this.leaveSimulation();
+            this.leaveWorkbench();
           }}
-          leaveSimulation={() => {
-            this.leaveSimulation();
+          leaveWorkbench={() => {
+            this.leaveWorkbench();
           }} />
         <div className='simulation-view-wrapper'>
           <div className='simulation-view-header'>
@@ -201,6 +200,6 @@ export default class SimulationView extends React.Component {
   }
 }
 
-SimulationView.CONSTANTS = Object.freeze({
+ExperimentWorkbench.CONSTANTS = Object.freeze({
   INTERVAL_INTERNAL_UPDATE_MS: 1000
 });

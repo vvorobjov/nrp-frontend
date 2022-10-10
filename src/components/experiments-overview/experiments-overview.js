@@ -13,9 +13,9 @@ import ExperimentList from '../experiment-list/experiment-list.js';
 import NrpHeader from '../nrp-header/nrp-header.js';
 import ExperimentFilesViewer from '../experiment-files-viewer/experiment-files-viewer.js';
 
-import './experiment-overview.css';
+import './experiments-overview.css';
 
-export default class ExperimentOverview extends React.Component {
+export default class ExperimentsOverview extends React.Component {
   static CONSTANTS = {
     TAB_INDEX: {
       MY_EXPERIMENTS: 0,
@@ -35,7 +35,7 @@ export default class ExperimentOverview extends React.Component {
       joinableExperiments: [],
       availableServers: [],
       startingExperiment: undefined,
-      selectedTabIndex: ExperimentOverview.CONSTANTS.TAB_INDEX.MY_EXPERIMENTS
+      selectedTabIndex: ExperimentsOverview.CONSTANTS.TAB_INDEX.MY_EXPERIMENTS
     };
   }
 
