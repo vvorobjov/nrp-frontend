@@ -143,7 +143,7 @@ class PublicExperimentsService extends HttpService {
    * @param {Object} experiment The Experiment configuration
    */
   async cloneExperiment(experiment) {
-    let experimentConfigFilepath = experiment.configuration.experimentConfiguration;
+    let experimentConfigFilepath = experiment.configuration.experimentId;
     this.httpRequestPOST(cloneURL, JSON.stringify({ expPath: experimentConfigFilepath }));
   }
 }
