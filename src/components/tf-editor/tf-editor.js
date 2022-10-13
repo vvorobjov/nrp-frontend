@@ -12,7 +12,8 @@ export default class TransceiverFunctionEditor extends React.Component {
   constructor(props) {
     super(props);
 
-    this.testListTfFiles = ['cg_mqtt.py', 'cg_mqtt_2.py', 'cg_mqtt_3.py'];
+    // this.testListTfFiles = ['cg_mqtt.py', 'cg_mqtt_2.py', 'cg_mqtt_3.py'];
+    this.testListTfFiles = this.props.DataPackProcessingFunctions;
     this.state = {
       selectedFilename: this.testListTfFiles[0],
       code: '',
