@@ -7,6 +7,7 @@ import { TiMediaRecord } from 'react-icons/ti';
 import { VscDebugRestart } from 'react-icons/vsc';
 
 import ExperimentToolsService from './experiment-tools-service';
+import ExperimentWorkbenchService from './experiment-workbench-service';
 import ServerResourcesService from '../../services/experiments/execution/server-resources-service.js';
 import ExperimentStorageService from '../../services/experiments/files/experiment-storage-service';
 import RunningSimulationService from '../../services/experiments/execution/running-simulation-service';
@@ -62,8 +63,7 @@ export default class ExperimentWorkbench extends React.Component {
     //await this.updateSimulationInfo();
     let experiments = await ExperimentStorageService.instance.getExperiments();
     this.experimentInfo = experiments.find(experiment => experiment.id === this.experimentID);
-    console.info('ExperimentWorkbench - experimentInfo');
-    console.info(this.experimentInfo);
+    ExperimentWorkbenchService.instance.experimentInfo = this.experimentInfo;
 
     let experimentName = this.experimentInfo.configuration.name;
     this.setState({experimentName: experimentName});
