@@ -141,7 +141,8 @@ export default class ExperimentsOverview extends React.Component {
             <ImportExperimentButtons />
             <ExperimentList experiments={this.state.storageExperiments}
               availableServers={this.state.availableServers}
-              startingExperiment={this.state.startingExperiment} />
+              startingExperiment={this.state.startingExperiment}
+              selectExperimentOverviewTab={(index) => this.setState({ selectedTabIndex: index })}/>
           </TabPanel>
           {/* New Experiment */}
           <TabPanel>

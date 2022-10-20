@@ -114,8 +114,8 @@ test('sorts the local experiment list by display name', async () => {
   ];
   ExperimentStorageService.instance.experiments = mockExperimentList;
   ExperimentStorageService.instance.sortExperiments(mockExperimentList);
-  expect(mockExperimentList[0].configuration.name).toBe('Abc');
-  expect(mockExperimentList[1].configuration.name).toBe('bcd');
+  expect(mockExperimentList[0].configuration.SimulationName).toBe('Abc');
+  expect(mockExperimentList[1].configuration.SimulationName).toBe('bcd');
 });
 
 test('fills missing experiment details', async () => {

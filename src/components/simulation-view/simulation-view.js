@@ -66,7 +66,7 @@ export default class SimulationView extends React.Component {
     console.info('SimulationView - experimentInfo');
     console.info(this.experimentInfo);
 
-    let experimentName = this.experimentInfo.configuration.name;
+    let experimentName = this.experimentInfo.configuration.SimulationName;
     this.setState({experimentName: experimentName});
 
     let server = this.experimentInfo.joinableServers.find(

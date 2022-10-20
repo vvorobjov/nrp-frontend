@@ -200,7 +200,7 @@ class RemoteExperimentFilesService extends HttpService {
     for (let experiment of experiments) {
       let serverExperiment = {
         uuid: experiment.uuid,
-        name: experiment.configuration.name
+        name: experiment.configuration.SimulationName
       };
       await getServerDirectoryFiles(serverExperiment);
 
@@ -374,7 +374,7 @@ class RemoteExperimentFilesService extends HttpService {
 
     let serverExperiment = {
       uuid: experiment.uuid,
-      name: experiment.configuration.name
+      name: experiment.configuration.SimulationName
     };
     await downloadFiles(serverExperiment);
 
