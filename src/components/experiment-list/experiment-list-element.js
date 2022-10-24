@@ -1,9 +1,10 @@
 import React, {useState} from 'react';
 import { Link } from 'react-router-dom';
-import { FaTrash, FaFileExport, FaShareAlt, FaClone, FaPen, FaBullseye, FaLastfmSquare } from 'react-icons/fa';
+import { FaTrash, FaFileExport, FaShareAlt, FaClone, FaBullseye, FaLastfmSquare } from 'react-icons/fa';
+import { MdOutlineDownloadDone } from 'react-icons/md';
 import { RiPlayFill, RiPlayLine, RiPlayList2Fill } from 'react-icons/ri';
 import { GoX } from 'react-icons/go';
-import { VscTriangleUp, VscTriangleDown } from 'react-icons/vsc';
+import { VscTriangleUp, VscTriangleDown, VscCheck, VscEdit } from 'react-icons/vsc';
 import { AiFillExperiment } from 'react-icons/ai';
 import { GoFileSubmodule } from 'react-icons/go';
 
@@ -30,7 +31,9 @@ export default class ExperimentListElement extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      showSimDetails: true
+      showSimDetails: true,
+      nameEditingVisible: false,
+      visibleName: props.experiment.configuration.SimulationName
     };
 
     this.launchButtonTitle = '';
@@ -107,15 +110,9 @@ export default class ExperimentListElement extends React.Component {
     /*|| pageState.deletingExperiment*/
   };
 
-  changeExperimentName(event) {
-    //ExperimentStorageService.instance.renameExperiment(experimentDirectoryPath, filename, event.value);
-    return null;
-  };
-
   render() {
     const exp = this.props.experiment;
     const config = this.props.experiment.configuration;
-    this.nameEditingVisible = false;
 
     return (
       <div className='list-entry-wrapper flex-container left-right'
@@ -129,13 +126,25 @@ export default class ExperimentListElement extends React.Component {
 
         <div className='list-entry-middle flex-container up-down'>
           <div className='flex-container left-right title-line'>
-            <div className='h4'>
+            {/* <div className='h4'>
               {config.SimulationName}
-            </div>
-            <div className="nameEditor" >
+            </div> */}
+            <input type='text'
+              value={this.state.visibleName}
+              disabled={!this.state.nameEditingVisible}
+              onChange={(e) => this.setState({visibleName: e.target.value})}/>
+            { this.state.nameEditingVisible ?
+              <button onClick={() => {
+                this.setState({ nameEditingVisible: false });
+                ExperimentStorageService.instance.renameExperiment(exp.id, this.state.visibleName);
+              }}>
+                <VscCheck/>
+              </button> :
               <button onClick={() => this.setState(
-                {nameEditingVisible : !this.state.nameEditingVisible})}> <FaPen/> </button>
-            </div>
+                { nameEditingVisible: true })}>
+                <VscEdit/>
+              </button>
+            }
             {exp.joinableServers.length > 0 ?
               <div className='exp-title-sim-info'>
                 ({exp.joinableServers.length} simulation{exp.joinableServers.length > 1 ? 's' : ''} running)

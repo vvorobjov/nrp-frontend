@@ -300,6 +300,11 @@ class ExperimentStorageService extends HttpService {
   async scanStorage() {
     return await (await this.httpRequestPOST(SCAN_STORAGE_URL)).json();
   }
+
+  async renameExperiment(experimentID, newName) {
+    const url = storageExperimentsURL + '/' + experimentID + '/rename';
+    return this.httpRequestPOST(url, JSON.stringify({newSimulationName: newName}));
+  }
 }
 
 ExperimentStorageService.EVENTS = Object.freeze({
