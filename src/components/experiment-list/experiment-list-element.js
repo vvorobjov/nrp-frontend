@@ -1,7 +1,8 @@
-import React from 'react';
+import React, {useState} from 'react';
 import { Link } from 'react-router-dom';
-import { FaTrash, FaFileExport, FaShareAlt, FaClone } from 'react-icons/fa';
+import { FaTrash, FaFileExport, FaShareAlt, FaClone, FaPen, FaBullseye, FaLastfmSquare } from 'react-icons/fa';
 import { RiPlayFill, RiPlayLine, RiPlayList2Fill } from 'react-icons/ri';
+import { GoX } from 'react-icons/go';
 import { VscTriangleUp, VscTriangleDown } from 'react-icons/vsc';
 import { AiFillExperiment } from 'react-icons/ai';
 import { GoFileSubmodule } from 'react-icons/go';
@@ -16,6 +17,8 @@ import ExperimentOverview from '../experiments-overview/experiments-overview.js'
 
 import './experiment-list-element.css';
 import '../main.css';
+import { Button } from 'react-bootstrap';
+import { TiEjectOutline } from 'react-icons/ti';
 
 const CLUSTER_THRESHOLDS = {
   UNAVAILABLE: 2,
@@ -102,11 +105,17 @@ export default class ExperimentListElement extends React.Component {
 
     return isDisabled;
     /*|| pageState.deletingExperiment*/
-  }
+  };
+
+  changeExperimentName(event) {
+    //ExperimentStorageService.instance.renameExperiment(experimentDirectoryPath, filename, event.value);
+    return null;
+  };
 
   render() {
     const exp = this.props.experiment;
     const config = this.props.experiment.configuration;
+    this.nameEditingVisible = false;
 
     return (
       <div className='list-entry-wrapper flex-container left-right'
@@ -122,6 +131,10 @@ export default class ExperimentListElement extends React.Component {
           <div className='flex-container left-right title-line'>
             <div className='h4'>
               {config.SimulationName}
+            </div>
+            <div className="nameEditor" >
+              <button onClick={() => this.setState(
+                {nameEditingVisible : !this.state.nameEditingVisible})}> <FaPen/> </button>
             </div>
             {exp.joinableServers.length > 0 ?
               <div className='exp-title-sim-info'>
@@ -139,7 +152,7 @@ export default class ExperimentListElement extends React.Component {
           {this.state.selected &&
             <div className='experiment-details' >
               <i>
-                Timeout:
+                Timeout :
                 {timeDDHHMMSS(config.SimulationTimeout)}
                 ({(config.timeoutType === 'simulation' ? 'simulation' : 'real')} time)
               </i>
