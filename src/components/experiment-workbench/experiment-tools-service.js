@@ -1,4 +1,5 @@
 import NrpCoreDashboard from '../nrp-core-dashboard/nrp-core-dashboard';
+import TransceiverFunctionEditor from '../tf-editor/tf-editor';
 
 
 let _instance = null;
@@ -42,7 +43,6 @@ class ExperimentToolsService {
 
   flexlayoutNodeFactory(node) {
     var component = node.getComponent();
-
     let toolConfig = this.tools.get(component);
     if (toolConfig && toolConfig.flexlayoutFactoryCb) {
       return toolConfig.flexlayoutFactoryCb();
@@ -96,8 +96,21 @@ ExperimentToolsService.TOOLS = Object.freeze({
     getIcon: () => {
       return <span>NRP-Core Docs</span>;
     }
-  }
-});
+  },
+  TRANSCEIVER_FUNCTIONS_EDITOR: {
+    singleton: true,
+    flexlayoutNode: {
+      'type': 'tab',
+      'name': 'Edit experiment files',
+      'component': 'TransceiverFunctionEditor'
+    },
+    flexlayoutFactoryCb: () =>  {
+      return <TransceiverFunctionEditor/>;
+    },
+    getIcon: () => {
+      return <span>Editor</span>;
+    }
+  }});
 
 ExperimentToolsService.CONSTANTS = Object.freeze({
   CATEGORY: {

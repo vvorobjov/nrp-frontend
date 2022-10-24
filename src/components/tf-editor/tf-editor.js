@@ -1,9 +1,10 @@
 import React from 'react';
+import FlexLayout from 'flexlayout-react';
 import CodeMirror from '@uiw/react-codemirror';
 import { Modal, Button } from 'react-bootstrap';
 
 import ExperimentStorageService from '../../services/experiments/files/experiment-storage-service';
-
+import ExperimentWorkbenchService from '../experiment-workbench/experiment-workbench-service';
 
 import './tf-editor.css';
 
@@ -11,11 +12,10 @@ export default class TransceiverFunctionEditor extends React.Component {
 
   constructor(props) {
     super(props);
+    this.files= [];
 
-    // this.testListTfFiles = ['cg_mqtt.py', 'cg_mqtt_2.py', 'cg_mqtt_3.py'];
-    this.testListTfFiles = this.props.DataPackProcessingFunctions;
     this.state = {
-      selectedFilename: this.testListTfFiles[0],
+      selectedFilename: '',
       code: '',
       textChanges: '',
       showDialogUnsavedChanges: false
@@ -23,7 +23,15 @@ export default class TransceiverFunctionEditor extends React.Component {
   }
 
   async componentDidMount() {
-    this.loadFileContent(this.state.selectedFilename);
+
+    const workbench = await ExperimentWorkbenchService.instance;
+    this.experimentInfo = workbench.experimentInfo;
+
+    let experimentName = this.experimentInfo.id;
+    this.setState({experimentName: experimentName});
+    await this.loadExperimentFiles();
+    this.setState({selectedFilename:  this.files.at(0)});
+    await this.loadFileContent(this.state.selectedFilename);
   }
 
   onChangeSelectedFile(event) {
@@ -51,8 +59,17 @@ export default class TransceiverFunctionEditor extends React.Component {
     }
   }
 
+  async loadExperimentFiles() {
+    const filelist = await ExperimentStorageService.instance.getExperimentFiles(this.state.experimentName);
+    for (const obj of filelist) { // Not checking for nested files yet
+      if (obj.type == 'file') {
+        this.files.push(obj.name);
+      }
+    }
+  }
+
   async loadFileContent(filename) {
-    let fileContent = await ExperimentStorageService.instance.getFileText(this.props.experimentId, filename);
+    let fileContent = await ExperimentStorageService.instance.getFileText(this.state.experimentName, filename);
     this.fileLoading = true;
     this.setState({selectedFilename: filename, code: fileContent, showDialogUnsavedChanges: false});
   }
@@ -68,7 +85,7 @@ export default class TransceiverFunctionEditor extends React.Component {
 
   async saveTF() {
     let response = await ExperimentStorageService.instance.setFile(
-      this.props.experimentId, this.state.selectedFilename, this.state.code);
+      this.state.experimentName, this.state.selectedFilename, this.state.code);
     if (response.ok) {
       this.hasUnsavedChanges = false;
       this.setState({textChanges: 'saved'});
@@ -95,7 +112,7 @@ export default class TransceiverFunctionEditor extends React.Component {
               name="selectTFFile"
               value={this.state.selectedFilename}
               onChange={(event) => this.onChangeSelectedFile(event)}>
-              {this.testListTfFiles.map(file => {
+              {this.files.map(file => {
                 return (<option key={file} value={file}>{file}</option>);
               })}
             </select>

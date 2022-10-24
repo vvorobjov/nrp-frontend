@@ -175,15 +175,14 @@ export default class ExperimentWorkbench extends React.Component {
                     <Tooltip id={`tooltip-${tool.flexlayoutNode.component}`}>
                       {tool.flexlayoutNode.name}
                     </Tooltip>
-                  }
-                >
+                  }>
                   <Button key={tool.flexlayoutNode.component}
                     className="simulation-tool-button"
                     onMouseDown={() => {
                       ExperimentToolsService.instance.startToolDrag(
                         tool.flexlayoutNode,
                         this.refLayout);
-                    }}>{tool.getIcon && tool.getIcon()}</Button>
+                    }}> {tool.getIcon && tool.getIcon()}</Button>
                 </OverlayTrigger>
               );
             })}
