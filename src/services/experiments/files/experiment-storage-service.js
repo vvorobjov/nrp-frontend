@@ -303,7 +303,7 @@ class ExperimentStorageService extends HttpService {
 
   async renameExperiment(experimentID, newName) {
     const url = storageExperimentsURL + '/' + experimentID + '/rename';
-    return this.httpRequestPOST(url, JSON.stringify({newSimulationName: newName}));
+    return await this.httpRequestPOST(url, JSON.stringify({newSimulationName: newName}));
   }
 }
 
