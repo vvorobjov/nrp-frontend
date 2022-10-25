@@ -1,5 +1,4 @@
 import React from 'react';
-import FlexLayout from 'flexlayout-react';
 import CodeMirror from '@uiw/react-codemirror';
 import { Modal, Button } from 'react-bootstrap';
 
@@ -62,7 +61,7 @@ export default class TransceiverFunctionEditor extends React.Component {
   async loadExperimentFiles() {
     const filelist = await ExperimentStorageService.instance.getExperimentFiles(this.state.experimentName);
     for (const obj of filelist) { // Not checking for nested files yet
-      if (obj.type == 'file') {
+      if (obj.type === 'file') {
         this.files.push(obj.name);
       }
     }

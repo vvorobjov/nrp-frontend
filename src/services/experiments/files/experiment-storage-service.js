@@ -79,7 +79,6 @@ class ExperimentStorageService extends HttpService {
         this.sortExperiments(experimentList);
         await this.fillExperimentDetails(experimentList);
         this.experiments = experimentList;
-        console.info(experimentList);
         this.emit(ExperimentStorageService.EVENTS.UPDATE_EXPERIMENTS, this.experiments);
       }
       catch (error) {

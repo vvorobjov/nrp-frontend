@@ -96,17 +96,6 @@ SimulationToolsService.TOOLS = Object.freeze({
     getIcon: () => {
       return <span>NRP-Core Docs</span>;
     }
-  },
-  TRANSCEIVER_FUNCTIONS_EDITOR: {
-    singleton: true,
-    flexlayoutNode: {
-    },
-    flexlayoutFactoryCb: () =>  {
-      return <TransceiverFunctionEditor />;
-    },
-    getIcon: () => {
-      return <span>TF</span>;
-    }
   }
 });
 

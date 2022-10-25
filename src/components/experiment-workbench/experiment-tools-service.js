@@ -30,8 +30,6 @@ class ExperimentToolsService {
   }
 
   registerToolConfig(toolConfig) {
-    console.info('registerToolConfig');
-    console.info(toolConfig);
     let id = toolConfig.flexlayoutNode.component;
     if (this.tools.has(id)) {
       console.warn('SimulationToolsService.registerToolConfig() - tool with ID ' + id + ' already exists');
