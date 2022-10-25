@@ -116,11 +116,13 @@ class PublicExperimentsService extends HttpService {
       }
 
       // retrieve the experiment thumbnail
-      experimentUpdates.push(this.getThumbnailURL(experiment.configuration.id).then(thumbnailURL => {
-        if (thumbnailURL) {
-          experiment.thumbnailURL = thumbnailURL; //URL.createObjectURL(thumbnail);
-        }
-      }));
+      // TODO: Make the proxy request working
+      // experimentUpdates.push(this.getThumbnailURL(experiment.configuration.id).then(thumbnailURL => {
+      //   if (thumbnailURL) {
+      //     experiment.thumbnailURL = thumbnailURL; //URL.createObjectURL(thumbnail);
+      //   }
+      // }));
+      experiment.thumbnailURL = '/thumbnails/Two-sided_Brain_BW.jpg';
 
       experiment.rights = EXPERIMENT_RIGHTS.PUBLICLY_SHARED;
     });
@@ -136,6 +138,7 @@ class PublicExperimentsService extends HttpService {
    * @returns {Blob} image object
    */
   //TODO: between storage experiments and shared experiments, can this be unified?
+  // TODO: The proxy expects to receive the experimentId, which was set to `dir/config.json`
   // move to experiment-configuration-service?
   async getThumbnailURL(experimentName) {
     let url = experimentImageURL + '/' + experimentName;

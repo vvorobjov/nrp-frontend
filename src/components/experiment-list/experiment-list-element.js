@@ -114,8 +114,10 @@ export default class ExperimentListElement extends React.Component {
         onClick={() => this.setState({ selected: true })}
         ref={this.wrapperRef}>
 
+        {/* TODO: the thumbnailURL is empty for experiments (not templates) view */}
         <div className='list-entry-left' style={{ position: 'relative' }}>
-          <img className='entity-thumbnail' src={exp.thumbnailURL} alt='' />
+          <img className='entity-thumbnail'
+            src={exp.thumbnailURL ? exp.thumbnailURL : '/thumbnails/Two-sided_Brain.jpg'} alt='' />
         </div>
 
         <div className='list-entry-middle flex-container up-down'>
