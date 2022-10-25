@@ -131,10 +131,23 @@ class ExperimentStorageService extends HttpService {
   async fillExperimentDetails(experimentList) {
     let experimentUpdates = [];
     experimentList.forEach(experiment => {
-      /*if (!experiment.configuration.brainProcesses && experiment.configuration.bibiConfSrc) {
-        experiment.configuration.brainProcesses = 1;
-      }*/
+      if (!experiment.configuration.DataPackProcessor) {
+        experiment.configuration.DataPackProcessor = 'tf';
+      }
+      if (!experiment.configuration.SimulationLoop) {
+        experiment.configuration.SimulationLoop = 'FTILoop';
+      }
+      if (!experiment.configuration.SimulationTimestep) {
+        experiment.configuration.SimulationTimestep = 0.01;
+      }
 
+      if (!experiment.configuration.ProcessLauncherType) {
+        experiment.configuration.ProcessLauncherType = 'Basic';
+      }
+
+      if (!experiment.configuration.SimulationTimeout) {
+        experiment.configuration.SimulationTimeout = 0;
+      }
       // retrieve the experiment thumbnail
       /*experimentUpdates.push(this.getThumbnail(experiment.name, experiment.configuration.thumbnail)
         .then(thumbnail => {
