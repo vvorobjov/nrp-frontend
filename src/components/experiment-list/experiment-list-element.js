@@ -33,6 +33,7 @@ export default class ExperimentListElement extends React.Component {
     this.state = {
       showSimDetails: true,
       nameEditingVisible: false,
+      templateTab: props.templateTab,
       visibleName: props.experiment.configuration.SimulationName
     };
 
@@ -126,25 +127,40 @@ export default class ExperimentListElement extends React.Component {
 
         <div className='list-entry-middle flex-container up-down'>
           <div className='flex-container left-right title-line'>
-            {/* <div className='h4'>
-              {config.SimulationName}
-            </div> */}
-            <input type='text'
-              value={this.state.visibleName}
-              disabled={!this.state.nameEditingVisible}
-              onChange={(e) => this.setState({visibleName: e.target.value})}/>
-            { this.state.nameEditingVisible ?
+            {this.state.templateTab || !this.state.nameEditingVisible ?
+              <div className='h4'>
+                {config.SimulationName}
+              </div>
+              :
+              null
+            }
+            {!this.state.templateTab && this.state.nameEditingVisible ?
+              <input type='text'
+                value={this.state.visibleName}
+                disabled={!this.state.nameEditingVisible}
+                onChange={(e) => this.setState({visibleName: e.target.value})}/>
+              :
+              null
+            }
+            { this.state.nameEditingVisible && !this.state.templateTab ?
               <button onClick={() => {
                 this.setState({ nameEditingVisible: false });
                 ExperimentStorageService.instance.renameExperiment(exp.id, this.state.visibleName);
               }}>
                 <VscCheck/>
-              </button> :
+              </button>
+              :
+              null
+            }
+            { !this.state.nameEditingVisible && !this.state.templateTab ?
               <button onClick={() => this.setState(
                 { nameEditingVisible: true })}>
                 <VscEdit/>
               </button>
+              :
+              null
             }
+
             {exp.joinableServers.length > 0 ?
               <div className='exp-title-sim-info'>
                 ({exp.joinableServers.length} simulation{exp.joinableServers.length > 1 ? 's' : ''} running)

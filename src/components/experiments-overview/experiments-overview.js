@@ -142,7 +142,8 @@ export default class ExperimentsOverview extends React.Component {
             <ExperimentList experiments={this.state.storageExperiments}
               availableServers={this.state.availableServers}
               startingExperiment={this.state.startingExperiment}
-              selectExperimentOverviewTab={(index) => this.setState({ selectedTabIndex: index })}/>
+              selectExperimentOverviewTab={(index) => this.setState({ selectedTabIndex: index })}
+              templateTab = {false} />
           </TabPanel>
           {/* New Experiment */}
           <TabPanel>
@@ -161,7 +162,9 @@ export default class ExperimentsOverview extends React.Component {
             <ExperimentList experiments={this.state.publicExperiments}
               availableServers={this.state.availableServers}
               startingExperiment={this.state.startingExperiment}
-              selectExperimentOverviewTab={(index) => this.setState({ selectedTabIndex: index })} />
+              turnOffEditingBox={() => this.experiments.setState({ nameEditingVisible: false })}
+              selectExperimentOverviewTab={(index) => this.setState({ selectedTabIndex: index })}
+              templateTab = {true} />
           </TabPanel>
           {/* Running Simulations */}
           <TabPanel>
