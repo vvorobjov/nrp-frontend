@@ -46,7 +46,6 @@ export default class SimulationView extends React.Component {
     super(props);
 
     const {serverIP, simulationID} = props.match.params;
-    //console.info('SimulationView ' + serverIP + ' ' + simulationID);
     this.serverIP = serverIP;
     this.simulationID = simulationID;
     this.serverURL = 'http://' + this.serverIP + ':8080'; // this should probably be part of some config
@@ -62,11 +61,11 @@ export default class SimulationView extends React.Component {
   async componentDidMount() {
     await this.updateSimulationInfo();
     let experiments = await ExperimentStorageService.instance.getExperiments();
-    this.experimentInfo = experiments.find(experiment => experiment.id === this.state.simulationInfo.experimentID);
+    this.experimentInfo = experiments.find(experiment => experiment.id === this.state.simulationInfo.experimentId);
     console.info('SimulationView - experimentInfo');
     console.info(this.experimentInfo);
 
-    let experimentName = this.experimentInfo.configuration.name;
+    let experimentName = this.experimentInfo.configuration.SimulationName;
     this.setState({experimentName: experimentName});
 
     let server = this.experimentInfo.joinableServers.find(

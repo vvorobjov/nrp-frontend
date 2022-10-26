@@ -45,7 +45,7 @@ test('fetches the list of experiments', async () => {
   const experiments = await ExperimentStorageService.instance.getExperiments();
   expect(ExperimentStorageService.instance.performRequest)
     .toHaveBeenCalledWith(experimentsUrl, ExperimentStorageService.instance.GETOptions);
-  expect(experiments[0].name).toBe('braitenberg_husky_holodeck_1_0_0');
+  expect(experiments[0].name).toBe('husky_braitenberg_cg_1');
   expect(experiments[1].configuration.maturity).toBe('production');
 
   // no forced update should not result in additional requests being sent
@@ -106,21 +106,22 @@ test('gets a thumbnail image for experiments', async () => {
 test('sorts the local experiment list by display name', async () => {
   let mockExperimentList = [
     {
-      configuration: { name: 'bcd' }
+      configuration: { SimulationName: 'bcd' }
     },
     {
-      configuration: { name: 'Abc' }
+      configuration: { SimulationName: 'Abc' }
     }
   ];
   ExperimentStorageService.instance.experiments = mockExperimentList;
   ExperimentStorageService.instance.sortExperiments(mockExperimentList);
-  expect(mockExperimentList[0].configuration.name).toBe('Abc');
-  expect(mockExperimentList[1].configuration.name).toBe('bcd');
+  expect(mockExperimentList[0].configuration.SimulationName).toBe('Abc');
+  expect(mockExperimentList[1].configuration.SimulationName).toBe('bcd');
 });
 
 test('fills missing experiment details', async () => {
   const experiments = await ExperimentStorageService.instance.getExperiments(true);
+  console.info(experiments);
   experiments.forEach(experiment => {
-    expect(experiment.configuration.brainProcesses).toBe(1);
+    expect(experiment.configuration.DataPackProcessor).toBeDefined();
   });
 });
