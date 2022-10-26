@@ -121,8 +121,10 @@ export default class ExperimentListElement extends React.Component {
         onClick={() => this.setState({ selected: true })}
         ref={this.wrapperRef}>
 
+        {/* TODO: the thumbnailURL is empty for experiments (not templates) view */}
         <div className='list-entry-left' style={{ position: 'relative' }}>
-          <img className='entity-thumbnail' src={exp.thumbnailURL} alt='' />
+          <img className='entity-thumbnail'
+            src={exp.thumbnailURL ? exp.thumbnailURL : '/thumbnails/Two-sided_Brain.jpg'} alt='' />
         </div>
 
         <div className='list-entry-middle flex-container up-down'>
@@ -212,6 +214,13 @@ export default class ExperimentListElement extends React.Component {
                   </Link>
                   : null}
 
+                {/* Files button */}
+                {<Link to={'/experiment/' + exp.id}
+                  className="nrp-btn btn-default" disabled={this.isLaunchDisabled()}>
+                  <AiFillExperiment className='icon' />Files
+                </Link>
+                }
+
                 {/*exp.rights.launch && config.brainProcesses > 1 ?
                   <button className='nrp-btn btn-default'>
                     <RiPlayLine className='icon' />Launch in Single Process Mode
@@ -273,13 +282,6 @@ export default class ExperimentListElement extends React.Component {
                     this.props.selectExperimentOverviewTab(ExperimentOverview.CONSTANTS.TAB_INDEX.MY_EXPERIMENTS);
                   }}>
                     <FaClone className='icon' />Clone
-                  </button>
-                  : null}
-
-                {/* Files button */}
-                {exp.rights.launch ?
-                  <button className='nrp-btn btn-default' >
-                    <GoFileSubmodule className='icon' />Files
                   </button>
                   : null}
 

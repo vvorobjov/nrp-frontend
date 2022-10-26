@@ -3,9 +3,11 @@ import { EXPERIMENT_RIGHTS } from '../experiment-constants';
 
 import endpoints from '../../proxy/data/endpoints.json';
 import config from '../../../config.json';
-const experimentsURL = `${config.api.proxy.url}${endpoints.proxy.experiments.url}`;
-const experimentImageURL = `${config.api.proxy.url}${endpoints.proxy.experimentImage.url}`;
-const cloneURL = `${config.api.proxy.url}${endpoints.proxy.storage.clone.url}`;
+
+const PROXY_URL = config.api.proxy.url;
+const experimentsURL = `${PROXY_URL}${endpoints.proxy.experiments.url}`;
+const experimentImageURL = `${PROXY_URL}${endpoints.proxy.experimentImage.url}`;
+const cloneURL = `${PROXY_URL}${endpoints.proxy.storage.clone.url}`;
 
 let _instance = null;
 const SINGLETON_ENFORCER = Symbol();
@@ -116,11 +118,13 @@ class PublicExperimentsService extends HttpService {
       }
 
       // retrieve the experiment thumbnail
-      experimentUpdates.push(this.getThumbnailURL(experiment.configuration.id).then(thumbnailURL => {
-        if (thumbnailURL) {
-          experiment.thumbnailURL = thumbnailURL; //URL.createObjectURL(thumbnail);
-        }
-      }));
+      // TODO: Make the proxy request working
+      // experimentUpdates.push(this.getThumbnailURL(experiment.configuration.id).then(thumbnailURL => {
+      //   if (thumbnailURL) {
+      //     experiment.thumbnailURL = thumbnailURL; //URL.createObjectURL(thumbnail);
+      //   }
+      // }));
+      experiment.thumbnailURL = '/thumbnails/Two-sided_Brain_BW.jpg';
 
       experiment.rights = EXPERIMENT_RIGHTS.PUBLICLY_SHARED;
     });
@@ -136,6 +140,7 @@ class PublicExperimentsService extends HttpService {
    * @returns {Blob} image object
    */
   //TODO: between storage experiments and shared experiments, can this be unified?
+  // TODO: The proxy expects to receive the experimentId, which was set to `dir/config.json`
   // move to experiment-configuration-service?
   async getThumbnailURL(experimentName) {
     let url = experimentImageURL + '/' + experimentName;
