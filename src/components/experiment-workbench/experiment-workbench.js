@@ -62,7 +62,7 @@ export default class ExperimentWorkbench extends React.Component {
     this.experimentInfo = experiments.find(experiment => experiment.id === this.experimentID);
     ExperimentWorkbenchService.instance.experimentInfo = this.experimentInfo;
 
-    let experimentName = this.experimentInfo.configuration.name;
+    let experimentName = this.experimentInfo.configuration.SimulationName;
     this.setState({experimentName: experimentName});
 
   }
@@ -126,7 +126,8 @@ export default class ExperimentWorkbench extends React.Component {
                     ? <RiPlayFill className='icon' />
                     : <RiPauseFill className='icon' />}
                 </button>
-                <button disabled={true} className='nrp-btn btn-default'><TiMediaRecord className='icon' /></button>
+                <button disabled={true} className='nrp-btn btn-default'>
+                  <TiMediaRecord clasexperimentInfosName='icon' /></button>
               </div>
 
               <div className='simulation-view-time-info'>
@@ -139,7 +140,9 @@ export default class ExperimentWorkbench extends React.Component {
               </div>
             </div>
 
-            <div className='simulation-view-experiment-title'>{this.state.experimentName}</div>
+            <div className='simulation-view-experiment-title'>
+              <div>{this.state.experimentName}</div>
+            </div>
             <button className='nrp-btn btn-default' onClick={() => {
               this.onButtonLayout();
             }}><RiLayout6Line className='icon' /></button>
