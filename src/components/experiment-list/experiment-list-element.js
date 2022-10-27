@@ -1,8 +1,10 @@
-import React from 'react';
+import React, {useState} from 'react';
 import { Link } from 'react-router-dom';
-import { FaTrash, FaFileExport, FaShareAlt, FaClone } from 'react-icons/fa';
+import { FaTrash, FaFileExport, FaShareAlt, FaClone, FaBullseye, FaLastfmSquare } from 'react-icons/fa';
+import { MdOutlineDownloadDone } from 'react-icons/md';
 import { RiPlayFill, RiPlayLine, RiPlayList2Fill } from 'react-icons/ri';
-import { VscTriangleUp, VscTriangleDown } from 'react-icons/vsc';
+import { GoX } from 'react-icons/go';
+import { VscTriangleUp, VscTriangleDown, VscCheck, VscEdit } from 'react-icons/vsc';
 import { AiFillExperiment } from 'react-icons/ai';
 import { GoFileSubmodule } from 'react-icons/go';
 
@@ -16,6 +18,8 @@ import ExperimentOverview from '../experiments-overview/experiments-overview.js'
 
 import './experiment-list-element.css';
 import '../main.css';
+import { Button } from 'react-bootstrap';
+import { TiEjectOutline } from 'react-icons/ti';
 
 const CLUSTER_THRESHOLDS = {
   UNAVAILABLE: 2,
@@ -27,7 +31,10 @@ export default class ExperimentListElement extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      showSimDetails: true
+      showSimDetails: true,
+      nameEditingVisible: false,
+      templateTab: props.templateTab,
+      visibleName: props.experiment.configuration.SimulationName
     };
 
     this.launchButtonTitle = '';
@@ -102,7 +109,7 @@ export default class ExperimentListElement extends React.Component {
 
     return isDisabled;
     /*|| pageState.deletingExperiment*/
-  }
+  };
 
   render() {
     const exp = this.props.experiment;
@@ -122,9 +129,40 @@ export default class ExperimentListElement extends React.Component {
 
         <div className='list-entry-middle flex-container up-down'>
           <div className='flex-container left-right title-line'>
-            <div className='h4'>
-              {config.SimulationName}
-            </div>
+            {this.state.templateTab || !this.state.nameEditingVisible ?
+              <div className='h4'>
+                {config.SimulationName}
+              </div>
+              :
+              null
+            }
+            {!this.state.templateTab && this.state.nameEditingVisible ?
+              <input type='text'
+                value={this.state.visibleName}
+                disabled={!this.state.nameEditingVisible}
+                onChange={(e) => this.setState({visibleName: e.target.value})}/>
+              :
+              null
+            }
+            { this.state.nameEditingVisible && !this.state.templateTab ?
+              <button onClick={() => {
+                this.setState({ nameEditingVisible: false });
+                ExperimentStorageService.instance.renameExperiment(exp.id, this.state.visibleName);
+              }}>
+                <VscCheck/>
+              </button>
+              :
+              null
+            }
+            { !this.state.nameEditingVisible && !this.state.templateTab ?
+              <button onClick={() => this.setState(
+                { nameEditingVisible: true })}>
+                <VscEdit/>
+              </button>
+              :
+              null
+            }
+
             {exp.joinableServers.length > 0 ?
               <div className='exp-title-sim-info'>
                 ({exp.joinableServers.length} simulation{exp.joinableServers.length > 1 ? 's' : ''} running)
@@ -141,7 +179,7 @@ export default class ExperimentListElement extends React.Component {
           {this.state.selected &&
             <div className='experiment-details' >
               <i>
-                Timeout:
+                Timeout :
                 {timeDDHHMMSS(config.SimulationTimeout)}
                 ({(config.timeoutType === 'simulation' ? 'simulation' : 'real')} time)
               </i>

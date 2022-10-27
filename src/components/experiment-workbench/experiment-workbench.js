@@ -238,7 +238,8 @@ class ExperimentWorkbench extends React.Component {
                     ? <RiPlayFill className='icon' />
                     : <RiPauseFill className='icon' />}
                 </button>
-                <button disabled={true} className='nrp-btn btn-default'><TiMediaRecord className='icon' /></button>
+                <button disabled={true} className='nrp-btn btn-default'>
+                  <TiMediaRecord clasexperimentInfosName='icon' /></button>
               </div>
 
               <div className='simulation-view-time-info'>
@@ -251,7 +252,9 @@ class ExperimentWorkbench extends React.Component {
               </div>
             </div>
 
-            <div className='simulation-view-experiment-title'>{this.state.experimentName}</div>
+            <div className='simulation-view-experiment-title'>
+              <div>{this.state.experimentName}</div>
+            </div>
             <button className='nrp-btn btn-default' onClick={() => {
               this.onButtonLayout();
             }}><RiLayout6Line className='icon' /></button>
