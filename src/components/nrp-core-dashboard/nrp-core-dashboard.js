@@ -3,6 +3,8 @@ import React from 'react';
 import MqttClientService from '../../services/mqtt-client-service';
 import ExperimentStorageService from '../../services/experiments/files/experiment-storage-service';
 
+import DashboardIcon from '@material-ui/icons/Dashboard';
+
 export default class NrpCoreDashboard extends React.Component {
   constructor(props) {
     super(props);
@@ -52,9 +54,7 @@ NrpCoreDashboard.CONSTANTS = Object.freeze({
       return <NrpCoreDashboard />;
     },
     getIcon: () => {
-      return <div>
-        <span>NRP-Core Dashboard</span>
-      </div>;
+      return <DashboardIcon/>;
     }
   }
 });

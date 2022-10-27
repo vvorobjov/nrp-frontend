@@ -1,10 +1,5 @@
 import React from 'react';
 import FlexLayout from 'flexlayout-react';
-import { OverlayTrigger, Tooltip, Button } from 'react-bootstrap';
-import { RiPlayFill, RiPauseFill, RiLayout6Line } from 'react-icons/ri';
-import { GiExitDoor } from 'react-icons/gi';
-import { TiMediaRecord } from 'react-icons/ti';
-import { VscDebugRestart } from 'react-icons/vsc';
 
 import ExperimentToolsService from './experiment-tools-service';
 import ExperimentWorkbenchService from './experiment-workbench-service';
@@ -17,6 +12,35 @@ import LeaveWorkbenchDialog from './leave-workbench-dialog';
 
 import '../../../node_modules/flexlayout-react/style/light.css';
 import './experiment-workbench.css';
+
+
+import { withStyles } from '@material-ui/core/styles';
+import clsx from 'clsx';
+import Drawer from '@material-ui/core/Drawer';
+import IconButton from '@material-ui/core/IconButton';
+import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
+import PropTypes from 'prop-types';
+import AppBar from '@material-ui/core/AppBar';
+import Toolbar from '@material-ui/core/Toolbar';
+import MenuIcon from '@material-ui/icons/Menu';
+import Badge from '@material-ui/core/Badge';
+import NotificationsIcon from '@material-ui/icons/Notifications';
+import Typography from '@material-ui/core/Typography';
+import CssBaseline from '@material-ui/core/CssBaseline';
+import Divider from '@material-ui/core/Divider';
+import List from '@material-ui/core/List';
+import Container from '@material-ui/core/Container';
+import Grid from '@material-ui/core/Grid';
+import Paper from '@material-ui/core/Paper';
+
+import ListItem from '@material-ui/core/ListItem';
+import ListItemIcon from '@material-ui/core/ListItemIcon';
+import ListItemText from '@material-ui/core/ListItemText';
+
+import PlayCircleFilledWhiteIcon from '@material-ui/icons/PlayCircleFilledWhite';
+import ExitToAppIcon from '@material-ui/icons/ExitToApp';
+import StopIcon from '@material-ui/icons/Stop';
+import PauseIcon from '@material-ui/icons/Pause';
 
 const jsonBaseLayout = {
   global: {},
@@ -32,8 +56,8 @@ const jsonBaseLayout = {
         'children': [
           {
             'type': 'tab',
-            'name': 'NEST wiki page',
-            'component':'nest_wiki'
+            'name': 'NRP-Core Docs',
+            'component': 'nrp-core-docu'
           }
         ]
       }
@@ -41,7 +65,102 @@ const jsonBaseLayout = {
   }
 };
 
-export default class ExperimentWorkbench extends React.Component {
+const drawerWidth = 240;
+const useStyles = theme => ({
+  root: {
+    display: 'flex'
+  },
+  toolbar: {
+    paddingRight: 24 // keep right padding when drawer closed
+  },
+  toolbarIcon: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'flex-end',
+    padding: '0 8px',
+    ...theme.mixins.toolbar
+  },
+  appBar: {
+    position: 'absolute',
+    zIndex: theme.zIndex.drawer + 1,
+    transition: theme.transitions.create(['width', 'margin'], {
+      easing: theme.transitions.easing.sharp,
+      duration: theme.transitions.duration.leavingScreen
+    })
+  },
+  appBarShift: {
+    marginLeft: drawerWidth,
+    width: `calc(100% - ${drawerWidth}px)`,
+    transition: theme.transitions.create(['width', 'margin'], {
+      easing: theme.transitions.easing.sharp,
+      duration: theme.transitions.duration.enteringScreen
+    })
+  },
+  menuButton: {
+    marginRight: 36
+  },
+  menuButtonHidden: {
+    display: 'none'
+  },
+  controlButton: {
+    borderWidth: '0',
+    shape: {
+      borderRadius: 0
+    }
+  },
+  title: {
+    flexGrow: 1
+  },
+  drawerPaper: {
+    position: 'relative',
+    whiteSpace: 'nowrap',
+    width: drawerWidth,
+    transition: theme.transitions.create('width', {
+      easing: theme.transitions.easing.sharp,
+      duration: theme.transitions.duration.enteringScreen
+    })
+  },
+  drawerPaperClose: {
+    overflowX: 'hidden',
+    transition: theme.transitions.create('width', {
+      easing: theme.transitions.easing.sharp,
+      duration: theme.transitions.duration.leavingScreen
+    }),
+    width: theme.spacing(7),
+    [theme.breakpoints.up('sm')]: {
+      width: theme.spacing(9)
+    }
+  },
+  appBarSpacer: theme.mixins.toolbar,
+  content: {
+    position: 'relative',
+    flexGrow: 1,
+    height: '100vh',
+    overflow: 'hidden'
+  },
+  container: {
+    position: 'relative',
+    paddingTop: theme.spacing(10),
+    paddingBottom: theme.spacing(0)
+  },
+  paper: {
+    padding: theme.spacing(1),
+    display: 'flex',
+    overflow: 'auto',
+    flexDirection: 'column'
+  },
+  fixedHeight: {
+    height: 240
+  },
+  controlContainer: {
+    height: 50
+  },
+  contentContainer: {
+    height: '75vh'
+  }
+});
+
+class ExperimentWorkbench extends React.Component {
   constructor(props) {
     super(props);
 
@@ -51,7 +170,10 @@ export default class ExperimentWorkbench extends React.Component {
 
     this.state = {
       modelFlexLayout: FlexLayout.Model.fromJson(jsonBaseLayout),
-      showLeaveDialog: false
+      showLeaveDialog: false,
+      drawerOpen: false,
+      simulationStarted: false,
+      notificationCount: 0
     };
 
     this.refLayout = React.createRef();
@@ -62,7 +184,7 @@ export default class ExperimentWorkbench extends React.Component {
     this.experimentInfo = experiments.find(experiment => experiment.id === this.experimentID);
     ExperimentWorkbenchService.instance.experimentInfo = this.experimentInfo;
 
-    let experimentName = this.experimentInfo.configuration.name;
+    let experimentName = this.experimentInfo.configuration.SimulationName;
     this.setState({experimentName: experimentName});
 
   }
@@ -99,20 +221,10 @@ export default class ExperimentWorkbench extends React.Component {
   }
 
   render() {
+    const { classes } = this.props;
     return (
-      <div>
-        <LeaveWorkbenchDialog visible={this.state.showLeaveDialog}
-          setVisibility={(visible) => this.showLeaveDialog(visible)}
-          stopSimulation={async () => {
-            await RunningSimulationService.instance.updateState(this.serverURL, this.simulationID,
-              EXPERIMENT_STATE.STOPPED);
-            this.leaveWorkbench();
-          }}
-          leaveWorkbench={() => {
-            this.leaveWorkbench();
-          }} />
-        <div className='simulation-view-wrapper'>
-          <div className='simulation-view-header'>
+      <div className={classes.root}>
+        {/* <div className='simulation-view-header'>
             <div className='simulation-view-controls'>
               <div className='simulation-view-control-buttons'>
                 <button className='nrp-btn btn-default' onClick={() => this.showLeaveDialog(true)}>
@@ -143,40 +255,140 @@ export default class ExperimentWorkbench extends React.Component {
             <button className='nrp-btn btn-default' onClick={() => {
               this.onButtonLayout();
             }}><RiLayout6Line className='icon' /></button>
+          </div> */}
+        <CssBaseline />
+        <AppBar position="absolute" className={clsx(classes.appBar, this.state.drawerOpen && classes.appBarShift)}>
+          <Toolbar className={classes.toolbar}>
+            <IconButton
+              edge="start"
+              color="inherit"
+              aria-label="open drawer"
+              onClick={() => this.setState({ drawerOpen: true })}
+              className={clsx(classes.menuButton, this.state.drawerOpen && classes.menuButtonHidden)}
+            >
+              <MenuIcon />
+            </IconButton>
+            {/* Play/pause button*/}
+            {this.state.simulationStarted
+              ?
+              <IconButton color="inherit"
+                onClick={() => this.setState({simulationStarted: false})}
+                disabled={this.state.showLeaveDialog}
+              >
+                <PauseIcon />
+              </IconButton>
+              :
+              <IconButton color="inherit"
+                onClick={() => this.setState({ simulationStarted: true })}
+                disabled={this.state.showLeaveDialog}
+              >
+                <PlayCircleFilledWhiteIcon />
+              </IconButton>
+            }
+            {/* Stop button*/}
+            <IconButton color="inherit" className={classes.controlButton}
+              disabled={this.state.showLeaveDialog} style={{ border : 15 }}
+            >
+              <StopIcon />
+            </IconButton>
+            {/* Exit button*/}
+            <IconButton color="inherit"
+              onClick={() => this.setState({ showLeaveDialog: true })}
+            >
+              <ExitToAppIcon />
+            </IconButton>
+            <Typography align="center" component="h1" variant="h6" color="inherit" noWrap className={classes.title}>
+              <span>{this.state.experimentName}</span>
+            </Typography>
+            <IconButton color="inherit">
+              <Badge badgeContent={this.state.notificationCount} color="secondary">
+                <NotificationsIcon />
+              </Badge>
+            </IconButton>
+          </Toolbar>
+        </AppBar>
+        <Drawer
+          variant="permanent"
+          classes={{
+            paper: clsx(classes.drawerPaper, !this.state.drawerOpen && classes.drawerPaperClose)
+          }}
+          open={this.state.drawerOpen}>
+          <div className={classes.toolbarIcon}>
+            <IconButton onClick={() => this.setState({ drawerOpen: false })}>
+              <ChevronLeftIcon />
+            </IconButton>
           </div>
-          <div className='simulation-view-sidebar'>
+          <Divider />
+          <List>
             {Array.from(ExperimentToolsService.instance.tools.values()).map(tool => {
               return (
-                <OverlayTrigger
-                  key={`overlaytrigger-${tool.flexlayoutNode.component}`}
-                  placement={'right'}
-                  overlay={
-                    <Tooltip id={`tooltip-${tool.flexlayoutNode.component}`}>
-                      {tool.flexlayoutNode.name}
-                    </Tooltip>
-                  }>
-                  <Button key={tool.flexlayoutNode.component}
-                    className="simulation-tool-button"
-                    onMouseDown={() => {
-                      ExperimentToolsService.instance.startToolDrag(
-                        tool.flexlayoutNode,
-                        this.refLayout);
-                    }}> {tool.getIcon && tool.getIcon()}</Button>
-                </OverlayTrigger>
+                <ListItem button onMouseDown={() => {
+                  ExperimentToolsService.instance.startToolDrag(
+                    tool.flexlayoutNode,
+                    this.refLayout);
+                }}>
+                  <ListItemIcon >
+                    {tool.getIcon()}
+                  </ListItemIcon>
+                  <ListItemText primary={tool.flexlayoutNode.name} />
+                </ListItem>
               );
             })}
-          </div>
-          <div className='simulation-view-mainview'>
-            <FlexLayout.Layout ref={this.refLayout} model={this.state.modelFlexLayout}
-              factory={(node) => {
-                return ExperimentToolsService.instance.flexlayoutNodeFactory(node);
-              }} />
-          </div>
-        </div>
+          </List>
+        </Drawer>
+        <LeaveWorkbenchDialog visible={this.state.showLeaveDialog}
+          setVisibility={(visible) => this.showLeaveDialog(visible)}
+          stopSimulation={async () => {
+            await RunningSimulationService.instance.updateState(this.serverURL, this.simulationID,
+              EXPERIMENT_STATE.STOPPED);
+            this.leaveWorkbench();
+          }}
+          leaveWorkbench={() => {
+            this.leaveWorkbench();
+          }}
+        />
+        {/* TODO: enable FlexLayout when we have something to layout */}
+        {/* <div className={classes.content} position='absolute'>
+          <FlexLayout.Layout ref={this.refLayout} model={this.state.modelFlexLayout}
+            factory={(node) => {
+              return ExperimentToolsService.instance.flexlayoutNodeFactory(node);
+            }} />
+        </div> */}
+        <main className={classes.content}>
+          <Container maxWidth="lg" className={classes.container}>
+            <Grid container spacing={3}>
+              {/* Chart */}
+              <Grid item xs={12} md={8} lg={12}>
+                <Paper className={clsx(classes.paper, classes.controlContainer)}>
+                </Paper>
+              </Grid>
+              {/* Recent Orders */}
+              {/* <Grid item xs={12}>
+                <Paper className={classes.paper}>
+                </Paper>
+              </Grid> */}
+              <Grid item xs={12}>
+                <Paper className={clsx(classes.paper, classes.contentContainer)}>
+                  <FlexLayout.Layout ref={this.refLayout} model={this.state.modelFlexLayout}
+                    factory={(node) => {
+                      return ExperimentToolsService.instance.flexlayoutNodeFactory(node);
+                    }} />
+                </Paper>
+              </Grid>
+            </Grid>
+          </Container>
+        </main>
       </div>
     );
   }
+
 }
+
+ExperimentWorkbench.propTypes = {
+  classes: PropTypes.object.isRequired
+};
+
+export default withStyles(useStyles)(ExperimentWorkbench);
 
 ExperimentWorkbench.CONSTANTS = Object.freeze({
   INTERVAL_INTERNAL_UPDATE_MS: 1000

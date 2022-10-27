@@ -1,5 +1,8 @@
+import { Description } from '@material-ui/icons';
 import NrpCoreDashboard from '../nrp-core-dashboard/nrp-core-dashboard';
 import TransceiverFunctionEditor from '../tf-editor/tf-editor';
+
+import DescriptionIcon from '@material-ui/icons/Description';
 
 
 let _instance = null;
@@ -49,6 +52,9 @@ class ExperimentToolsService {
     if (component === 'button') {
       return <button>{node.getName()}</button>;
     }
+    else if (component === 'tab') {
+      return component.flexlayoutFactoryCb();
+    }
     else if (component === 'nest_wiki') {
       return <iframe src='https://en.wikipedia.org/wiki/NEST_(software)' title='nest_wiki'
         className='flexlayout-iframe'></iframe>;
@@ -57,6 +63,10 @@ class ExperimentToolsService {
 
   startToolDrag(flexlayoutNode, layoutReference) {
     layoutReference.current.addTabWithDragAndDrop(flexlayoutNode.name, flexlayoutNode);
+  }
+
+  addTool(flexlayoutNode, layoutReference) {
+    layoutReference.current.addTab(flexlayoutNode.name, flexlayoutNode);
   }
 }
 
@@ -76,7 +86,6 @@ ExperimentToolsService.TOOLS = Object.freeze({
         <img src={'https://www.nest-simulator.org/wp-content/uploads/2015/03/nest_logo.png'}
           alt="NEST Desktop"
           style={{width: 40+ 'px', height: 20 + 'px'}} />
-        <span>Desktop</span>
       </div>;
     }
   },
@@ -92,7 +101,7 @@ ExperimentToolsService.TOOLS = Object.freeze({
         title='NRP-Core Documentation' />;
     },
     getIcon: () => {
-      return <span>NRP-Core Docs</span>;
+      return <DescriptionIcon/>;
     }
   },
   TRANSCEIVER_FUNCTIONS_EDITOR: {
