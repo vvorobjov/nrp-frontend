@@ -3,6 +3,7 @@ import NrpCoreDashboard from '../nrp-core-dashboard/nrp-core-dashboard';
 import TransceiverFunctionEditor from '../tf-editor/tf-editor';
 
 import DescriptionIcon from '@material-ui/icons/Description';
+import ListAltIcon from '@material-ui/icons/ListAlt';
 
 
 let _instance = null;
@@ -115,7 +116,7 @@ ExperimentToolsService.TOOLS = Object.freeze({
       return <TransceiverFunctionEditor/>;
     },
     getIcon: () => {
-      return <span>Editor</span>;
+      return <ListAltIcon/>;
     }
   }});
 

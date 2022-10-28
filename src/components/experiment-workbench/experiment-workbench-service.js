@@ -20,11 +20,11 @@ class ExperimentWorkbenchService {
   }
 
   get experimentInfo() {
-    return this.expInfo;
+    return this._expInfo;
   }
   set experimentInfo(info) {
-    this.expInfo = info;
-    console.info(['ExperimentWorkbenchService - experimentInfo', this.expInfo]);
+    this._expInfo = info;
+    console.info(['ExperimentWorkbenchService - experimentInfo', this._expInfo]);
   }
 }
 

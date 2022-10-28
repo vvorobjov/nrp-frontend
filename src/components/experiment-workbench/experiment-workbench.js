@@ -29,7 +29,6 @@ import Typography from '@material-ui/core/Typography';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import Divider from '@material-ui/core/Divider';
 import List from '@material-ui/core/List';
-import Container from '@material-ui/core/Container';
 import Grid from '@material-ui/core/Grid';
 import Paper from '@material-ui/core/Paper';
 
@@ -56,8 +55,8 @@ const jsonBaseLayout = {
         'children': [
           {
             'type': 'tab',
-            'name': 'NRP-Core Docs',
-            'component': 'nrp-core-docu'
+            'name': 'Edit experiment files',
+            'component': 'TransceiverFunctionEditor'
           }
         ]
       }
@@ -140,25 +139,34 @@ const useStyles = theme => ({
   },
   container: {
     position: 'relative',
-    paddingTop: theme.spacing(10),
-    paddingBottom: theme.spacing(0)
+    paddingTop: theme.spacing(1),
+    paddingBottom: theme.spacing(0),
+    direction: 'column',
+    display: 'flex'
   },
-  paper: {
+  controlContainer: {
+    height: 50,
+    marginLeft: theme.spacing(1),
+    marginRight: theme.spacing(1),
+    padding: theme.spacing(1),
+    display: 'flex',
+    overflow: 'auto',
+    flexDirection: 'row',
+    alignItems: 'center'
+  },
+  // TODO: Fix vertical filling
+  contentContainer: {
+    height: '80vh',
     padding: theme.spacing(1),
     display: 'flex',
     overflow: 'auto',
     flexDirection: 'column'
   },
-  fixedHeight: {
-    height: 240
-  },
-  controlContainer: {
-    height: 50
-  },
-  contentContainer: {
-    height: '75vh'
+  statusWarning: {
+    backgroundColor: 'magenta'
   }
 });
+
 
 class ExperimentWorkbench extends React.Component {
   constructor(props) {
@@ -172,22 +180,35 @@ class ExperimentWorkbench extends React.Component {
       modelFlexLayout: FlexLayout.Model.fromJson(jsonBaseLayout),
       showLeaveDialog: false,
       drawerOpen: false,
-      simulationStarted: false,
-      notificationCount: 0
+      notificationCount: 0,
+      simulationState: EXPERIMENT_STATE.CREATED,
+      nrpVersion: '4.0.0',
+      experimentConfiguration: {}
     };
 
     this.refLayout = React.createRef();
   }
 
-  async componentDidMount() {
+  async componentWillMount() {
     let experiments = await ExperimentStorageService.instance.getExperiments();
-    this.experimentInfo = experiments.find(experiment => experiment.id === this.experimentID);
-    ExperimentWorkbenchService.instance.experimentInfo = this.experimentInfo;
+    const experimentInfo = experiments.find(experiment => experiment.id === this.experimentID);
+    ExperimentWorkbenchService.instance.experimentInfo = experimentInfo;
 
-    let experimentName = this.experimentInfo.configuration.SimulationName;
-    this.setState({experimentName: experimentName});
+    this.setState({experimentConfiguration: experimentInfo.configuration});
+  };
 
+  async componentDidMount() {
   }
+
+  async componentDidUpdate() {
+  }
+
+  /*async updateSimulationInfo() {
+    let simInfo = await RunningSimulationService.instance.getInfo(this.serverURL, this.simulationID);
+    this.setState({simulationInfo: simInfo});
+    console.info('SimulationView.updateSimulationInfo - simulationInfo');
+    console.info(this.state.simulationInfo);
+  }*/
 
   onStatusInfoROS(message) {
     this.setState({
@@ -218,6 +239,19 @@ class ExperimentWorkbench extends React.Component {
     this.props.history.push({
       pathname: '/experiments-overview'
     });
+  }
+
+  getStatusStyle() {
+    switch (this.state.simulationState) {
+    case EXPERIMENT_STATE.STARTED:
+      return 'simulation-status-started';
+    case EXPERIMENT_STATE.PAUSED:
+      return 'simulation-status-paused';
+    case EXPERIMENT_STATE.ERROR:
+      return 'simulation-status-error';
+    default:
+      return 'simulation-status-default';
+    }
   }
 
   render() {
@@ -260,63 +294,70 @@ class ExperimentWorkbench extends React.Component {
             }}><RiLayout6Line className='icon' /></button>
           </div> */}
         <CssBaseline />
-        <AppBar position="absolute" className={clsx(classes.appBar, this.state.drawerOpen && classes.appBarShift)}>
+        <AppBar position='absolute' className={clsx(classes.appBar, this.state.drawerOpen && classes.appBarShift)}>
           <Toolbar className={classes.toolbar}>
             <IconButton
-              edge="start"
-              color="inherit"
-              aria-label="open drawer"
+              edge='start'
+              color='inherit'
+              aria-label='open drawer'
               onClick={() => this.setState({ drawerOpen: true })}
               className={clsx(classes.menuButton, this.state.drawerOpen && classes.menuButtonHidden)}
             >
               <MenuIcon />
             </IconButton>
             {/* Play/pause button*/}
-            {this.state.simulationStarted
+            {this.state.simulationState === EXPERIMENT_STATE.STARTED
               ?
-              <IconButton color="inherit"
-                onClick={() => this.setState({simulationStarted: false})}
+              <IconButton color='inherit'
+                onClick={() => this.setState({simulationState: EXPERIMENT_STATE.PAUSED})}
                 disabled={this.state.showLeaveDialog}
               >
                 <PauseIcon />
               </IconButton>
               :
-              <IconButton color="inherit"
-                onClick={() => this.setState({ simulationStarted: true })}
+              <IconButton color='inherit'
+                onClick={() => this.setState({ simulationState: EXPERIMENT_STATE.STARTED })}
                 disabled={this.state.showLeaveDialog}
               >
                 <PlayCircleFilledWhiteIcon />
               </IconButton>
             }
             {/* Stop button*/}
-            <IconButton color="inherit" className={classes.controlButton}
-              disabled={this.state.showLeaveDialog} style={{ border : 15 }}
+            <IconButton color='inherit' className={classes.controlButton}
+              disabled={this.state.showLeaveDialog}
+              onClick={() => this.setState({ simulationState: EXPERIMENT_STATE.STOPPED })}
             >
               <StopIcon />
             </IconButton>
-            {/* Exit button*/}
-            <IconButton color="inherit"
+            {/* Exit button */}
+            <IconButton color='inherit'
               onClick={() => this.setState({ showLeaveDialog: true })}
             >
               <ExitToAppIcon />
             </IconButton>
-            <Typography align="center" component="h1" variant="h6" color="inherit" noWrap className={classes.title}>
-              <span>{this.state.experimentName}</span>
+            {/* Title */}
+            <Typography align='center' component='h1' variant='h6' color='inherit' noWrap className={classes.title}>
+              <span>{this.state.experimentConfiguration.SimulationName}</span>
             </Typography>
-            <IconButton color="inherit">
-              <Badge badgeContent={this.state.notificationCount} color="secondary">
+            {/* TODO: Add error popup and notification counter */}
+            {/* Notification counter */}
+            {/* <IconButton color='inherit'>
+              <Badge badgeContent={this.state.notificationCount} color='secondary'>
                 <NotificationsIcon />
               </Badge>
-            </IconButton>
+            </IconButton> */}
           </Toolbar>
         </AppBar>
         <Drawer
-          variant="permanent"
+          variant='permanent'
           classes={{
             paper: clsx(classes.drawerPaper, !this.state.drawerOpen && classes.drawerPaperClose)
           }}
           open={this.state.drawerOpen}>
           <div className={classes.toolbarIcon}>
+            <Typography align='left' component='h1' variant='h6' color='inherit' noWrap className={classes.title}>
+              NRP {this.state.nrpVersion}
+            </Typography>
             <IconButton onClick={() => this.setState({ drawerOpen: false })}>
               <ChevronLeftIcon />
             </IconButton>
@@ -339,6 +380,7 @@ class ExperimentWorkbench extends React.Component {
             })}
           </List>
         </Drawer>
+        {/* This is the leaving dialog */}
         <LeaveWorkbenchDialog visible={this.state.showLeaveDialog}
           setVisibility={(visible) => this.showLeaveDialog(visible)}
           stopSimulation={async () => {
@@ -350,36 +392,30 @@ class ExperimentWorkbench extends React.Component {
             this.leaveWorkbench();
           }}
         />
-        {/* TODO: enable FlexLayout when we have something to layout */}
-        {/* <div className={classes.content} position='absolute'>
-          <FlexLayout.Layout ref={this.refLayout} model={this.state.modelFlexLayout}
-            factory={(node) => {
-              return ExperimentToolsService.instance.flexlayoutNodeFactory(node);
-            }} />
-        </div> */}
+        {/* This is the content of the main window */}
         <main className={classes.content}>
-          <Container maxWidth="lg" className={classes.container}>
-            <Grid container spacing={3}>
-              {/* Chart */}
-              <Grid item xs={12} md={8} lg={12}>
-                <Paper className={clsx(classes.paper, classes.controlContainer)}>
-                </Paper>
-              </Grid>
-              {/* Recent Orders */}
-              {/* <Grid item xs={12}>
-                <Paper className={classes.paper}>
-                </Paper>
-              </Grid> */}
-              <Grid item xs={12}>
-                <Paper className={clsx(classes.paper, classes.contentContainer)}>
-                  <FlexLayout.Layout ref={this.refLayout} model={this.state.modelFlexLayout}
-                    factory={(node) => {
-                      return ExperimentToolsService.instance.flexlayoutNodeFactory(node);
-                    }} />
-                </Paper>
-              </Grid>
+          <div className={classes.appBarSpacer} />
+          <Grid container spacing={1} className={classes.container}>
+            {/* Chart */}
+            <Grid item xs={12}>
+              <Paper className={clsx(classes.controlContainer, this.getStatusStyle())}>
+                <Typography align='left' variant='subtitle1' color='inherit' noWrap className={classes.title}>
+                  Experiment Timeout: {this.state.experimentConfiguration.SimulationTimeout}
+                </Typography>
+                <Typography align='left' variant='subtitle1' color='inherit' noWrap className={classes.title}>
+                  Simulation State: {this.state.simulationState}
+                </Typography>
+              </Paper>
             </Grid>
-          </Container>
+            <Grid item xs={12}>
+              <Paper className={classes.contentContainer}>
+                <FlexLayout.Layout ref={this.refLayout} model={this.state.modelFlexLayout}
+                  factory={(node) => {
+                    return ExperimentToolsService.instance.flexlayoutNodeFactory(node);
+                  }} />
+              </Paper>
+            </Grid>
+          </Grid>
         </main>
       </div>
     );
