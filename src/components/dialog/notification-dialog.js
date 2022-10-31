@@ -63,20 +63,20 @@ class NotificationDialog extends React.Component{
           <ol>
             {notifications.map((notification, index) => {
               return (
-                // <li key={index} className='no-style'>
-                <Toast className='toast-width' onClose={(index) => this.handleClose(index)}
-                  delay={notification.type === 'Warning' ? this.warnDelayMS : this.infoDelayMS}
-                  animation={true} autohide={true}>
-                  <Toast.Header className={notification.type === 'Warning' ? 'warning' : 'info'} >
-                    <strong className='mr-auto'>{notification.type}</strong>
-                    <small>{notification.date.toLocaleTimeString()}</small>
-                  </Toast.Header>
-                  <Toast.Body>
-                    <h6>{notification.message}</h6>
-                    {notification.details}
-                  </Toast.Body>
-                </Toast>
-                // </li>
+                <li key={index} className='no-style'>
+                  <Toast className='toast-width' onClose={(index) => this.handleClose(index)}
+                    delay={notification.type === 'Warning' ? this.warnDelayMS : this.infoDelayMS}
+                    animation={true} autohide={true}>
+                    <Toast.Header className={notification.type === 'Warning' ? 'warning' : 'info'} >
+                      <strong className='mr-auto'>{notification.type}</strong>
+                      <small>{notification.date.toLocaleTimeString()}</small>
+                    </Toast.Header>
+                    <Toast.Body>
+                      <h6>{notification.message}</h6>
+                      {notification.details}
+                    </Toast.Body>
+                  </Toast>
+                </li>
               );
             })}
           </ol>

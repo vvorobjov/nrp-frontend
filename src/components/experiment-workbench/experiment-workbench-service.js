@@ -26,6 +26,14 @@ class ExperimentWorkbenchService {
     this._expInfo = info;
     console.info(['ExperimentWorkbenchService - experimentInfo', this._expInfo]);
   }
+
+  get experimentID() {
+    return this._experimentID;
+  }
+  set experimentID(experimentID) {
+    this._experimentID = experimentID;
+    console.info(['ExperimentWorkbenchService - experimentID', this._experimentID]);
+  }
 }
 
 export default ExperimentWorkbenchService;
