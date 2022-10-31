@@ -193,7 +193,7 @@ class ExperimentWorkbench extends React.Component {
     this.refLayout = React.createRef();
   }
 
-  async componentWillMount() {
+  async UNSAFE_componentWillMount() {
     let experiments = await ExperimentStorageService.instance.getExperiments();
     const experimentInfo = experiments.find(experiment => experiment.id === this.experimentID);
     ExperimentWorkbenchService.instance.experimentInfo = experimentInfo;
@@ -375,9 +375,9 @@ class ExperimentWorkbench extends React.Component {
           </div>
           <Divider />
           <List>
-            {Array.from(ExperimentToolsService.instance.tools.values()).map(tool => {
+            {Array.from(ExperimentToolsService.instance.tools.values()).map((tool, index) => {
               return (
-                <ListItem button
+                <ListItem button key={index}
                   onMouseDown={() => {
                     ExperimentToolsService.instance.startToolDrag(
                       tool.flexlayoutNode,
@@ -419,6 +419,9 @@ class ExperimentWorkbench extends React.Component {
               <Paper className={clsx(classes.controlContainer, this.getStatusStyle())}>
                 <Typography align='left' variant='subtitle1' color='inherit' noWrap className={classes.title}>
                   Experiment Timeout: {this.state.experimentConfiguration.SimulationTimeout}
+                </Typography>
+                <Typography align='left' variant='subtitle1' color='inherit' noWrap className={classes.title}>
+                  Experiment Time: {this.state.experimentTime}
                 </Typography>
                 <Typography align='left' variant='subtitle1' color='inherit' noWrap className={classes.title}>
                   Simulation State: {this.state.simulationState}
