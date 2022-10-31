@@ -8,11 +8,12 @@ import ExperimentsOverview from './components/experiments-overview/experiments-o
 import ExperimentWorkbench from './components/experiment-workbench/experiment-workbench';
 import SimulationView from './components/simulation-view/simulation-view';
 import NotificationDialog from './components/dialog/notification-dialog.js';
-//import MqttClientService from './services/nrp-core/mqtt-client-service';
+import MqttClientService from './services/mqtt-client-service';
 
 class App extends React.Component {
 
   componentDidMount() {
+    this.mqttClientService = MqttClientService.instance;
     //MqttClientService.instance.connect('ws://' + window.location.hostname + ':1884');
   }
 

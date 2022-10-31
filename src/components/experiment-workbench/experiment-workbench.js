@@ -3,8 +3,10 @@ import FlexLayout from 'flexlayout-react';
 
 import ExperimentToolsService from './experiment-tools-service';
 import ExperimentWorkbenchService from './experiment-workbench-service';
+import ExperimentTimeBox from './experiment-time-box';
 import ExperimentStorageService from '../../services/experiments/files/experiment-storage-service';
 import RunningSimulationService from '../../services/experiments/execution/running-simulation-service';
+import MqttClientService from '../../services/mqtt-client-service';
 import DialogService from '../../services/dialog-service';
 import { EXPERIMENT_STATE } from '../../services/experiments/experiment-constants';
 import timeDDHHMMSS from '../../utility/time-filter';
@@ -184,7 +186,9 @@ class ExperimentWorkbench extends React.Component {
       drawerOpen: false,
       notificationCount: 0,
       simulationState: EXPERIMENT_STATE.CREATED,
+      // TODO: take from some config
       nrpVersion: '4.0.0',
+      timeToken: null,
       experimentConfiguration: {}
     };
 
@@ -222,13 +226,21 @@ class ExperimentWorkbench extends React.Component {
     });
   }
 
-  async onButtonStartPause() {
-    let newState = this.state.simulationInfo.state === EXPERIMENT_STATE.PAUSED
-      ? EXPERIMENT_STATE.STARTED
-      : EXPERIMENT_STATE.PAUSED;
-    await RunningSimulationService.instance.updateState(this.serverURL, this.simulationID, newState);
+  onButtonStartPause() {
+    // let newState = this.state.simulationInfo.state === EXPERIMENT_STATE.PAUSED
+    //   ? EXPERIMENT_STATE.STARTED
+    //   : EXPERIMENT_STATE.PAUSED;
+    // await RunningSimulationService.instance.updateState(this.serverURL, this.simulationID, newState);
 
-    this.updateSimulationInfo();
+    // this.updateSimulationInfo();
+
+    let newState = this.state.simulationState === EXPERIMENT_STATE.STARTED
+      ? EXPERIMENT_STATE.PAUSED
+      : EXPERIMENT_STATE.STARTED;
+
+    this.setState({ simulationState: newState });
+
+    DialogService.instance.progressNotification({message:'The experiment is ' + newState});
   }
 
   onButtonLayout() {
@@ -313,21 +325,14 @@ class ExperimentWorkbench extends React.Component {
             {this.state.simulationState === EXPERIMENT_STATE.STARTED
               ?
               <IconButton color='inherit'
-                onClick={() => {
-                  this.setState({simulationState: EXPERIMENT_STATE.PAUSED});
-                  DialogService.instance.progressNotification({message:'The experiment is paused'});
-                }}
+                onClick={() => this.onButtonStartPause()}
                 disabled={this.state.showLeaveDialog}
               >
                 <PauseIcon />
               </IconButton>
               :
               <IconButton color='inherit'
-                onClick={() => {
-                  this.setState({ simulationState: EXPERIMENT_STATE.STARTED });
-                  DialogService.instance.progressNotification({message:'The experiment is started'});
-
-                }}
+                onClick={() => this.onButtonStartPause()}
                 disabled={this.state.showLeaveDialog}
               >
                 <PlayCircleFilledWhiteIcon />
@@ -420,9 +425,7 @@ class ExperimentWorkbench extends React.Component {
                 <Typography align='left' variant='subtitle1' color='inherit' noWrap className={classes.title}>
                   Experiment Timeout: {this.state.experimentConfiguration.SimulationTimeout}
                 </Typography>
-                <Typography align='left' variant='subtitle1' color='inherit' noWrap className={classes.title}>
-                  Experiment Time: {this.state.experimentTime}
-                </Typography>
+                <ExperimentTimeBox/>
                 <Typography align='left' variant='subtitle1' color='inherit' noWrap className={classes.title}>
                   Simulation State: {this.state.simulationState}
                 </Typography>
