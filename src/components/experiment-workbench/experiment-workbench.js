@@ -188,6 +188,8 @@ class ExperimentWorkbench extends React.Component {
       experimentConfiguration: {}
     };
 
+    ExperimentWorkbenchService.instance.experimentID = this.experimentID;
+
     this.refLayout = React.createRef();
   }
 
