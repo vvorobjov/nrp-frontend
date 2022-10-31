@@ -1,46 +1,33 @@
 import React from 'react';
-import Button from '@material-ui/core/Button';
-import Dialog from '@material-ui/core/Dialog';
-import DialogActions from '@material-ui/core/DialogActions';
-import DialogContent from '@material-ui/core/DialogContent';
-import DialogContentText from '@material-ui/core/DialogContentText';
-import DialogTitle from '@material-ui/core/DialogTitle';
-import ExitToAppIcon from '@material-ui/icons/ExitToApp';
-import StopIcon from '@material-ui/icons/Stop';
+import {Button } from 'react-bootstrap';
+import Modal from 'react-bootstrap/Modal';
+
+import './leave-workbench-dialog.css';
 
 export default class LeaveWorkbenchDialog extends React.Component{
   render(){
     return (
       <div>
-        <Dialog
-          open={this.props.visible}
-          onClose={() => this.props.setVisibility(false)}
-          id='leave-workbench-dialog'
-        >
-          <DialogTitle>Exit menu</DialogTitle>
-          <DialogContent>
-            <DialogContentText>
-              Would you like to leave or stop the simulation?
-            </DialogContentText>
-          </DialogContent>
-          <DialogActions>
-            <Button
-              onClick={() => this.props.leaveWorkbench()}
-              color='default'
-              variant="contained"
-              endIcon={<ExitToAppIcon>send</ExitToAppIcon>}
-            >
-              Leave
-            </Button>
-            <Button onClick={() => this.props.stopSimulation()}
-              color='secondary'
-              variant="contained"
-              endIcon={<StopIcon>send</StopIcon>}
-            >
-              Stop
-            </Button>
-          </DialogActions>
-        </Dialog>
+        <div>
+          <Modal  className='leave-workbench-dialog-wrapper'
+            show={this.props.visible} onHide={() => this.props.setVisibility(false)}
+          >
+            <Modal.Header closeButton className="leave-workbench-dialog-header">
+              <Modal.Title>Exit menu</Modal.Title>
+            </Modal.Header>
+            <Modal.Body>Would you like to leave or stop the simulation?</Modal.Body>
+            <Modal.Footer>
+              <div>
+                <Button variant="light" onClick={() => this.props.leaveWorkbench()}>
+                  Leave
+                </Button>
+                <Button variant="danger" onClick={() => this.props.stopSimulation()}>
+                  Stop
+                </Button>
+              </div>
+            </Modal.Footer>
+          </Modal>
+        </div>
       </div>
     );
   }
