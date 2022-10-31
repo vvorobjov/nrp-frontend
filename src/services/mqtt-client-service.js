@@ -103,8 +103,8 @@ export default class MqttClientService extends EventEmitter {
       return;
     }
 
-    console.info('MQTT message: [topic, payload, packet]');
-    console.info([topic, payload, packet]);
+    // console.info('MQTT message: [topic, payload, packet]');
+    // console.info([topic, payload, packet]);
     //Now we see which callbacks have been assigned for a topic
     let subTokens = this.subTokensMap.get(topic);
     if (typeof subTokens !== 'undefined') {

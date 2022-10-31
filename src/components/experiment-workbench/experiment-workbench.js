@@ -3,6 +3,7 @@ import FlexLayout from 'flexlayout-react';
 
 import ExperimentToolsService from './experiment-tools-service';
 import ExperimentWorkbenchService from './experiment-workbench-service';
+import ExperimentTimeBox from './experiment-time-box';
 import ExperimentStorageService from '../../services/experiments/files/experiment-storage-service';
 import RunningSimulationService from '../../services/experiments/execution/running-simulation-service';
 import MqttClientService from '../../services/mqtt-client-service';
@@ -204,10 +205,6 @@ class ExperimentWorkbench extends React.Component {
     this.setState({experimentConfiguration: experimentInfo.configuration});
   };
 
-  updateTime = (msg) => {
-    this.setState({ experimentTime: msg.toString()});
-  }
-
   async componentDidMount() {
   }
 
@@ -244,13 +241,6 @@ class ExperimentWorkbench extends React.Component {
     this.setState({ simulationState: newState });
 
     DialogService.instance.progressNotification({message:'The experiment is ' + newState});
-
-    if (this.state.timeToken === null) {
-      const timeTopic = MqttClientService.instance.getConfig().mqtt.topics.base + '/'
-        + MqttClientService.instance.getConfig().mqtt.topics.time;
-      var timeToken = MqttClientService.instance.subscribeToTopic(timeTopic, this.updateTime);
-      this.setState({ timeToken: timeToken});
-    }
   }
 
   onButtonLayout() {
@@ -435,9 +425,7 @@ class ExperimentWorkbench extends React.Component {
                 <Typography align='left' variant='subtitle1' color='inherit' noWrap className={classes.title}>
                   Experiment Timeout: {this.state.experimentConfiguration.SimulationTimeout}
                 </Typography>
-                <Typography align='left' variant='subtitle1' color='inherit' noWrap className={classes.title}>
-                  Experiment Time: {this.state.experimentTime}
-                </Typography>
+                <ExperimentTimeBox/>
                 <Typography align='left' variant='subtitle1' color='inherit' noWrap className={classes.title}>
                   Simulation State: {this.state.simulationState}
                 </Typography>
