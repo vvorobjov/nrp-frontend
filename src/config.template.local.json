@@ -55,7 +55,14 @@
       }
     }
   },
-  "mqtt": {},
+  "mqtt": {
+    "url": "localhost",
+    "port": "8883",
+    "topics": {
+      "base": "nrp",
+      "time": "time"
+    }
+  },
   "ros-topics": {
     "spikes": "/monitor/spike_recorder",
     "joint": "/joint_states",
