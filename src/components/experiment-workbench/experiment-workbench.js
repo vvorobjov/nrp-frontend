@@ -5,6 +5,7 @@ import ExperimentToolsService from './experiment-tools-service';
 import ExperimentWorkbenchService from './experiment-workbench-service';
 import ExperimentStorageService from '../../services/experiments/files/experiment-storage-service';
 import RunningSimulationService from '../../services/experiments/execution/running-simulation-service';
+import DialogService from '../../services/dialog-service';
 import { EXPERIMENT_STATE } from '../../services/experiments/experiment-constants';
 import timeDDHHMMSS from '../../utility/time-filter';
 
@@ -64,6 +65,7 @@ const jsonBaseLayout = {
   }
 };
 
+// TODO: Unify styles with css or mui styles
 const drawerWidth = 240;
 const useStyles = theme => ({
   root: {
@@ -309,14 +311,21 @@ class ExperimentWorkbench extends React.Component {
             {this.state.simulationState === EXPERIMENT_STATE.STARTED
               ?
               <IconButton color='inherit'
-                onClick={() => this.setState({simulationState: EXPERIMENT_STATE.PAUSED})}
+                onClick={() => {
+                  this.setState({simulationState: EXPERIMENT_STATE.PAUSED});
+                  DialogService.instance.progressNotification({message:'The experiment is paused'});
+                }}
                 disabled={this.state.showLeaveDialog}
               >
                 <PauseIcon />
               </IconButton>
               :
               <IconButton color='inherit'
-                onClick={() => this.setState({ simulationState: EXPERIMENT_STATE.STARTED })}
+                onClick={() => {
+                  this.setState({ simulationState: EXPERIMENT_STATE.STARTED });
+                  DialogService.instance.progressNotification({message:'The experiment is started'});
+
+                }}
                 disabled={this.state.showLeaveDialog}
               >
                 <PlayCircleFilledWhiteIcon />
@@ -366,11 +375,18 @@ class ExperimentWorkbench extends React.Component {
           <List>
             {Array.from(ExperimentToolsService.instance.tools.values()).map(tool => {
               return (
-                <ListItem button onMouseDown={() => {
-                  ExperimentToolsService.instance.startToolDrag(
-                    tool.flexlayoutNode,
-                    this.refLayout);
-                }}>
+                <ListItem button
+                  onMouseDown={() => {
+                    ExperimentToolsService.instance.startToolDrag(
+                      tool.flexlayoutNode,
+                      this.refLayout);
+                  }}
+                  onClick={() => {
+                    ExperimentToolsService.instance.addTool(
+                      tool.flexlayoutNode,
+                      this.refLayout);
+                  }}
+                >
                   <ListItemIcon >
                     {tool.getIcon()}
                   </ListItemIcon>

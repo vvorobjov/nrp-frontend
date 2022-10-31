@@ -67,7 +67,7 @@ class ExperimentToolsService {
   }
 
   addTool(flexlayoutNode, layoutReference) {
-    layoutReference.current.addTab(flexlayoutNode.name, flexlayoutNode);
+    layoutReference.current.addTabToActiveTabSet(flexlayoutNode);
   }
 }
 

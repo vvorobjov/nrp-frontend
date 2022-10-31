@@ -11,6 +11,8 @@ class NotificationDialog extends React.Component{
     this.state = {
       notifications: []
     };
+    this.infoDelayMS = 6000;
+    this.warnDelayMS = 15000;
   }
 
   async componentDidMount() {
@@ -26,11 +28,14 @@ class NotificationDialog extends React.Component{
     );
   }
 
-  onNotification(notification) {
+  onNotification(notification, date = new Date()) {
     // avoid duplicates
     var isIn = false;
+    notification.date = date;
     this.state.notifications.forEach((notif) =>{
-      if (notification.type===notif.type && notification.message===notif.message){
+      if (notification.type===notif.type
+        && notification.message===notif.message
+        && notification.date===notif.date){
         isIn = true;
       }
     });
@@ -49,6 +54,7 @@ class NotificationDialog extends React.Component{
     });
   }
 
+  // TODO: the Toast doesn't disappear if there are more than one notification
   render(){
     let notifications = this.state.notifications;
     return(
@@ -57,18 +63,20 @@ class NotificationDialog extends React.Component{
           <ol>
             {notifications.map((notification, index) => {
               return (
-                <li key={index} className='no-style'>
-                  <Toast className='toast-width' onClose={(index) => this.handleClose(index)}
-                    delay={notification.type==='Warning'? 60000: 10000} autohide>
-                    <Toast.Header className={notification.type==='Warning'? 'warning': 'info'} >
-                      <strong className='mr-auto'>{notification.type}</strong>
-                    </Toast.Header>
-                    <Toast.Body>
-                      <h6>{notification.message}</h6>
-                      {notification.details}
-                    </Toast.Body>
-                  </Toast>
-                </li>
+                // <li key={index} className='no-style'>
+                <Toast className='toast-width' onClose={(index) => this.handleClose(index)}
+                  delay={notification.type === 'Warning' ? this.warnDelayMS : this.infoDelayMS}
+                  animation={true} autohide={true}>
+                  <Toast.Header className={notification.type === 'Warning' ? 'warning' : 'info'} >
+                    <strong className='mr-auto'>{notification.type}</strong>
+                    <small>{notification.date.toLocaleTimeString()}</small>
+                  </Toast.Header>
+                  <Toast.Body>
+                    <h6>{notification.message}</h6>
+                    {notification.details}
+                  </Toast.Body>
+                </Toast>
+                // </li>
               );
             })}
           </ol>
