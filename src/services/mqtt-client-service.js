@@ -17,7 +17,18 @@ export default class MqttClientService extends EventEmitter {
       throw new Error('Use ' + this.constructor.name + '.instance');
     }
 
+    this.connect = this.connect.bind(this);
+
+    this.state = {
+      isConnected: false
+    };
+
     this.subTokensMap = new Map();
+
+    // Since it's a singleton, shoud the url be defined here?
+    this.mqttBrokerUrl = 'ws://' + window.location.hostname + ':8883';
+
+    this.connect();
   }
 
   static get instance() {
@@ -28,19 +39,43 @@ export default class MqttClientService extends EventEmitter {
     return _instance;
   }
 
-  connect(brokerUrl) {
-    console.info('MQTT connecting to ' + brokerUrl + ' ...');
-    this.client = mqtt.connect(brokerUrl);
+  isConnected() {
+    return this.client.connected;
+  }
+
+  getBrokerURL() {
+    return this.mqttBrokerUrl;
+  }
+
+  connect() {
+    console.info('MQTT connecting to ' + this.mqttBrokerUrl + ' ...');
+    this.client = mqtt.connect(this.mqttBrokerUrl, { clientId: 'aa'});
     this.client.on('connect', () => {
       console.info('... MQTT connected');
       console.info(this.client);
       this.emit(MqttClientService.EVENTS.CONNECTED, this.client);
     });
     this.client.on('error', this.onError);
+    // TODO: fetch disconnection event properly
+    this.client.on('disconnect', () => {
+      console.info('... MQTT disconnected');
+      this.emit(MqttClientService.EVENTS.DISCONNECTED);
+    });
     this.client.on('message', (params) => {
       this.onMessage(params);
     });
   }
+
+  // disconnect(brokerUrl) {
+  //   console.info('MQTT disconnecting ' + brokerUrl);
+  //   if (this.client){
+  //     this.client.on('disconnect', () => {
+  //       console.info('... MQTT disconnected');
+  //       this.emit(MqttClientService.EVENTS.DISCONNECTED);
+  //     });
+  //     this.client.disconnect();
+  //   }
+  // }
 
   onError(error) {
     console.error(error);
@@ -134,5 +169,6 @@ export default class MqttClientService extends EventEmitter {
 }
 
 MqttClientService.EVENTS = Object.freeze({
-  CONNECTED: 'CONNECTED'
+  CONNECTED: 'CONNECTED',
+  DISCONNECTED: 'DISCONNECTED'
 });
