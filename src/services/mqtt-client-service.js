@@ -4,6 +4,8 @@ import { EventEmitter } from 'events';
 //import { DataPackMessage } from 'nrp-jsproto/engine_grpc_pb';
 import jspb from '../../node_modules/google-protobuf/google-protobuf';
 
+import frontendConfig from '../config.json';
+
 let _instance = null;
 const SINGLETON_ENFORCER = Symbol();
 
@@ -17,6 +19,7 @@ export default class MqttClientService extends EventEmitter {
       throw new Error('Use ' + this.constructor.name + '.instance');
     }
 
+    this.config = frontendConfig;
     this.connect = this.connect.bind(this);
 
     this.state = {
@@ -26,7 +29,7 @@ export default class MqttClientService extends EventEmitter {
     this.subTokensMap = new Map();
 
     // Since it's a singleton, shoud the url be defined here?
-    this.mqttBrokerUrl = 'ws://' + window.location.hostname + ':8883';
+    this.mqttBrokerUrl = 'ws://' + frontendConfig.mqtt.url + ':' + frontendConfig.mqtt.port;
 
     this.connect();
   }
@@ -47,13 +50,15 @@ export default class MqttClientService extends EventEmitter {
     return this.mqttBrokerUrl;
   }
 
+  getConfig() {
+    return this.config;
+  }
+
   connect() {
     console.info('MQTT connecting to ' + this.mqttBrokerUrl + ' ...');
-    this.client = mqtt.connect(this.mqttBrokerUrl, { clientId: 'aa'});
+    this.client = mqtt.connect(this.mqttBrokerUrl, { clientId: 'nrp-frontend'});
     this.client.on('connect', () => {
-      console.info('... MQTT connected');
-      console.info(this.client);
-      this.emit(MqttClientService.EVENTS.CONNECTED, this.client);
+      this.onConnect();
     });
     this.client.on('error', this.onError);
     // TODO: fetch disconnection event properly
@@ -61,8 +66,8 @@ export default class MqttClientService extends EventEmitter {
       console.info('... MQTT disconnected');
       this.emit(MqttClientService.EVENTS.DISCONNECTED);
     });
-    this.client.on('message', (params) => {
-      this.onMessage(params);
+    this.client.on('message', (topic, message) => {
+      this.onMessage(topic, message);
     });
   }
 
@@ -81,13 +86,25 @@ export default class MqttClientService extends EventEmitter {
     console.error(error);
   }
 
+  onConnect() {
+    console.info('... MQTT connected');
+    console.info(this.client);
+    // TODO: filter nrp messages
+    this.client.subscribe('#', (err) => {
+      if (err) {
+        console.error(err);
+      }
+    });
+    this.emit(MqttClientService.EVENTS.CONNECTED, this.client);
+  }
+
   onMessage(topic, payload, packet) {
     if (typeof payload === 'undefined') {
       return;
     }
 
-    //console.info('MQTT message: [topic, payload, packet]');
-    //console.info([topic, payload, packet]);
+    console.info('MQTT message: [topic, payload, packet]');
+    console.info([topic, payload, packet]);
     //Now we see which callbacks have been assigned for a topic
     let subTokens = this.subTokensMap.get(topic);
     if (typeof subTokens !== 'undefined') {
@@ -133,8 +150,8 @@ export default class MqttClientService extends EventEmitter {
         [token]
       );
     }
-    //console.info('You have been subscribed to topic ' + topic);
-    //console.info(this.subTokensMap);
+    console.info('You have been subscribed to topic ' + topic);
+    console.info(this.subTokensMap);
     return token;
   }
 

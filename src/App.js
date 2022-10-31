@@ -13,6 +13,7 @@ import MqttClientService from './services/mqtt-client-service';
 class App extends React.Component {
 
   componentDidMount() {
+    this.mqttClientService = MqttClientService.instance;
     //MqttClientService.instance.connect('ws://' + window.location.hostname + ':1884');
   }
 

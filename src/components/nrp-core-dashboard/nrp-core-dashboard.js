@@ -31,12 +31,7 @@ export default class NrpCoreDashboard extends React.Component {
     MqttClientService.instance.off(MqttClientService.EVENTS.DISCONNECTED, this.onMqttClientDisconnected);
   }
 
-  onMqttClientConnected = (MqttClient) => {
-    MqttClient.subscribe('#', (err) => {
-      if (err) {
-        console.error(err);
-      }
-    });
+  onMqttClientConnected = () => {
     this.setState({ mqttConnected: true});
   }
 
