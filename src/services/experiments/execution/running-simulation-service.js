@@ -199,6 +199,9 @@ class SimulationService extends HttpService {
       DialogService.instance.networkError(error);
     }
   }
+  async getInfoMock(newState) {
+    return {id: 0, state: newState};
+  }
 }
 
 export default SimulationService;

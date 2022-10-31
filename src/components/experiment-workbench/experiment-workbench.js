@@ -5,8 +5,8 @@ import ExperimentToolsService from './experiment-tools-service';
 import ExperimentWorkbenchService from './experiment-workbench-service';
 import ExperimentTimeBox from './experiment-time-box';
 import ExperimentStorageService from '../../services/experiments/files/experiment-storage-service';
-import RunningSimulationService from '../../services/experiments/execution/running-simulation-service';
-import MqttClientService from '../../services/mqtt-client-service';
+import SimulationService from '../../services/experiments/execution/running-simulation-service';
+import ExperimentExecutionService from '../../services/experiments/execution/experiment-execution-service';
 import DialogService from '../../services/dialog-service';
 import { EXPERIMENT_STATE } from '../../services/experiments/experiment-constants';
 import timeDDHHMMSS from '../../utility/time-filter';
@@ -226,7 +226,7 @@ class ExperimentWorkbench extends React.Component {
     });
   }
 
-  onButtonStartPause() {
+  async onButtonStartPause() {
     // let newState = this.state.simulationInfo.state === EXPERIMENT_STATE.PAUSED
     //   ? EXPERIMENT_STATE.STARTED
     //   : EXPERIMENT_STATE.PAUSED;
@@ -234,13 +234,48 @@ class ExperimentWorkbench extends React.Component {
 
     // this.updateSimulationInfo();
 
-    let newState = this.state.simulationState === EXPERIMENT_STATE.STARTED
-      ? EXPERIMENT_STATE.PAUSED
-      : EXPERIMENT_STATE.STARTED;
+    // if there is no simulation bound
+    if (!this.state.runningSimulation) {
+      await ExperimentExecutionService.instance.startNewExperimentMock(
+        ExperimentWorkbenchService.instance.experimentInfo,
+        true,
+        undefined,
+        undefined
+      ).then((simInfo) => {
+        // TODO: get proper simulation information
+        if (simInfo) {
+          this.setState({ runningSimulation: simInfo });
+          this.setState({ simulationState: EXPERIMENT_STATE.INITIALIZED });
+        }
+      }).catch((failure) => {
+        DialogService.instance.simulationError({ message: failure });
+      });
+    }
+    let newState =
+    this.state.simulationState === EXPERIMENT_STATE.PAUSED ||
+    this.state.simulationState === EXPERIMENT_STATE.INITIALIZED
+      ? EXPERIMENT_STATE.STARTED
+      : EXPERIMENT_STATE.PAUSED;
 
-    this.setState({ simulationState: newState });
+    if (this.state.runningSimulation) {
+      await SimulationService.instance.updateState(
+        this.serverURL,
+        this.state.runningSimulation.id,
+        newState
+      );
+    }
 
-    DialogService.instance.progressNotification({message:'The experiment is ' + newState});
+    // await SimulationService.instance.getInfo(
+    //   this.serverURL,
+    //   this.state.runningSimulation.id
+    await SimulationService.instance.getInfoMock(
+      newState
+    ).then((simInfo) => {
+      if (simInfo) {
+        this.setState({ simulationState: simInfo.state });
+        DialogService.instance.progressNotification({ message: 'The experiment is ' + this.state.simulationState });
+      }
+    });
   }
 
   onButtonLayout() {
@@ -407,7 +442,7 @@ class ExperimentWorkbench extends React.Component {
         <LeaveWorkbenchDialog visible={this.state.showLeaveDialog}
           setVisibility={(visible) => this.showLeaveDialog(visible)}
           stopSimulation={async () => {
-            await RunningSimulationService.instance.updateState(this.serverURL, this.simulationID,
+            await SimulationService.instance.updateState(this.serverURL, this.simulationID,
               EXPERIMENT_STATE.STOPPED);
             this.leaveWorkbench();
           }}
