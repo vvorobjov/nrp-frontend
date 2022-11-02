@@ -214,12 +214,14 @@ export default class ExperimentListElement extends React.Component {
                   </Link>
                   : null}
 
-                {/* Files button */}
+                {/* Files button
+                TODO: [NRRPLT-8682]
+                Change Files icon and make the file aditor to be the opened tab in the experiment-workbench
                 {<Link to={'/experiment/' + exp.id}
                   className="nrp-btn btn-default" disabled={this.isLaunchDisabled()}>
                   <AiFillExperiment className='icon' />Files
                 </Link>
-                }
+                } */}
 
                 {/*exp.rights.launch && config.brainProcesses > 1 ?
                   <button className='nrp-btn btn-default'>

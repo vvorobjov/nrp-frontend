@@ -34,7 +34,7 @@
 }
 
 .flexlayout__tab {
-  overflow: hidden;
+  overflow: scroll;
 }
 
 .simulation-view-controls {
@@ -72,6 +72,22 @@
   color: black;
   font-weight: bold;
   background-color: lightgray;
+}
+
+.simulation-status-error {
+  background-color: #ffc8d0 !important;
+}
+
+.simulation-status-default {
+  background-color: #c8d0ff !important;
+}
+
+.simulation-status-started {
+  background-color: #ceffc8 !important;
+}
+
+.simulation-status-paused {
+  background-color: #f8ffc8 !important;
 }
 
 iframe {

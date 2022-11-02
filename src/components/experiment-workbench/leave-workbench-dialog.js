@@ -9,7 +9,9 @@ export default class LeaveWorkbenchDialog extends React.Component{
     return (
       <div>
         <div>
-          <Modal show={this.props.visible} onHide={() => this.props.setVisibility(false)}>
+          <Modal  className='leave-workbench-dialog-wrapper'
+            show={this.props.visible} onHide={() => this.props.setVisibility(false)}
+          >
             <Modal.Header closeButton className="leave-workbench-dialog-header">
               <Modal.Title>Exit menu</Modal.Title>
             </Modal.Header>

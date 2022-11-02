@@ -180,6 +180,8 @@ class SimulationService extends HttpService {
     }
     catch (error) {
       DialogService.instance.simulationError(error);
+      //TODO: Remove mock
+      return { state: state };
     }
   }
 
@@ -198,6 +200,9 @@ class SimulationService extends HttpService {
     catch (error) {
       DialogService.instance.networkError(error);
     }
+  }
+  async getInfoMock(newState) {
+    return {id: 'test/0', state: newState};
   }
 }
 

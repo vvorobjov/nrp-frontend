@@ -32,11 +32,11 @@
 }
 
 .tf-editor-text-saved {
-  color: green;
+  color: #8aff7c;
 }
 
 .tf-editor-text-unsaved {
-  color: orange;
+  color: #ffb97c;
 }
 
 .tf-editor-codemirror-container {

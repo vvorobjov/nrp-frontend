@@ -24,10 +24,9 @@ export default class TransceiverFunctionEditor extends React.Component {
   async componentDidMount() {
 
     const workbench = await ExperimentWorkbenchService.instance;
-    this.experimentInfo = workbench.experimentInfo;
+    this.experimentID = workbench.experimentID;
 
-    let experimentName = this.experimentInfo.id;
-    this.setState({experimentName: experimentName});
+    this.setState({experimentName: this.experimentID});
     await this.loadExperimentFiles();
     this.setState({selectedFilename:  this.files.at(0)});
     await this.loadFileContent(this.state.selectedFilename);
