@@ -185,11 +185,11 @@ class ExperimentWorkbench extends React.Component {
       showLeaveDialog: false,
       drawerOpen: false,
       notificationCount: 0,
-      simulationState: EXPERIMENT_STATE.CREATED,
       // TODO: take from some config
       nrpVersion: '4.0.0',
-      timeToken: null,
-      experimentConfiguration: {}
+      experimentConfiguration: {},
+      runningSimulationID: undefined,
+      simulationState: EXPERIMENT_STATE.STOPPED
     };
 
     ExperimentWorkbenchService.instance.experimentID = this.experimentID;
@@ -206,6 +206,18 @@ class ExperimentWorkbench extends React.Component {
   };
 
   async componentDidMount() {
+    // Get the simulation ID from ExperimentWorkbenchService, if is defined
+    this.state.runningSimulationID = await ExperimentWorkbenchService.instance.simulationID;
+
+    // Update simulation state, if it is defined
+    if (this.state.runningSimulationID) {
+      await SimulationService.instance.getInfo(
+        this.serverURL,
+        this.state.runningSimulationID
+      ).then((simInfo) => {
+        this.setState({ simulationState: simInfo.state});
+      });
+    }
   }
 
   async componentDidUpdate() {
@@ -226,16 +238,9 @@ class ExperimentWorkbench extends React.Component {
     });
   }
 
-  async onButtonStartPause() {
-    // let newState = this.state.simulationInfo.state === EXPERIMENT_STATE.PAUSED
-    //   ? EXPERIMENT_STATE.STARTED
-    //   : EXPERIMENT_STATE.PAUSED;
-    // await RunningSimulationService.instance.updateState(this.serverURL, this.simulationID, newState);
-
-    // this.updateSimulationInfo();
-
+  async onButtonStart() {
     // if there is no simulation bound
-    if (!this.state.runningSimulation) {
+    if (!this.state.runningSimulationID) {
       await ExperimentExecutionService.instance.startNewExperimentMock(
         ExperimentWorkbenchService.instance.experimentInfo,
         true,
@@ -244,38 +249,50 @@ class ExperimentWorkbench extends React.Component {
       ).then((simInfo) => {
         // TODO: get proper simulation information
         if (simInfo) {
-          this.setState({ runningSimulation: simInfo });
-          this.setState({ simulationState: EXPERIMENT_STATE.INITIALIZED });
+          ExperimentWorkbenchService.instance.simulationID = simInfo.id;
+          this.setState({ runningSimulationID: simInfo.id });
+          this.setState({ simulationState: simInfo.state });
         }
       }).catch((failure) => {
         DialogService.instance.simulationError({ message: failure });
       });
     }
-    let newState =
-    this.state.simulationState === EXPERIMENT_STATE.PAUSED ||
-    this.state.simulationState === EXPERIMENT_STATE.INITIALIZED
-      ? EXPERIMENT_STATE.STARTED
-      : EXPERIMENT_STATE.PAUSED;
 
-    if (this.state.runningSimulation) {
-      await SimulationService.instance.updateState(
-        this.serverURL,
-        this.state.runningSimulation.id,
-        newState
-      );
-    }
+    // On START button click, start simulation if it was created
+    let newState = EXPERIMENT_STATE.STARTED;
 
-    // await SimulationService.instance.getInfo(
-    //   this.serverURL,
-    //   this.state.runningSimulation.id
-    await SimulationService.instance.getInfoMock(
-      newState
-    ).then((simInfo) => {
-      if (simInfo) {
-        this.setState({ simulationState: simInfo.state });
-        DialogService.instance.progressNotification({ message: 'The experiment is ' + this.state.simulationState });
+    this.updateSimState(newState);
+  }
+
+  async onButtonPause() {
+    let newState = EXPERIMENT_STATE.PAUSED;
+
+    this.updateSimState(newState);
+  }
+
+  async onButtonStop() {
+    let newState = EXPERIMENT_STATE.STOPPED;
+
+    await this.updateSimState(newState).then(() => {
+      if (this.state.simulationState === EXPERIMENT_STATE.STOPPED) {
+        this.setState({ runningSimulationID: undefined });
+        ExperimentWorkbenchService.instance.simulationID = undefined;
       }
     });
+  }
+
+  async updateSimState(newState) {
+    // !! Remove mock from updateState
+    if (this.state.runningSimulationID) {
+      await SimulationService.instance.updateState(
+        this.serverURL,
+        this.state.runningSimulationID,
+        newState
+      ).then((simInfo) => {
+        this.setState({ simulationState: simInfo.state });
+        DialogService.instance.progressNotification({ message: 'The experiment is ' + this.state.simulationState });
+      });
+    }
   }
 
   onButtonLayout() {
@@ -360,14 +377,14 @@ class ExperimentWorkbench extends React.Component {
             {this.state.simulationState === EXPERIMENT_STATE.STARTED
               ?
               <IconButton color='inherit'
-                onClick={() => this.onButtonStartPause()}
+                onClick={() => this.onButtonPause()}
                 disabled={this.state.showLeaveDialog}
               >
                 <PauseIcon />
               </IconButton>
               :
               <IconButton color='inherit'
-                onClick={() => this.onButtonStartPause()}
+                onClick={() => this.onButtonStart()}
                 disabled={this.state.showLeaveDialog}
               >
                 <PlayCircleFilledWhiteIcon />
@@ -376,7 +393,7 @@ class ExperimentWorkbench extends React.Component {
             {/* Stop button*/}
             <IconButton color='inherit' className={classes.controlButton}
               disabled={this.state.showLeaveDialog}
-              onClick={() => this.setState({ simulationState: EXPERIMENT_STATE.STOPPED })}
+              onClick={() => this.onButtonStop()}
             >
               <StopIcon />
             </IconButton>

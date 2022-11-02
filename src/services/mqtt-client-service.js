@@ -161,7 +161,7 @@ export default class MqttClientService extends EventEmitter {
       let index = tokens.indexOf(unsubToken);
       if (index !== -1) {
         tokens.splice(index, 1);
-        //console.info('You have been unsubscribed from topic ' + unsubToken.topic);
+        console.info('You have been unsubscribed from topic ' + unsubToken.topic);
       }
       else {
         console.warn('Your provided token could not be found in the subscription list');

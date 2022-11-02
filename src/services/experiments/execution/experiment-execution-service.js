@@ -33,7 +33,7 @@ class ExperimentExecutionService extends HttpService {
 
   // Mock
   async startNewExperimentMock() {
-    return {id: 0};
+    return {id: 'test/0'};
   }
 
   /**
