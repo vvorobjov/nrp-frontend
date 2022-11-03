@@ -6,6 +6,7 @@ import { withRouter } from 'react-router-dom';
 import timeDDHHMMSS from '../../utility/time-filter.js';
 import { EXPERIMENT_STATE } from '../../services/experiments/experiment-constants.js';
 import ExperimentExecutionService from '../../services/experiments/execution/experiment-execution-service.js';
+import ExperimentWorkbenchService from '../experiment-workbench/experiment-workbench-service';
 
 import './simulation-details.css';
 
@@ -55,9 +56,16 @@ class SimulationDetails extends React.Component {
     });
   }
 
+  /**
+   * Join the running simulation.
+   * @param {object} simulationInfo the description of the running simulation
+   *
+   * Opens experiment workbench and sets the running simulation ID in ExperimentWorkbenchService
+   */
   joinSimulation(simulationInfo) {
+    ExperimentWorkbenchService.instance.simulationID = simulationInfo.runningSimulation.simulationID;
     this.props.history.push({
-      pathname: '/simulation-view/' + simulationInfo.server + '/' + simulationInfo.runningSimulation.simulationID
+      pathname: '/experiment/' + simulationInfo.runningSimulation.experimentID
     });
   }
 

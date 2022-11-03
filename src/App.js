@@ -26,7 +26,7 @@ class App extends React.Component {
           <Switch>
             <Route path='/experiments-overview' component={ExperimentsOverview} />
             <Route path='/experiment/:experimentID' component={ExperimentWorkbench} />
-            <Route path='/simulation-view/:serverIP/:simulationID' component={SimulationView} />
+            {/* <Route path='/simulation-view/:serverIP/:simulationID' component={SimulationView} /> */}
             <Route path='/' component={EntryPage} />
           </Switch>
         </BrowserRouter>

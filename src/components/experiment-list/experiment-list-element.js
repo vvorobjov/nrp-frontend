@@ -1,5 +1,6 @@
 import React, {useState} from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useHistory } from 'react-router-dom';
+import { withRouter } from 'react-router-dom';
 import { FaTrash, FaFileExport, FaShareAlt, FaClone, FaBullseye, FaLastfmSquare } from 'react-icons/fa';
 import { MdOutlineDownloadDone } from 'react-icons/md';
 import { RiPlayFill, RiPlayLine, RiPlayList2Fill } from 'react-icons/ri';
@@ -19,6 +20,7 @@ import ExperimentOverview from '../experiments-overview/experiments-overview.js'
 import './experiment-list-element.css';
 import '../main.css';
 import { Button } from 'react-bootstrap';
+import Spinner from 'react-bootstrap/Spinner';
 import { TiEjectOutline } from 'react-icons/ti';
 
 const CLUSTER_THRESHOLDS = {
@@ -27,14 +29,15 @@ const CLUSTER_THRESHOLDS = {
 };
 const SHORT_DESCRIPTION_LENGTH = 200;
 
-export default class ExperimentListElement extends React.Component {
+class ExperimentListElement extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
       showSimDetails: true,
       nameEditingVisible: false,
       templateTab: props.templateTab,
-      visibleName: props.experiment.configuration.SimulationName
+      visibleName: props.experiment.configuration.SimulationName,
+      cloneInProgress: false
     };
 
     this.launchButtonTitle = '';
@@ -56,6 +59,12 @@ export default class ExperimentListElement extends React.Component {
     if (this.wrapperRef && !this.wrapperRef.current.contains(event.target)) {
       this.setState({ selected: false });
     }
+  }
+
+  openExperimentWorkbench = (expID) => {
+    this.props.history.push({
+      pathname: '/experiment/' + expID
+    });
   }
 
   getAvailabilityInfo() {
@@ -193,8 +202,7 @@ export default class ExperimentListElement extends React.Component {
           {this.state.selected &&
             <div className='experiment-details' >
               <i>
-                Timeout :
-                {timeDDHHMMSS(config.SimulationTimeout)}
+                Timeout: {config.SimulationTimeout}
                 ({(config.timeoutType === 'simulation' ? 'simulation' : 'real')} time)
               </i>
               <br />
@@ -211,21 +219,16 @@ export default class ExperimentListElement extends React.Component {
           }
 
           {this.state.selected &&
-            <div className='list-entry-buttons flex-container' onClick={() => {
-              /*return exp.id === pageState.selected;*/
-            }}>
+            <div className='list-entry-buttons flex-container' >
               <div className='btn-group' role='group' >
                 {exp.rights.launch ?
-                  /*<button
-                    onClick={() => this.openExperimentWorkbench(exp)}
-                    disabled={this.isLaunchDisabled()}
-                    className='nrp-btn btn-default'
-                    title={this.launchButtonTitle} >
+                  <button className="nrp-btn btn-default"
+                    onClick={() => {
+                      this.openExperimentWorkbench(exp.id);
+                    }}
+                  >
                     <AiFillExperiment className='icon' />Open
-                </button>*/
-                  <Link to={'/experiment/' + exp.id} className="nrp-btn btn-default" disabled={this.isLaunchDisabled()}>
-                    <AiFillExperiment className='icon' />Open
-                  </Link>
+                  </button>
                   : null}
 
                 {/* Files button
@@ -292,14 +295,21 @@ export default class ExperimentListElement extends React.Component {
                   : null}
 
                 {/* Clone button */}
-                {exp.rights.clone ?
-                  <button className='nrp-btn btn-default' onClick={() => {
-                    PublicExperimentsService.instance.cloneExperiment(exp);
+                <button className='nrp-btn btn-default' disabled={!exp.rights.clone}
+                  onClick={async () => {
+                    this.setState({ cloneInProgress: true });
+                    await PublicExperimentsService.instance.cloneExperiment(exp);
+                    await ExperimentStorageService.instance.getExperiments(true).then(() => {
+                      this.setState({cloneInProgress: false});
+                    });
                     this.props.selectExperimentOverviewTab(ExperimentOverview.CONSTANTS.TAB_INDEX.MY_EXPERIMENTS);
-                  }}>
-                    <FaClone className='icon' />Clone
-                  </button>
-                  : null}
+                  }}
+                >
+                  {this.state.cloneInProgress
+                    ? <Spinner animation="border" variant="secondary" size="sm" />
+                    : <FaClone className='icon' />
+                  } Clone
+                </button>
 
                 {/* Shared button */}
                 {exp.rights.launch ?
@@ -320,3 +330,4 @@ export default class ExperimentListElement extends React.Component {
     );
   }
 }
+export default withRouter(ExperimentListElement);
