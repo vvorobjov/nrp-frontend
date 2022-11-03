@@ -13,6 +13,7 @@ import timeDDHHMMSS from '../../utility/time-filter.js';
 import ExperimentExecutionService from '../../services/experiments/execution/experiment-execution-service.js';
 import PublicExperimentsService from '../../services/experiments/files/public-experiments-service.js';
 import ExperimentStorageService from '../../services/experiments/files/experiment-storage-service.js';
+import RemoveExperimentDialog from './remove-experiment-dialog';
 
 import SimulationDetails from './simulation-details';
 import ExperimentOverview from '../experiments-overview/experiments-overview.js';
@@ -34,6 +35,7 @@ class ExperimentListElement extends React.Component {
     super(props);
     this.state = {
       showSimDetails: true,
+      showRemoveDialog: false,
       nameEditingVisible: false,
       templateTab: props.templateTab,
       visibleName: props.experiment.configuration.SimulationName,
@@ -99,6 +101,10 @@ class ExperimentListElement extends React.Component {
     return status;
   }
 
+  showRemoveDialog(show) {
+    this.setState({showRemoveDialog: show});
+  }
+
   isLaunchDisabled() {
     let isDisabled = !this.props.experiment.rights.launch ||
       this.props.availableServers.length === 0 ||
@@ -130,6 +136,15 @@ class ExperimentListElement extends React.Component {
         style={{ position: 'relative' }}
         onClick={() => this.setState({ selected: true })}
         ref={this.wrapperRef}>
+
+        {/* This is the remove dialog */}
+        <RemoveExperimentDialog visible={this.state.showRemoveDialog}
+          setVisibility={(visible) => this.showRemoveDialog(visible)}
+          removeExperiment={async () => {
+            await ExperimentStorageService.instance.deleteExperiment(exp.id);
+            ExperimentStorageService.instance.getExperiments(true);
+          }}
+        />
 
         {/* TODO: the thumbnailURL is empty for experiments (not templates) view */}
         <div className='list-entry-left' style={{ position: 'relative' }}>
@@ -222,13 +237,13 @@ class ExperimentListElement extends React.Component {
             <div className='list-entry-buttons flex-container' >
               <div className='btn-group' role='group' >
                 {exp.rights.launch ?
-                  <button className="nrp-btn btn-default"
+                  <Button className="nrp-btn btn-default"
                     onClick={() => {
                       this.openExperimentWorkbench(exp.id);
                     }}
                   >
                     <AiFillExperiment className='icon' />Open
-                  </button>
+                  </Button>
                   : null}
 
                 {/* Files button
@@ -254,35 +269,40 @@ class ExperimentListElement extends React.Component {
 
                 {/* isPrivateExperiment */}
                 {exp.rights.delete ?
-                  <button className='nrp-btn btn-default' onClick={async () => {
-                    await ExperimentStorageService.instance.deleteExperiment(exp.id);
-                    ExperimentStorageService.instance.getExperiments(true);
-                  }}>
+                  <Button className='nrp-btn btn-default'
+                    variant='warning'
+                    onClick={() => {
+                      this.showRemoveDialog(true);
+                    }}
+                  >
                     <FaTrash className='icon' />Delete
-                  </button>
+                  </Button>
                   : null}
 
                 {/* Records button */}
                 {exp.rights.launch ?
-                  <button className='nrp-btn btn-default'>
+                  <Button className='nrp-btn btn-default'
+                    variant='secondary'>
                     {this.state.showRecordings ?
                       <VscTriangleUp className='icon' /> :
                       <VscTriangleDown className='icon' />
                     }
                     Recordings
-                  </button>
+                  </Button>
                   : null}
 
                 {/* Export button */}
                 {exp.rights.launch ?
-                  <button className='nrp-btn btn-default'>
+                  <Button className='nrp-btn btn-default'
+                    variant='secondary'>
                     <FaFileExport className='icon' />Export
-                  </button>
+                  </Button>
                   : null}
 
                 {/* Simulations button */}
                 {exp.rights.launch && exp.joinableServers.length > 0 ?
-                  <button className='nrp-btn btn-default'
+                  <Button className='nrp-btn btn-default'
+                    variant='primary'
                     onClick={() => {
                       this.setState({ showSimDetails: !this.state.showSimDetails });
                     }}>
@@ -291,11 +311,12 @@ class ExperimentListElement extends React.Component {
                       <VscTriangleDown className='icon' />
                     }
                     Simulations
-                  </button>
+                  </Button>
                   : null}
 
                 {/* Clone button */}
-                <button className='nrp-btn btn-default' disabled={!exp.rights.clone}
+                <Button className='nrp-btn btn-default' disabled={!exp.rights.clone}
+                  variant='secondary'
                   onClick={async () => {
                     this.setState({ cloneInProgress: true });
                     await PublicExperimentsService.instance.cloneExperiment(exp);
@@ -309,13 +330,14 @@ class ExperimentListElement extends React.Component {
                     ? <Spinner animation="border" variant="secondary" size="sm" />
                     : <FaClone className='icon' />
                   } Clone
-                </button>
+                </Button>
 
                 {/* Shared button */}
                 {exp.rights.launch ?
-                  <button className='nrp-btn btn-default'>
+                  <Button className='nrp-btn btn-default'
+                    variant='secondary'>
                     <FaShareAlt className='icon' />Share
-                  </button>
+                  </Button>
                   : null}
               </div>
             </div>

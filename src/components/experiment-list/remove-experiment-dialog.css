@@ -1,0 +1,8 @@
+.remove-experiment-dialog-wrapper {
+  z-index: 1275;
+}
+
+.remove-experiment-dialog-header {
+  color: black;
+  background-color: white;
+}
