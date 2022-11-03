@@ -31,8 +31,8 @@ export default class UserMenu extends React.Component {
   }
 
   onClickLogout() {
-    AuthenticationService.instance.clearStoredToken();
-    window.location.reload();
+    AuthenticationService.instance.logout();
+    window.location.reload(true);
   }
 
   render() {
@@ -44,8 +44,8 @@ export default class UserMenu extends React.Component {
             variant='success'
             id='dropdown-basic'
           >
-            <FaUserCircle className='user-icon' />
             <div className='user-name'>
+              <FaUserCircle className='user-icon' />
               {this.state.user ? this.state.user.displayName : 'pending ...'}
             </div>
           </Dropdown.Toggle>
