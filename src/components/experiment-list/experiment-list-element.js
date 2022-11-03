@@ -4,7 +4,7 @@ import { FaTrash, FaFileExport, FaShareAlt, FaClone, FaBullseye, FaLastfmSquare 
 import { MdOutlineDownloadDone } from 'react-icons/md';
 import { RiPlayFill, RiPlayLine, RiPlayList2Fill } from 'react-icons/ri';
 import { GoX } from 'react-icons/go';
-import { VscTriangleUp, VscTriangleDown, VscCheck, VscEdit } from 'react-icons/vsc';
+import { VscTriangleUp, VscTriangleDown, VscCheck, VscEdit, VscDiscard} from 'react-icons/vsc';
 import { AiFillExperiment } from 'react-icons/ai';
 import { GoFileSubmodule } from 'react-icons/go';
 
@@ -43,6 +43,7 @@ export default class ExperimentListElement extends React.Component {
   }
 
   async componentDidMount() {
+    this.state.edibleName = this.state.visibleName;
     this.handleClickOutside = this.handleClickOutside.bind(this);
     document.addEventListener('mousedown', this.handleClickOutside);
   }
@@ -131,31 +132,44 @@ export default class ExperimentListElement extends React.Component {
           <div className='flex-container left-right title-line'>
             {this.state.templateTab || !this.state.nameEditingVisible ?
               <div className='h4'>
-                {config.SimulationName}
+                {this.state.visibleName}
               </div>
               :
               null
             }
             {!this.state.templateTab && this.state.nameEditingVisible ?
               <input type='text'
-                value={this.state.visibleName}
+                value={this.state.edibleName}
                 disabled={!this.state.nameEditingVisible}
-                onChange={(e) => this.setState({visibleName: e.target.value})}/>
+                onChange={(e) => {
+                  this.setState({edibleName: e.target.value});
+                }}/>
               :
               null
             }
             { this.state.nameEditingVisible && !this.state.templateTab ?
-              <button onClick={() => {
+              <button className='list-entry-edit-buttons' onClick={() => {
                 this.setState({ nameEditingVisible: false });
-                ExperimentStorageService.instance.renameExperiment(exp.id, this.state.visibleName);
+                this.setState({ visibleName: this.state.edibleName});
+                ExperimentStorageService.instance.renameExperiment(exp.id, this.state.edibleName);
               }}>
                 <VscCheck/>
               </button>
               :
               null
             }
+            { this.state.nameEditingVisible && !this.state.templateTab ?
+              <button className='list-entry-edit-buttons' onClick={() => {
+                this.setState({ nameEditingVisible: false });
+                this.setState({ edibleName: this.state.visibleName});
+              }}>
+                <VscDiscard/>
+              </button>
+              :
+              null
+            }
             { !this.state.nameEditingVisible && !this.state.templateTab ?
-              <button onClick={() => this.setState(
+              <button className='list-entry-edit-buttons' onClick={() => this.setState(
                 { nameEditingVisible: true })}>
                 <VscEdit/>
               </button>
@@ -163,7 +177,7 @@ export default class ExperimentListElement extends React.Component {
               null
             }
 
-            {exp.joinableServers.length > 0 ?
+            {exp.joinableServers.length = 0 ?
               <div className='exp-title-sim-info'>
                 ({exp.joinableServers.length} simulation{exp.joinableServers.length > 1 ? 's' : ''} running)
               </div>
