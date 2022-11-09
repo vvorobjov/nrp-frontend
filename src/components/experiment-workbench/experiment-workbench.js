@@ -26,8 +26,6 @@ import PropTypes from 'prop-types';
 import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
 import MenuIcon from '@material-ui/icons/Menu';
-import Badge from '@material-ui/core/Badge';
-import NotificationsIcon from '@material-ui/icons/Notifications';
 import Typography from '@material-ui/core/Typography';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import Divider from '@material-ui/core/Divider';
@@ -165,9 +163,6 @@ const useStyles = theme => ({
     display: 'flex',
     overflow: 'auto',
     flexDirection: 'column'
-  },
-  statusWarning: {
-    backgroundColor: 'magenta'
   }
 });
 

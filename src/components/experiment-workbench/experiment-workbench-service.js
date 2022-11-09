@@ -1,5 +1,8 @@
 import { EventEmitter } from 'events';
 
+import MqttClientService from '../../services/mqtt-client-service';
+import DialogService from '../../services/dialog-service';
+
 let _instance = null;
 const SINGLETON_ENFORCER = Symbol();
 
@@ -13,6 +16,7 @@ class ExperimentWorkbenchService extends EventEmitter {
       throw new Error('Use ' + this.constructor.name + '.instance');
     }
     this._simulationID = undefined;
+    this._errorToken = undefined;
   }
 
   static get instance() {
@@ -49,6 +53,26 @@ class ExperimentWorkbenchService extends EventEmitter {
       ExperimentWorkbenchService.EVENTS.SIMULATION_SET,
       this._simulationID
     );
+    this.setTopic(this._simulationID);
+  }
+
+  setTopic = (simulationID) => {
+    if (this._errorToken) {
+      MqttClientService.instance.unsubscribe(this._errorToken);
+      this._errorToken = undefined;
+    }
+    if (simulationID) {
+      const errorTopic = MqttClientService.instance.getConfig().mqtt.topics.base + '/'
+        + simulationID + '/'
+        + MqttClientService.instance.getConfig().mqtt.topics.errors;
+      const errorToken = MqttClientService.instance.subscribeToTopic(errorTopic, this.errorMsgHandler);
+      this._errorToken = errorToken;
+    }
+  }
+
+  errorMsgHandler = (msg) => {
+    // TODO: parse error message
+    DialogService.instance.warningNotification({ message: msg.toString() });
   }
 }
 
