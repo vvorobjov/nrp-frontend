@@ -24,6 +24,7 @@ class NrpUserService extends HttpService {
     if (enforcer !== SINGLETON_ENFORCER) {
       throw new Error('Use ' + this.constructor.name + '.instance');
     }
+    this.currentUser = undefined;
   }
 
   static get instance() {
@@ -44,6 +45,15 @@ class NrpUserService extends HttpService {
   }
 
   /**
+   * Checks if the user can be got
+   * @returns {bool} The presence of the logged in user
+   */
+  isConnected() {
+    let identity = this.getCurrentUser();
+    return identity !== undefined;
+  }
+
+  /**
    * Get the name displayed for a user ID.
    * @param {string} userID - the ID of the user
    * @returns {string} user name, or unknown
@@ -61,10 +71,15 @@ class NrpUserService extends HttpService {
    */
   async getCurrentUser() {
     if (!this.currentUser) {
-      let responseIdentity = await this.httpRequestGET(IDENTITY_ME_URL);
-      if (responseIdentity.ok) {
-        this.currentUser = await responseIdentity.json();
-      }
+      await this.httpRequestGET(IDENTITY_ME_URL).then(async (identity) => {
+        if (identity.ok){
+          this.currentUser = await identity.json();
+          this.emit(NrpUserService.EVENTS.CONNECTED);
+        }
+      }).catch(() => {
+        this.currentUser = undefined;
+        this.emit(NrpUserService.EVENTS.DISCONNECTED);
+      });
     }
 
     return this.currentUser;
@@ -132,5 +147,10 @@ class NrpUserService extends HttpService {
     return await (await this.httpRequestPOST(GDPR_URL)).json();
   }
 }
+
+NrpUserService.EVENTS = Object.freeze({
+  CONNECTED: 'CONNECTED',
+  DISCONNECTED: 'DISCONNECTED'
+});
 
 export default NrpUserService;
