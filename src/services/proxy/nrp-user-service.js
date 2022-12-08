@@ -24,7 +24,7 @@ class NrpUserService extends HttpService {
     if (enforcer !== SINGLETON_ENFORCER) {
       throw new Error('Use ' + this.constructor.name + '.instance');
     }
-    this.currentUser = undefined;
+    this.currentUser = null;
   }
 
   static get instance() {
@@ -45,12 +45,11 @@ class NrpUserService extends HttpService {
   }
 
   /**
-   * Checks if the user can be got
+   * Checks if the user is set
    * @returns {bool} The presence of the logged in user
    */
-  isConnected() {
-    let identity = this.getCurrentUser();
-    return identity !== undefined;
+  userIsSet() {
+    return this.currentUser !== null;
   }
 
   /**
@@ -77,7 +76,7 @@ class NrpUserService extends HttpService {
           this.emit(NrpUserService.EVENTS.CONNECTED);
         }
       }).catch(() => {
-        this.currentUser = undefined;
+        this.currentUser = null;
         this.emit(NrpUserService.EVENTS.DISCONNECTED);
       });
     }

@@ -24,10 +24,28 @@ export default class UserMenu extends React.Component {
         });
       }
     });
+    NrpUserService.instance.on(NrpUserService.EVENTS.CONNECTED, this.onProxyConnected);
+    NrpUserService.instance.on(NrpUserService.EVENTS.DISCONNECTED, this.onProxyDisconnected);
   }
 
   componentWillUnmount() {
     this.cancelGetCurrentUser = true;
+    NrpUserService.instance.off(NrpUserService.EVENTS.CONNECTED, this.onProxyConnected);
+    NrpUserService.instance.off(NrpUserService.EVENTS.DISCONNECTED, this.onProxyDisconnected);
+  }
+
+  onProxyConnected = () => {
+    NrpUserService.instance.getCurrentUser().then((currentUser) => {
+      if (!this.cancelGetCurrentUser) {
+        this.setState({
+          user: currentUser
+        });
+      }
+    });
+  }
+
+  onProxyDisconnected = () => {
+    this.setState({ user: null });
   }
 
   onClickLogout() {

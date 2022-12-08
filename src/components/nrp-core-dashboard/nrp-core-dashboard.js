@@ -8,6 +8,7 @@ import DashboardIcon from '@material-ui/icons/Dashboard';
 
 import Grid from '@material-ui/core/Grid';
 import { Alert, AlertTitle } from '@material-ui/lab';
+import Button from '@material-ui/core/Button';
 
 export default class NrpCoreDashboard extends React.Component {
   constructor(props) {
@@ -15,7 +16,8 @@ export default class NrpCoreDashboard extends React.Component {
 
     this.state = {
       mqttConnected: MqttClientService.instance.isConnected(),
-      proxyConnected: false
+      proxyConnected: NrpUserService.instance.userIsSet(),
+      reconnectDisabled: NrpUserService.instance.userIsSet()
     };
 
     // this.mqttBrokerUrl = 'ws://' + window.location.hostname + ':8883';
@@ -46,11 +48,11 @@ export default class NrpCoreDashboard extends React.Component {
   }
 
   onProxyConnected = () => {
-    this.setState({ proxyConnected: true});
+    this.setState({ proxyConnected: true, reconnectDisabled: true});
   }
 
   onProxyDisconnected = () => {
-    this.setState({ proxyConnected: false});
+    this.setState({ proxyConnected: false, reconnectDisabled: false});
   }
 
   async triggerProxyScanStorage() {
@@ -70,17 +72,33 @@ export default class NrpCoreDashboard extends React.Component {
             </Alert>
           </Grid>
           <Grid item xs={12}>
-            <button onClick={this.triggerProxyScanStorage}>Proxy Scan Storage</button>
-          </Grid>
-          <Grid item xs={12}>
-            <Alert severity={this.state.proxyConnected ? 'success' : 'error'}>
+            <Alert severity={this.state.proxyConnected ? 'success' : 'error'}
+              action={
+                <Button
+                  color='inherit'
+                  size='small'
+                  disabled={this.state.reconnectDisabled}
+                  onClick={ async () => {
+                    this.setState({ reconnectDisabled: true});
+                    await NrpUserService.instance.getCurrentUser();
+                  }}
+                >
+                  Try to reconnect
+                </Button>
+              }
+            >
               <AlertTitle>NRP Proxy Connection</AlertTitle>
-              {this.mqttBrokerUrl}
+              {this.state.proxyConnected ? 'Connected' : 'Could not get response from the Proxy'}
             </Alert>
           </Grid>
           <Grid item xs={12}>
-            <button onClick={NrpUserService.instance.getCurrentUser()}>Try to login</button>
+            <Button onClick={this.triggerProxyScanStorage} disabled={!this.state.proxyConnected}>
+              Proxy Scan Storage
+            </Button>
           </Grid>
+          {/* <Grid item xs={12}>
+            <button onClick={NrpUserService.instance.getCurrentUser()}>Try to login</button>
+          </Grid> */}
         </Grid>
       </div>
     );

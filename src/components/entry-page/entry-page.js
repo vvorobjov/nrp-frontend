@@ -29,9 +29,9 @@ export default class EntryPage extends React.Component {
           <p>Experiment 2 Placeholder</p>
         </div>
         <div className='sidebar-right'></div>*/}
-        <div>
+        {/* <div>
           <div><b>!!! NRP Core testing !!!</b></div>
-        </div>
+        </div> */}
         <NrpCoreDashboard />
         {/*<TransceiverFunctionEditor experimentId='mqtt_simple_1'/>*/}
       </div>
