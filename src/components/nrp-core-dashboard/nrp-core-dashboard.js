@@ -4,11 +4,10 @@ import MqttClientService from '../../services/mqtt-client-service';
 import NrpUserService from '../../services/proxy/nrp-user-service.js';
 import ExperimentStorageService from '../../services/experiments/files/experiment-storage-service';
 
-import DashboardIcon from '@material-ui/icons/Dashboard';
-
 import Grid from '@material-ui/core/Grid';
 import { Alert, AlertTitle } from '@material-ui/lab';
 import Button from '@material-ui/core/Button';
+import DashboardIcon from '@material-ui/icons/Dashboard';
 
 export default class NrpCoreDashboard extends React.Component {
   constructor(props) {
@@ -20,18 +19,28 @@ export default class NrpCoreDashboard extends React.Component {
       reconnectDisabled: NrpUserService.instance.userIsSet()
     };
 
-    // this.mqttBrokerUrl = 'ws://' + window.location.hostname + ':8883';
     this.mqttBrokerUrl = MqttClientService.instance.getBrokerURL();
   }
 
+  /**
+   * is invoked immediately after a component is mounted (inserted into the tree).
+   * Initialization that requires DOM nodes should go here.
+   * If you need to load data from a remote endpoint,
+   * this is a good place to instantiate the network request.
+   */
   componentDidMount() {
     MqttClientService.instance.on(MqttClientService.EVENTS.CONNECTED, this.onMqttClientConnected);
     MqttClientService.instance.on(MqttClientService.EVENTS.DISCONNECTED, this.onMqttClientDisconnected);
     NrpUserService.instance.on(NrpUserService.EVENTS.CONNECTED, this.onProxyConnected);
     NrpUserService.instance.on(NrpUserService.EVENTS.DISCONNECTED, this.onProxyDisconnected);
-    // MqttClientService.instance.connect(this.mqttBrokerUrl);
   }
 
+  /**
+   * is invoked immediately before a component is unmounted and destroyed.
+   * Perform any necessary cleanup in this method,
+   * such as invalidating timers, canceling network requests,
+   * or cleaning up any subscriptions that were created in componentDidMount().
+   */
   componentWillUnmount() {
     MqttClientService.instance.off(MqttClientService.EVENTS.CONNECTED, this.onMqttClientConnected);
     MqttClientService.instance.off(MqttClientService.EVENTS.DISCONNECTED, this.onMqttClientDisconnected);
@@ -39,18 +48,30 @@ export default class NrpCoreDashboard extends React.Component {
     NrpUserService.instance.off(NrpUserService.EVENTS.DISCONNECTED, this.onProxyDisconnected);
   }
 
+  /**
+   * Sets the component state when the MQTT connection trigger is emitted
+   */
   onMqttClientConnected = () => {
     this.setState({ mqttConnected: true});
   }
 
+  /**
+   * Sets the component state when the MQTT connection problem trigger is emitted
+   */
   onMqttClientDisconnected = () => {
     this.setState({ mqttConnected: false});
   }
 
+  /**
+   * Sets the component state when the Proxy connection trigger is emitted
+   */
   onProxyConnected = () => {
     this.setState({ proxyConnected: true, reconnectDisabled: true});
   }
 
+  /**
+   * Sets the component state when the Proxy connection problem trigger is emitted
+   */
   onProxyDisconnected = () => {
     this.setState({ proxyConnected: false, reconnectDisabled: false});
   }

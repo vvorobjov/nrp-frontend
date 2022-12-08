@@ -1,9 +1,11 @@
 import React from 'react';
-import Dropdown from 'react-bootstrap/Dropdown';
-import { FaUserCircle, FaSignOutAlt } from 'react-icons/fa';
 
 import NrpUserService from '../../services/proxy/nrp-user-service.js';
 import AuthenticationService from '../../services/authentication-service.js';
+
+import Dropdown from 'react-bootstrap/Dropdown';
+import AccountCircleIcon from '@material-ui/icons/AccountCircle';
+import ExitToAppIcon from '@material-ui/icons/ExitToApp';
 
 import './user-menu.css';
 
@@ -16,25 +18,48 @@ export default class UserMenu extends React.Component {
     };
   }
 
+  /**
+   * is invoked immediately after a component is mounted (inserted into the tree).
+   * Initialization that requires DOM nodes should go here.
+   * If you need to load data from a remote endpoint,
+   * this is a good place to instantiate the network request.
+   */
   async componentDidMount() {
-    NrpUserService.instance.getCurrentUser().then((currentUser) => {
-      if (!this.cancelGetCurrentUser) {
-        this.setState({
-          user: currentUser
-        });
-      }
-    });
+    this.getCurrentUser();
     NrpUserService.instance.on(NrpUserService.EVENTS.CONNECTED, this.onProxyConnected);
     NrpUserService.instance.on(NrpUserService.EVENTS.DISCONNECTED, this.onProxyDisconnected);
   }
 
+  /**
+   * is invoked immediately before a component is unmounted and destroyed.
+   * Perform any necessary cleanup in this method,
+   * such as invalidating timers, canceling network requests,
+   * or cleaning up any subscriptions that were created in componentDidMount().
+   */
   componentWillUnmount() {
     this.cancelGetCurrentUser = true;
     NrpUserService.instance.off(NrpUserService.EVENTS.CONNECTED, this.onProxyConnected);
     NrpUserService.instance.off(NrpUserService.EVENTS.DISCONNECTED, this.onProxyDisconnected);
   }
 
+  /**
+   * Updates the user information when the Proxy connection trigger is emitted
+   */
   onProxyConnected = () => {
+    this.getCurrentUser();
+  }
+
+  /**
+   * Cleans the user information when the Proxy connection problem trigger is emitted
+   */
+  onProxyDisconnected = () => {
+    this.setState({ user: null });
+  }
+
+  /**
+   * Gets the user information through the NrpUserService
+   */
+  async getCurrentUser() {
     NrpUserService.instance.getCurrentUser().then((currentUser) => {
       if (!this.cancelGetCurrentUser) {
         this.setState({
@@ -44,10 +69,9 @@ export default class UserMenu extends React.Component {
     });
   }
 
-  onProxyDisconnected = () => {
-    this.setState({ user: null });
-  }
-
+  /**
+   * Invokes the logout procedure
+   */
   onClickLogout() {
     AuthenticationService.instance.logout();
     window.location.reload(true);
@@ -62,8 +86,8 @@ export default class UserMenu extends React.Component {
             variant='success'
             id='dropdown-basic'
           >
-            <div className='user-name'>
-              <FaUserCircle className='user-icon' />
+            <div id='user-menu-name' className='user-name'>
+              <AccountCircleIcon className='user-icon' />
               {this.state.user ? this.state.user.displayName : 'pending ...'}
             </div>
           </Dropdown.Toggle>
@@ -73,12 +97,11 @@ export default class UserMenu extends React.Component {
               className='dropdown-item'
               onClick={this.onClickLogout}
             >
-              <FaSignOutAlt className='user-icon' />
+              <ExitToAppIcon className='user-icon' />
                Logout
             </Dropdown.Item>
           </Dropdown.Menu>
         </Dropdown>
-
       </div>
     );
   }
