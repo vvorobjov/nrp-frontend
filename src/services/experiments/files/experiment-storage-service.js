@@ -9,6 +9,7 @@ const PROXY_URL = config.api.proxy.url;
 const SCAN_STORAGE_URL = `${PROXY_URL}${endpoints.proxy.storage.scanStorage.url}`;
 const storageURL = `${PROXY_URL}${endpoints.proxy.storage.url}`;
 const storageExperimentsURL = `${PROXY_URL}${endpoints.proxy.storage.experiments.url}`;
+const cloneURL = `${PROXY_URL}${endpoints.proxy.storage.clone.url}`;
 
 
 let _instance = null;
@@ -159,6 +160,15 @@ class ExperimentStorageService extends HttpService {
     });
 
     return Promise.all(experimentUpdates);
+  }
+
+  /**
+   * Clone a storage experiment
+   * @param {Object} experiment The Experiment configuration
+   */
+  async cloneExperiment(experiment) {
+    let experimentName = experiment.name;
+    this.httpRequestPOST(cloneURL + '/' + experimentName);
   }
 
   /**

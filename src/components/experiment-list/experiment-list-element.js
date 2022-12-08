@@ -319,7 +319,16 @@ class ExperimentListElement extends React.Component {
                   variant='secondary'
                   onClick={async () => {
                     this.setState({ cloneInProgress: true });
-                    await PublicExperimentsService.instance.cloneExperiment(exp);
+                    // exp.name property belongs to the storage experiments
+                    if (exp.name){
+                      // Clone storage experiment
+                      await ExperimentStorageService.instance.cloneExperiment(exp);
+                    }
+                    else {
+                      // Clone template experiment
+                      await PublicExperimentsService.instance.cloneExperiment(exp);
+                    }
+                    // Wait the cloning to finish
                     await ExperimentStorageService.instance.getExperiments(true).then(() => {
                       this.setState({cloneInProgress: false});
                     });

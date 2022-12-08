@@ -148,7 +148,7 @@ class PublicExperimentsService extends HttpService {
   }
 
   /**
-   * Clone an experiment setup to storage
+   * Clone a public experiment setup to storage
    * @param {Object} experiment The Experiment configuration
    */
   async cloneExperiment(experiment) {
