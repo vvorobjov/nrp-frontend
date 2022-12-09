@@ -95,15 +95,15 @@ export default class ImportExperimentButtons extends React.Component {
       <div>
         {/* Import folder pop-up */}
         {this.state.importFolderResponse
-          ? <div className="import-popup">
-            <div className="alert alert-success" role="alert">
+          ? <div className='import-popup'>
+            <div className='alert alert-success' role='alert'>
               <p>The experiment folder
                 <b>{' ' + this.state.importFolderResponse.zipBaseFolderName}</b> has been succesfully imported as
                 <b>{' ' + this.state.importFolderResponse.destFolderName}</b>.
               </p>
             </div>
-            <div className="text-right">
-              <button className="btn btn-success" onClick={() => this.importFolderPopupClick()}>Got it!</button>
+            <div className='text-right'>
+              <button className='btn btn-success' onClick={() => this.importFolderPopupClick()}>Got it!</button>
             </div>
           </div>
           : null
@@ -111,16 +111,16 @@ export default class ImportExperimentButtons extends React.Component {
 
         {/* Import zip pop-up */}
         {this.state.importZipResponses
-          ? <div className="import-popup">
-            <div className="alert alert-success" role="alert">
+          ? <div className='import-popup'>
+            <div className='alert alert-success' role='alert'>
               <p>{this.state.importZipResponses.numberOfZips} successfully imported zip files.</p>
             </div>
             <p>The following experiments folders</p>
             <p><b>{this.state.importZipResponses.zipBaseFolderName.join(', ')}</b></p>
             <p>have been successfully imported as:</p>
             <p><b>{this.state.importZipResponses.destFolderName.join(', ')}.</b></p>
-            <div className="text-right">
-              <button className="btn btn-success" onClick={() => this.importZipPopupClick()}>Got it!</button>
+            <div className='text-right'>
+              <button className='btn btn-success' onClick={() => this.importZipPopupClick()}>Got it!</button>
             </div>
           </div>
           : null
@@ -128,8 +128,8 @@ export default class ImportExperimentButtons extends React.Component {
 
         {/* Scan pop-up */}
         {this.state.scanStorageResponse
-          ? <div className="import-popup">
-            <div className="alert alert-success" role="alert">
+          ? <div className='import-popup'>
+            <div className='alert alert-success' role='alert'>
               <p>{this.state.scanStorageResponse.addedFoldersNumber} added folders,
                 {' ' + this.state.scanStorageResponse.deletedFoldersNumber} deleted folders.</p>
             </div>
@@ -142,23 +142,23 @@ export default class ImportExperimentButtons extends React.Component {
             <p><b>{this.state.scanStorageResponse.deletedFolders !== ''
               ? this.state.scanStorageResponse.deletedFolders
               : 'none' }</b></p>
-            <div className="text-right">
-              <button className="btn btn-success" onClick={() => this.scanStoragePopupClick()}>Got it!</button>
+            <div className='text-right'>
+              <button className='btn btn-success' onClick={() => this.scanStoragePopupClick()}>Got it!</button>
             </div>
           </div>
           : null
         }
 
         {/* Import buttons */}
-        <div className="list-entry-buttons flex-container center">
-          <input disabled="true" id="folder" type="file" style={{display:'none'}}
-            multiple directory="" webkitdirectory=""
+        <div className='list-entry-buttons flex-container center'>
+          <input disabled={true} id='folder' type='file' style={{display:'none'}}
+            multiple directory='' webkitdirectory=''
             onChange={(event) => this.importExperimentFolderChange(event)}/>
-          <input disabled="true" id="zip" type="file" style={{display:'none'}}
+          <input disabled={true} id='zip' type='file' style={{display:'none'}}
             multiple accept='.zip'
             onChange={(event) => this.importZippedExperimentChange(event)}/>
           {!this.state.isImporting
-            ? <div className="btn-group" role="group">
+            ? <div className='btn-group' role='group'>
               <OverlayTrigger placement='bottom'
                 key='folder-tooltip'
                 overlay={
@@ -167,8 +167,8 @@ export default class ImportExperimentButtons extends React.Component {
                   </Tooltip>
                 }
               >
-                <button type="button" className="btn btn-outline-dark">
-                  <label htmlFor="folder" className="import-button">
+                <button type='button' className='btn btn-outline-dark'>
+                  <label htmlFor='folder' className='import-button'>
                     <FaFolder/> Import folder
                   </label>
                 </button>
@@ -181,13 +181,13 @@ export default class ImportExperimentButtons extends React.Component {
                   </Tooltip>
                 }
               >
-                <button type="button" className="btn btn-outline-dark"
-                  data-toggle="tooltip" data-placement="bottom" title="Tooltip on bottom"
+                <button type='button' className='btn btn-outline-dark'
+                  data-toggle='tooltip' data-placement='bottom' title='Tooltip on bottom'
                 >
-                  <label htmlFor="zip" className="import-button"><FaFileArchive /> Import zip</label>
+                  <label htmlFor='zip' className='import-button'><FaFileArchive /> Import zip</label>
                 </button >
               </OverlayTrigger>
-              <button type="button" className="btn btn-outline-dark" onClick={() => this.scanStorageClick()}>
+              <button type='button' className='btn btn-outline-dark' onClick={() => this.scanStorageClick()}>
                 <FaAudible/> Scan Storage
               </button>
             </div>
