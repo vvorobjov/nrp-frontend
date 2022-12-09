@@ -62,8 +62,14 @@ class ServerResourcesService extends HttpService {
    */
   async getServerAvailability(forceUpdate = false) {
     if (!this.availableServers || forceUpdate) {
-      this.availableServers = await (await this.httpRequestGET(availableServersURL)).json();
-      this.emit(ServerResourcesService.EVENTS.UPDATE_SERVER_AVAILABILITY, this.availableServers);
+      try{
+        this.availableServers = await (await this.httpRequestGET(availableServersURL)).json();
+        this.emit(ServerResourcesService.EVENTS.UPDATE_SERVER_AVAILABILITY, this.availableServers);
+      }
+      catch (error) {
+        this.availableServers = null;
+        DialogService.instance.networkError(error);
+      }
     }
 
     return this.availableServers;

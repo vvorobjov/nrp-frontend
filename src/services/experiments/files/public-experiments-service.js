@@ -3,6 +3,7 @@ import { EXPERIMENT_RIGHTS } from '../experiment-constants';
 
 import endpoints from '../../proxy/data/endpoints.json';
 import config from '../../../config.json';
+import DialogService from '../../dialog-service.js';
 
 const PROXY_URL = config.api.proxy.url;
 const experimentsURL = `${PROXY_URL}${endpoints.proxy.experiments.url}`;
@@ -70,11 +71,17 @@ class PublicExperimentsService extends HttpService {
   // move to experiment-configuration-service?
   async getExperiments(forceUpdate = false) {
     if (!this.experiments || forceUpdate) {
-      let experimentList = Object.values(await (await this.httpRequestGET(experimentsURL)).json());
-      this.sortExperiments(experimentList);
-      await this.fillExperimentDetails(experimentList);
-      this.experiments = experimentList;
-      this.emit(PublicExperimentsService.EVENTS.UPDATE_EXPERIMENTS, this.experiments);
+      try {
+        let experimentList = Object.values(await (await this.httpRequestGET(experimentsURL)).json());
+        this.sortExperiments(experimentList);
+        await this.fillExperimentDetails(experimentList);
+        this.experiments = experimentList;
+        this.emit(PublicExperimentsService.EVENTS.UPDATE_EXPERIMENTS, this.experiments);
+      }
+      catch (error) {
+        this.experiments = null;
+        DialogService.instance.networkError(error);
+      }
     }
 
     return this.experiments;
