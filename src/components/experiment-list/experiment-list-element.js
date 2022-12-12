@@ -282,7 +282,8 @@ class ExperimentListElement extends React.Component {
                 {/* Records button */}
                 {exp.rights.launch ?
                   <Button className='nrp-btn btn-default'
-                    variant='secondary'>
+                    variant='secondary'
+                    disabled={true}>
                     {this.state.showRecordings ?
                       <VscTriangleUp className='icon' /> :
                       <VscTriangleDown className='icon' />
@@ -294,7 +295,8 @@ class ExperimentListElement extends React.Component {
                 {/* Export button */}
                 {exp.rights.launch ?
                   <Button className='nrp-btn btn-default'
-                    variant='secondary'>
+                    variant='secondary'
+                    disabled={true}>
                     <FaFileExport className='icon' />Export
                   </Button>
                   : null}
@@ -344,7 +346,8 @@ class ExperimentListElement extends React.Component {
                 {/* Shared button */}
                 {exp.rights.launch ?
                   <Button className='nrp-btn btn-default'
-                    variant='secondary'>
+                    variant='secondary'
+                    disabled={true}>
                     <FaShareAlt className='icon' />Share
                   </Button>
                   : null}
@@ -355,6 +358,13 @@ class ExperimentListElement extends React.Component {
           {this.state.selected && exp.joinableServers.length > 0 && this.state.showSimDetails ?
             <SimulationDetails simulations={exp.joinableServers} />
             : null
+          }
+          {exp.rights.launch ?
+            <div className='experiment-clone-date'>
+              Cloning date: {config.cloneDate}
+            </div>
+            :
+            null
           }
         </div>
       </div>

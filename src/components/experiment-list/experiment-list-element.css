@@ -132,3 +132,11 @@
 .experiment-details {
   margin-top: 10px;
 }
+
+.experiment-clone-date {
+  margin-right: 50px;
+  display: flex;
+  justify-content: flex-end;
+  font-style: italic;
+  font-size: 0.8em;
+}
