@@ -60,7 +60,8 @@
     "port": "8883",
     "topics": {
       "base": "nrp",
-      "time": "time"
+      "time": "time",
+      "errors": "errors"
     }
   },
   "ros-topics": {

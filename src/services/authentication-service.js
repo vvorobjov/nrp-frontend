@@ -128,7 +128,8 @@ class AuthenticationService {
   }
 
   checkForNewLocalTokenToStore() {
-    const path = window.location.pathname;
+    // const path = window.location.pathname;
+    const path = window.location.href;
 
     const accessTokenMatch = /&access_token=([^&]*)/.exec(path);
     if (!accessTokenMatch || !accessTokenMatch[1]) {
@@ -144,7 +145,7 @@ class AuthenticationService {
 
     // navigate to clean url
     let cleanedPath = path.substr(0, path.indexOf('&'));
-    window.location = cleanedPath;
+    window.location.href = cleanedPath;
   }
 
   clearStoredLocalToken() {

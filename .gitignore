@@ -53,3 +53,4 @@ Thumbs.db
 
 src/config.json
 coverage
+junit.xml
