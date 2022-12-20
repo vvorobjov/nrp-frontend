@@ -25,7 +25,7 @@ export default class UserMenu extends React.Component {
    * this is a good place to instantiate the network request.
    */
   async componentDidMount() {
-    this.getCurrentUser();
+    this.getCurrentUser(true);
     NrpUserService.instance.on(NrpUserService.EVENTS.CONNECTED, this.onProxyConnected);
     NrpUserService.instance.on(NrpUserService.EVENTS.DISCONNECTED, this.onProxyDisconnected);
   }

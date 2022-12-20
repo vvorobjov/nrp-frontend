@@ -9,8 +9,9 @@
       "src/services/**/*.js"
     ],
     "coveragePathIgnorePatterns": [
-      "src/services/experiments/execution/__tests__/running-simulation-service.test.js",
-      "src/services/__tests__/roslib-service.test.js"
+      "src/services/experiments/execution/running-simulation-service.js",
+      "src/services/roslib-service.js",
+      "src/services/experiments/files/import-experiment-service.js"
     ]
   },
   "version": "0.1.0",

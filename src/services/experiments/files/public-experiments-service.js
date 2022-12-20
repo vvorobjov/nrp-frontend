@@ -125,7 +125,7 @@ class PublicExperimentsService extends HttpService {
       }
 
       // retrieve the experiment thumbnail
-      // TODO: Make the proxy request working
+      // TODO: [NRRPLT-8681] Make the proxy request working
       // experimentUpdates.push(this.getThumbnailURL(experiment.configuration.id).then(thumbnailURL => {
       //   if (thumbnailURL) {
       //     experiment.thumbnailURL = thumbnailURL; //URL.createObjectURL(thumbnail);
@@ -143,6 +143,8 @@ class PublicExperimentsService extends HttpService {
    * Retrieves the thumbnail image for a given experiment.
    * @param {string} experimentName - name of the experiment
    * @param {string} thumbnailFilename - name of the thumbnail file
+   *
+   * TODO: [NRRPLT-8681] Fix endpoint
    *
    * @returns {Blob} image object
    */

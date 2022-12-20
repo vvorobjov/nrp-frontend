@@ -150,6 +150,7 @@ export default class ImportExperimentButtons extends React.Component {
         }
 
         {/* Import buttons */}
+        {/* TODO: [NRRPLT-8721] restore experiment import funtionality */}
         <div className='list-entry-buttons flex-container center'>
           <input disabled={true} id='folder' type='file' style={{display:'none'}}
             multiple directory='' webkitdirectory=''

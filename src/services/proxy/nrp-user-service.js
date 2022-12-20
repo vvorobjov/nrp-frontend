@@ -68,12 +68,16 @@ class NrpUserService extends HttpService {
    *
    * @return currentUser - the user currently logged in
    */
-  async getCurrentUser() {
-    if (!this.currentUser) {
+  async getCurrentUser(force = false) {
+    if (force || !this.currentUser) {
       await this.httpRequestGET(IDENTITY_ME_URL).then(async (identity) => {
         if (identity.ok){
           this.currentUser = await identity.json();
           this.emit(NrpUserService.EVENTS.CONNECTED);
+        }
+        else {
+          // TODO: emit some event? error?
+          this.currentUser = null;
         }
       }).catch(() => {
         this.currentUser = null;
