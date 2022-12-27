@@ -1,6 +1,7 @@
 import React from 'react';
 
 import NrpUserService from '../../services/proxy/nrp-user-service.js';
+import EventProxyService from '../../services/proxy/event-proxy-service';
 import AuthenticationService from '../../services/authentication-service.js';
 
 import Dropdown from 'react-bootstrap/Dropdown';
@@ -26,8 +27,8 @@ export default class UserMenu extends React.Component {
    */
   async componentDidMount() {
     this.getCurrentUser(true);
-    NrpUserService.instance.on(NrpUserService.EVENTS.CONNECTED, this.onProxyConnected);
-    NrpUserService.instance.on(NrpUserService.EVENTS.DISCONNECTED, this.onProxyDisconnected);
+    EventProxyService.instance.prependListener(EventProxyService.EVENTS.CONNECTED, this.onProxyConnected);
+    EventProxyService.instance.prependListener(EventProxyService.EVENTS.DISCONNECTED, this.onProxyDisconnected);
   }
 
   /**
@@ -38,8 +39,8 @@ export default class UserMenu extends React.Component {
    */
   componentWillUnmount() {
     this.cancelGetCurrentUser = true;
-    NrpUserService.instance.off(NrpUserService.EVENTS.CONNECTED, this.onProxyConnected);
-    NrpUserService.instance.off(NrpUserService.EVENTS.DISCONNECTED, this.onProxyDisconnected);
+    EventProxyService.instance.off(EventProxyService.EVENTS.CONNECTED, this.onProxyConnected);
+    EventProxyService.instance.off(EventProxyService.EVENTS.DISCONNECTED, this.onProxyDisconnected);
   }
 
   /**
