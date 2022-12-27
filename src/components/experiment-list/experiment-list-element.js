@@ -225,11 +225,11 @@ class ExperimentListElement extends React.Component {
                 Brain processes: {config.brainProcesses}
               </i>
               <br />*/}
-              <div style={{ display: 'flex' }}>
+              {/* <div style={{ display: 'flex' }}>
                 <i style={{ marginTop: '4px' }}>Server status: </i>
                 <i className={'server-icon ' + this.getServerStatusClass()}
                   title={this.getAvailabilityInfo()}></i>
-              </div>
+              </div> */}
             </div>
           }
 

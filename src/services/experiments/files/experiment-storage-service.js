@@ -1,15 +1,13 @@
-import { HttpService } from '../../http-service.js';
+import { HttpProxyService, NRPProxyError } from '../../proxy/http-proxy-service';
 import { EXPERIMENT_RIGHTS } from '../experiment-constants';
 
 import endpoints from '../../proxy/data/endpoints.json';
-import config from '../../../config.json';
 import DialogService from '../../dialog-service.js';
 
-const PROXY_URL = config.api.proxy.url;
-const SCAN_STORAGE_URL = `${PROXY_URL}${endpoints.proxy.storage.scanStorage.url}`;
-const storageURL = `${PROXY_URL}${endpoints.proxy.storage.url}`;
-const storageExperimentsURL = `${PROXY_URL}${endpoints.proxy.storage.experiments.url}`;
-const cloneURL = `${PROXY_URL}${endpoints.proxy.storage.clone.url}`;
+const SCAN_STORAGE_URL = `${endpoints.proxy.storage.scanStorage.url}`;
+const storageURL = `${endpoints.proxy.storage.url}`;
+const storageExperimentsURL = `${endpoints.proxy.storage.experiments.url}`;
+const cloneURL = `${endpoints.proxy.storage.clone.url}`;
 
 
 let _instance = null;
@@ -19,7 +17,7 @@ const SINGLETON_ENFORCER = Symbol();
  * Service that handles storage experiment files and configurations given
  * that the user has authenticated successfully.
  */
-class ExperimentStorageService extends HttpService {
+class ExperimentStorageService extends HttpProxyService {
   constructor(enforcer) {
     super();
     if (enforcer !== SINGLETON_ENFORCER) {
@@ -90,7 +88,12 @@ class ExperimentStorageService extends HttpService {
       }
       catch (error) {
         this.experiments = null;
-        DialogService.instance.networkError(error);
+        if (error instanceof NRPProxyError) {
+          DialogService.instance.networkError(error);
+        }
+        else {
+          DialogService.instance.unexpectedError(error);
+        }
       }
     }
 
@@ -192,7 +195,7 @@ class ExperimentStorageService extends HttpService {
   async getFile(experimentDirectoryPath, filename, byName = false) {
     let directory = experimentDirectoryPath.replace(/[\/]/g, '%2F');
     let file = filename.replace(/[\/]/g, '%2F');
-    const url = `${config.api.proxy.url}${endpoints.proxy.storage.url}/${directory}/${file}?byname=${byName}`;
+    const url = `${endpoints.proxy.storage.url}/${directory}/${file}?byname=${byName}`;
     return this.httpRequestGET(url);
   }
 
@@ -204,7 +207,7 @@ class ExperimentStorageService extends HttpService {
    */
   async getExperimentFiles(experimentName) {
     let experiment = experimentName.replace(/[\/]/g, '%2F');
-    let url = `${config.api.proxy.url}${endpoints.proxy.storage.url}/${experiment}`;
+    let url = `${endpoints.proxy.storage.url}/${experiment}`;
     const files = await (await this.httpRequestGET(url)).json();
     return files;
   }
@@ -247,9 +250,13 @@ class ExperimentStorageService extends HttpService {
    * @returns the request object containing the status code
    */
   async deleteEntity(experimentName, entityName, byname, type) {
-    const url = new URL(`${config.api.proxy.url}${endpoints.proxy.storage.url}/${experimentName}/${entityName}`);
-    url.searchParams.set('byname', byname);
-    url.searchParams.set('type', type);
+    const url = this.createRequestURL(
+      `${endpoints.proxy.storage.url}/${experimentName}/${entityName}`,
+      {
+        byname: byname,
+        type: type
+      }
+    );
 
     return this.httpRequestDELETE(url);
   }
@@ -300,8 +307,12 @@ class ExperimentStorageService extends HttpService {
    */
   async setFile(experimentName, filename, data, byname = true, contentType = 'text/plain') {
     let directory = experimentName.replace(/[\/]/g, '%2F');
-    const url = new URL(`${config.api.proxy.url}${endpoints.proxy.storage.url}/${directory}/${filename}`);
-    url.searchParams.append('byname', byname);
+    const url = this.createRequestURL(
+      `${endpoints.proxy.storage.url}/${directory}/${filename}`,
+      {
+        byname: byname
+      }
+    );
 
     let requestOptions = {
       ...this.POSTOptions, ...{ headers: { 'Content-Type': contentType } }

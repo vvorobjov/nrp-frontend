@@ -96,10 +96,8 @@ export default class ExperimentsOverview extends React.Component {
   };
 
   onUpdateStorageExperiments(storageExperiments) {
-    // TODO: Remove mock
-    // let joinableExperiments = storageExperiments.filter(
-    //   experiment => experiment.joinableServers && experiment.joinableServers.length > 0);
-    let joinableExperiments = storageExperiments;
+    let joinableExperiments = storageExperiments.filter(
+      experiment => experiment.joinableServers && experiment.joinableServers.length > 0);
     this.setState({
       storageExperiments: storageExperiments,
       joinableExperiments: joinableExperiments

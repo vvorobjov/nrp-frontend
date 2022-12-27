@@ -1,7 +1,6 @@
-import config from '../../config.json';
 import endpoints from './data/endpoints.json';
 
-import { HttpService } from '../http-service.js';
+import { HttpProxyService } from '../proxy/http-proxy-service';
 
 const USERGROUP_NAME_ADMINS = 'hbp-sp10-administrators';
 const USERGROUP_NAME_CLUSTER_RESERVATION = 'hbp-sp10-cluster-reservation';
@@ -10,15 +9,14 @@ let _instance = null;
 const SINGLETON_ENFORCER = Symbol();
 
 
-const PROXY_URL = config.api.proxy.url;
-const IDENTITY_BASE_URL = `${PROXY_URL}${endpoints.proxy.identity.url}`;
-const IDENTITY_ME_URL = `${PROXY_URL}${endpoints.proxy.identity.me.url}`;
-const IDENTITY_ME_GROUPS_URL = `${PROXY_URL}${endpoints.proxy.identity.me.groups.url}`;
+const IDENTITY_BASE_URL = `${endpoints.proxy.identity.url}`;
+const IDENTITY_ME_URL = `${endpoints.proxy.identity.me.url}`;
+const IDENTITY_ME_GROUPS_URL = `${endpoints.proxy.identity.me.groups.url}`;
 const GDPR_URL = `${IDENTITY_BASE_URL}${endpoints.proxy.identity.gdpr.url}`;
 /**
  * Service managing all data related to NRP users.
  */
-class NrpUserService extends HttpService {
+class NrpUserService extends HttpProxyService {
   constructor(enforcer) {
     super();
     if (enforcer !== SINGLETON_ENFORCER) {

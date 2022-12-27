@@ -2,6 +2,7 @@ import React from 'react';
 
 import MqttClientService from '../../services/mqtt-client-service';
 import NrpUserService from '../../services/proxy/nrp-user-service.js';
+import EventProxyService from '../../services/proxy/event-proxy-service';
 import ExperimentStorageService from '../../services/experiments/files/experiment-storage-service';
 
 import Grid from '@material-ui/core/Grid';
@@ -9,14 +10,24 @@ import { Alert, AlertTitle } from '@material-ui/lab';
 import Button from '@material-ui/core/Button';
 import DashboardIcon from '@material-ui/icons/Dashboard';
 
+/**
+ * The component drawing the NRP dashboard,
+ * depending on the proxy and MQTT connectivity.
+ *
+ * @augments React.Component
+ * @listens EventProxyService.EVENTS.CONNECTED
+ * @listens EventProxyService.EVENTS.DISCONNECTED
+ * @listens MqttClientService.EVENTS.CONNECTED
+ * @listens MqttClientService.EVENTS.DISCONNECTED
+ */
 export default class NrpCoreDashboard extends React.Component {
   constructor(props) {
     super(props);
 
     this.state = {
       mqttConnected: MqttClientService.instance.isConnected(),
-      proxyConnected: NrpUserService.instance.userIsSet(),
-      reconnectDisabled: NrpUserService.instance.userIsSet()
+      proxyConnected: EventProxyService.instance.isConnected(),
+      reconnectDisabled: EventProxyService.instance.isConnected()
     };
 
     this.mqttBrokerUrl = MqttClientService.instance.getBrokerURL();
@@ -31,8 +42,9 @@ export default class NrpCoreDashboard extends React.Component {
   componentDidMount() {
     MqttClientService.instance.on(MqttClientService.EVENTS.CONNECTED, this.onMqttClientConnected);
     MqttClientService.instance.on(MqttClientService.EVENTS.DISCONNECTED, this.onMqttClientDisconnected);
-    NrpUserService.instance.on(NrpUserService.EVENTS.CONNECTED, this.onProxyConnected);
-    NrpUserService.instance.on(NrpUserService.EVENTS.DISCONNECTED, this.onProxyDisconnected);
+    EventProxyService.instance.prependListener(EventProxyService.EVENTS.CONNECTED, this.onProxyConnected);
+    // add listener to the beginning, because EventProxyService listener throws and prevents other listeners to execute
+    EventProxyService.instance.prependListener(EventProxyService.EVENTS.DISCONNECTED, this.onProxyDisconnected);
   }
 
   /**
@@ -44,12 +56,13 @@ export default class NrpCoreDashboard extends React.Component {
   componentWillUnmount() {
     MqttClientService.instance.off(MqttClientService.EVENTS.CONNECTED, this.onMqttClientConnected);
     MqttClientService.instance.off(MqttClientService.EVENTS.DISCONNECTED, this.onMqttClientDisconnected);
-    NrpUserService.instance.off(NrpUserService.EVENTS.CONNECTED, this.onProxyConnected);
-    NrpUserService.instance.off(NrpUserService.EVENTS.DISCONNECTED, this.onProxyDisconnected);
+    EventProxyService.instance.off(EventProxyService.EVENTS.CONNECTED, this.onProxyConnected);
+    EventProxyService.instance.off(EventProxyService.EVENTS.DISCONNECTED, this.onProxyDisconnected);
   }
 
   /**
-   * Sets the component state when the MQTT connection trigger is emitted
+   * Sets the component state when the MQTT connection trigger is emitted.
+   * @listens MqttClientService.EVENTS.CONNECTED
    */
   onMqttClientConnected = () => {
     this.setState({ mqttConnected: true});
@@ -57,6 +70,7 @@ export default class NrpCoreDashboard extends React.Component {
 
   /**
    * Sets the component state when the MQTT connection problem trigger is emitted
+   * @listens MqttClientService.EVENTS.DISCONNECTED
    */
   onMqttClientDisconnected = () => {
     this.setState({ mqttConnected: false});
@@ -64,6 +78,7 @@ export default class NrpCoreDashboard extends React.Component {
 
   /**
    * Sets the component state when the Proxy connection trigger is emitted
+   * @listens EventProxyService.EVENTS.CONNECTED
    */
   onProxyConnected = () => {
     this.setState({ proxyConnected: true, reconnectDisabled: true});
@@ -71,6 +86,7 @@ export default class NrpCoreDashboard extends React.Component {
 
   /**
    * Sets the component state when the Proxy connection problem trigger is emitted
+   * @listens EventProxyService.EVENTS.DISCONNECTED
    */
   onProxyDisconnected = () => {
     this.setState({ proxyConnected: false, reconnectDisabled: false});
@@ -101,7 +117,12 @@ export default class NrpCoreDashboard extends React.Component {
                   disabled={this.state.reconnectDisabled}
                   onClick={ async () => {
                     this.setState({ reconnectDisabled: true});
-                    await NrpUserService.instance.getCurrentUser();
+                    try {
+                      await NrpUserService.instance.getCurrentUser();
+                    }
+                    finally {
+                      this.setState({ reconnectDisabled: EventProxyService.instance.isConnected()});
+                    }
                   }}
                 >
                   Try to reconnect

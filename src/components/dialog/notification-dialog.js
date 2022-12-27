@@ -28,14 +28,12 @@ class NotificationDialog extends React.Component{
     );
   }
 
-  onNotification(notification, date = new Date()) {
+  onNotification(notification) {
     // avoid duplicates
     var isIn = false;
-    notification.date = date;
     this.state.notifications.forEach((notif) =>{
       if (notification.type===notif.type
-        && notification.message===notif.message
-        && notification.date===notif.date){
+        && notification.message===notif.message){
         isIn = true;
       }
     });
@@ -69,7 +67,6 @@ class NotificationDialog extends React.Component{
                     animation={true} autohide={true}>
                     <Toast.Header className={notification.type === 'Warning' ? 'warning' : 'info'} >
                       <strong className='mr-auto'>{notification.type}</strong>
-                      <small>{notification.date.toLocaleTimeString()}</small>
                     </Toast.Header>
                     <Toast.Body>
                       <h6>{notification.message}</h6>

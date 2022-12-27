@@ -9,9 +9,10 @@ import DialogService from '../../../dialog-service.js';
 import endpoints from '../../../proxy/data/endpoints.json';
 import config from '../../../../config.json';
 import MockExperiments from '../../../../mocks/mock_experiments.json';
+import {NRPProxyError} from '../../../proxy/http-proxy-service'
 
 const proxyEndpoint = endpoints.proxy;
-const experimentsUrl = `${config.api.proxy.url}${proxyEndpoint.storage.experiments.url}`;
+const experimentsUrl = `${proxyEndpoint.storage.experiments.url}`;
 
 jest.setTimeout(3 * ExperimentStorageService.CONSTANTS.INTERVAL_POLL_EXPERIMENTS);
 
@@ -59,12 +60,26 @@ describe('ExperimentStorageService', () => {
     // forced update should result in new request
     await ExperimentStorageService.instance.getExperiments(true);
     expect(ExperimentStorageService.instance.performRequest.mock.calls.length > oldCallCount).toBe(true);
+  });
 
+  test('raises the unexpectedError dialog on Error', async () => {
+    // error should appear if the service is unavailable (use force update)
+    // and return value should be null
+    jest.spyOn(DialogService.instance, 'unexpectedError');
+    jest.spyOn(ExperimentStorageService.instance, 'httpRequestGET').mockImplementationOnce(async () => {
+      throw new Error('Test Error');
+    });
+    const nullExperiments = await ExperimentStorageService.instance.getExperiments(true);
+    expect(nullExperiments).toBeNull();
+    expect(DialogService.instance.unexpectedError).toBeCalled();
+  });
+
+  test('raises the networkError dialog on NRPProxyError', async () => {
     // error should appear if the service is unavailable (use force update)
     // and return value should be null
     jest.spyOn(DialogService.instance, 'networkError');
-    jest.spyOn(ExperimentStorageService.instance, 'httpRequestGET').mockImplementation(async () => {
-      throw new Error('Test error');
+    jest.spyOn(ExperimentStorageService.instance, 'httpRequestGET').mockImplementationOnce(async () => {
+      throw new NRPProxyError('Test NRPProxyError', null, null);
     });
     const nullExperiments = await ExperimentStorageService.instance.getExperiments(true);
     expect(nullExperiments).toBeNull();
@@ -166,7 +181,7 @@ describe('ExperimentStorageService', () => {
     await ExperimentStorageService.instance.cloneExperiment(MockExperiments[0]);
 
     expect(ExperimentStorageService.instance.httpRequestPOST).toBeCalledWith(
-      `${config.api.proxy.url}${endpoints.proxy.storage.clone.url}/${MockExperiments[0].name}`
+      `${endpoints.proxy.storage.clone.url}/${MockExperiments[0].name}`
     );
   });
 
@@ -176,7 +191,7 @@ describe('ExperimentStorageService', () => {
 
     let fileList = await ExperimentStorageService.instance.getExperimentFiles(MockExperiments[0].name);
     expect(ExperimentStorageService.instance.httpRequestGET).toBeCalledWith(
-      `${config.api.proxy.url}${endpoints.proxy.storage.url}/${MockExperiments[0].name}`
+      `${endpoints.proxy.storage.url}/${MockExperiments[0].name}`
     );
     expect(fileList).toEqual({ 'description': 'fileList' });
   });
@@ -187,35 +202,32 @@ describe('ExperimentStorageService', () => {
     await ExperimentStorageService.instance.deleteExperiment(MockExperiments[0].name);
     expect(ExperimentStorageService.instance.httpRequestDELETE).toHaveBeenNthCalledWith(
       1,
-      new URL(`${config.api.proxy.url}${endpoints.proxy.storage.url}/${MockExperiments[0].name}`).href
+      `${endpoints.proxy.storage.url}/${MockExperiments[0].name}`
     );
 
     let entityName = 'someEntity';
-    let expectedArg = new URL(`${config.api.proxy.url}${endpoints.proxy.storage.url}/${MockExperiments[0].name}/${entityName}`);
-    expectedArg.searchParams.set('byname', false);
-    expectedArg.searchParams.set('type', 'folder');
+    let expectedArg = `${endpoints.proxy.storage.url}/${MockExperiments[0].name}/${entityName}?byname=false&type=folder`;
     await ExperimentStorageService.instance.deleteFolder(MockExperiments[0].name, entityName);
     expect(ExperimentStorageService.instance.httpRequestDELETE).toHaveBeenNthCalledWith(
       2,
       expectedArg
     );
 
-    expectedArg.searchParams.set('byname', true);
+    expectedArg = `${endpoints.proxy.storage.url}/${MockExperiments[0].name}/${entityName}?byname=true&type=folder`;
     await ExperimentStorageService.instance.deleteFolder(MockExperiments[0].name, entityName, true);
     expect(ExperimentStorageService.instance.httpRequestDELETE).toHaveBeenNthCalledWith(
       3,
       expectedArg
     );
-    
-    expectedArg.searchParams.set('byname', false);
-    expectedArg.searchParams.set('type', 'file');
+
+    expectedArg = `${endpoints.proxy.storage.url}/${MockExperiments[0].name}/${entityName}?byname=false&type=file`;
     await ExperimentStorageService.instance.deleteFile(MockExperiments[0].name, entityName);
     expect(ExperimentStorageService.instance.httpRequestDELETE).toHaveBeenNthCalledWith(
       4,
       expectedArg
     );
-    
-    expectedArg.searchParams.set('byname', true);
+
+    expectedArg = `${endpoints.proxy.storage.url}/${MockExperiments[0].name}/${entityName}?byname=true&type=file`;
     await ExperimentStorageService.instance.deleteFile(MockExperiments[0].name, entityName, true);
     expect(ExperimentStorageService.instance.httpRequestDELETE).toHaveBeenNthCalledWith(
       5,
@@ -236,9 +248,8 @@ describe('ExperimentStorageService', () => {
     // In total, only 3 requests should be sent (4th gives error)
     expect(ExperimentStorageService.instance.httpRequestPOST).toHaveBeenCalledTimes(3);
 
-    let expectedArg = new URL(`${config.api.proxy.url}${endpoints.proxy.storage.url}/${MockExperiments[0].name}/${entityName}`);
     // checking 1st call
-    expectedArg.searchParams.set('byname', true);
+    let expectedArg = `${endpoints.proxy.storage.url}/${MockExperiments[0].name}/${entityName}?byname=true`;
     expect(ExperimentStorageService.instance.httpRequestPOST).toHaveBeenNthCalledWith(
       1,
       expectedArg,
@@ -248,7 +259,7 @@ describe('ExperimentStorageService', () => {
     expect(res1.type).toEqual('text/plain');
 
     // checking 2nd call
-    expectedArg.searchParams.set('byname', false);
+    expectedArg = `${endpoints.proxy.storage.url}/${MockExperiments[0].name}/${entityName}?byname=false`;
     expect(ExperimentStorageService.instance.httpRequestPOST).toHaveBeenNthCalledWith(
       2,
       expectedArg,
@@ -258,7 +269,7 @@ describe('ExperimentStorageService', () => {
     expect(res2.type).toEqual('application/json');
 
     // checking 3rd call
-    expectedArg.searchParams.set('byname', true);
+    expectedArg = `${endpoints.proxy.storage.url}/${MockExperiments[0].name}/${entityName}?byname=true`;
     expect(ExperimentStorageService.instance.httpRequestPOST).toHaveBeenNthCalledWith(
       3,
       expectedArg,

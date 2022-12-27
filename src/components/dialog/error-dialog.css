@@ -10,3 +10,12 @@
   background-color: rgb(238, 173, 173);
   color: rgb(138, 41, 41);
 }
+
+.modal-dialog{
+  overflow-y: initial !important
+}
+
+.modal-body {
+  max-height: 60vh;
+  overflow-y: auto;
+}

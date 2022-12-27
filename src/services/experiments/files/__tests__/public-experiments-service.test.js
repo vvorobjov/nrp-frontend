@@ -9,9 +9,10 @@ import DialogService from '../../../dialog-service.js';
 import endpoints from '../../../proxy/data/endpoints.json';
 import config from '../../../../config.json';
 import MockExperiments from '../../../../mocks/mock_experiments.json';
+import {NRPProxyError} from '../../../proxy/http-proxy-service'
 
 const proxyEndpoint = endpoints.proxy;
-const experimentsUrl = `${config.api.proxy.url}${proxyEndpoint.experiments.url}`;
+const experimentsUrl = `${proxyEndpoint.experiments.url}`;
 
 jest.setTimeout(3 * PublicExperimentsService.CONSTANTS.INTERVAL_POLL_EXPERIMENTS);
 
@@ -59,12 +60,26 @@ describe('PublicExperimentsService', () => {
     // forced update should result in new request
     await PublicExperimentsService.instance.getExperiments(true);
     expect(PublicExperimentsService.instance.performRequest.mock.calls.length > oldCallCount).toBe(true);
+  });
 
+  test('raises the unexpectedError dialog on Error', async () => {
+    // error should appear if the service is unavailable (use force update)
+    // and return value should be null
+    jest.spyOn(DialogService.instance, 'unexpectedError');
+    jest.spyOn(PublicExperimentsService.instance, 'httpRequestGET').mockImplementationOnce(async () => {
+      throw new Error('Test Error');
+    });
+    const nullExperiments = await PublicExperimentsService.instance.getExperiments(true);
+    expect(nullExperiments).toBeNull();
+    expect(DialogService.instance.unexpectedError).toBeCalled();
+  });
+
+  test('raises the networkError dialog on NRPProxyError', async () => {
     // error should appear if the service is unavailable (use force update)
     // and return value should be null
     jest.spyOn(DialogService.instance, 'networkError');
-    jest.spyOn(PublicExperimentsService.instance, 'httpRequestGET').mockImplementation(async () => {
-      throw new Error('Test error');
+    jest.spyOn(PublicExperimentsService.instance, 'httpRequestGET').mockImplementationOnce(async () => {
+      throw new NRPProxyError('Test NRPProxyError', null, null);
     });
     const nullExperiments = await PublicExperimentsService.instance.getExperiments(true);
     expect(nullExperiments).toBeNull();
