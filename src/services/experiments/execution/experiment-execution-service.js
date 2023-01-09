@@ -168,19 +168,19 @@ class ExperimentExecutionService extends HttpService {
       this.httpRequestPOST(serverURL + '/simulation', JSON.stringify(simInitData));
       progressCallback({ main: 'Initialize Simulation...' });
 
-      // register for messages during initialization
-      SimulationService.instance.addRosStatusInfoCallback(
-        serverConfiguration.rosbridge.websocket,
-        progressCallback
-      );
+      // // register for messages during initialization
+      // SimulationService.instance.addRosStatusInfoCallback(
+      //   serverConfiguration.rosbridge.websocket,
+      //   progressCallback
+      // );
 
       SimulationService.instance.simulationReady(serverURL, simInitData.creationUniqueID)
         .then((simulation) => {
           SimulationService.instance.initConfigFiles(serverURL, simulation.simulationID)
             .then(() => {
-              let simulationURL = 'esv-private/experiment-view/' + serverID + '/' + experimentID + '/' +
-                privateExperiment + '/' + simulation.simulationID;
-              resolve(simulationURL);
+              // let simulationURL = 'esv-private/experiment-view/' + serverID + '/' + experimentID + '/' +
+              //   privateExperiment + '/' + simulation.simulationID;
+              // resolve(simulationURL);
               ExperimentExecutionService.instance.emit(ExperimentExecutionService.EVENTS.START_EXPERIMENT, undefined);
             })
             .catch(reject);

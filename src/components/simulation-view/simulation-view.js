@@ -73,12 +73,12 @@ export default class SimulationView extends React.Component {
     this.serverConfig = await ServerResourcesService.instance.getServerConfig(server.server);
     console.info('this.serverConfig');
     console.info(this.serverConfig);
-    RunningSimulationService.instance.addRosStatusInfoCallback(
-      this.serverConfig.rosbridge.websocket,
-      (data) => {
-        this.onStatusInfoROS(data);
-      }
-    );
+    // RunningSimulationService.instance.addRosStatusInfoCallback(
+    //   this.serverConfig.rosbridge.websocket,
+    //   (data) => {
+    //     this.onStatusInfoROS(data);
+    //   }
+    // );
   }
 
   async updateSimulationInfo() {

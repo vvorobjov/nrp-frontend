@@ -7,7 +7,7 @@ let _instance = null;
 const SINGLETON_ENFORCER = Symbol();
 
 /**
- * Service handling server resources for simulating experiments.
+ * Service handling the state of the experiment workbench and the current running simulation
  */
 class ExperimentWorkbenchService extends EventEmitter {
   constructor(enforcer) {
@@ -17,6 +17,7 @@ class ExperimentWorkbenchService extends EventEmitter {
     }
     this._simulationID = undefined;
     this._errorToken = undefined;
+    this._statusToken = undefined;
   }
 
   static get instance() {
@@ -53,20 +54,30 @@ class ExperimentWorkbenchService extends EventEmitter {
       ExperimentWorkbenchService.EVENTS.SIMULATION_SET,
       this._simulationID
     );
-    this.setTopic(this._simulationID);
+    this.setTopics(this._simulationID);
   }
 
-  setTopic = (simulationID) => {
+  setTopics = (simulationID) => {
     if (this._errorToken) {
       MqttClientService.instance.unsubscribe(this._errorToken);
       this._errorToken = undefined;
     }
+    if (this._statusToken) {
+      MqttClientService.instance.unsubscribe(this._statusToken);
+      this._statusToken = undefined;
+    }
     if (simulationID) {
-      const errorTopic = MqttClientService.instance.getConfig().mqtt.topics.base + '/'
-        + simulationID + '/'
-        + MqttClientService.instance.getConfig().mqtt.topics.errors;
+      const topicBase = MqttClientService.instance.getConfig().mqtt.topics.base + '/'
+        + simulationID + '/';
+      // assign error MQTT topic
+      const errorTopic = topicBase + MqttClientService.instance.getConfig().mqtt.topics.errors;
       const errorToken = MqttClientService.instance.subscribeToTopic(errorTopic, this.errorMsgHandler);
       this._errorToken = errorToken;
+
+      // assign status MQTT topic
+      const statusTopic = topicBase + MqttClientService.instance.getConfig().mqtt.topics.status;
+      const statusToken = MqttClientService.instance.subscribeToTopic(statusTopic, this.statusMsgHandler);
+      this._statusToken = statusToken;
     }
   }
 
@@ -74,10 +85,30 @@ class ExperimentWorkbenchService extends EventEmitter {
     // TODO: parse error message
     DialogService.instance.warningNotification({ message: msg.toString() });
   }
+
+  /**
+   * The handler emitting the new simulation status
+   *
+   * @emits ExperimentWorkbenchService.EVENTS.SIMULATION_STATUS_UPDATED
+   *
+   * @param {string} msg is a string representing status object
+   * @param {float}  msg.realTime is the real time of the simulation
+   * @param {float}  msg.simulationTime is the simulation time of the simulation
+   * @param {string} msg.state is the simulation state
+   * @param {float}  msg.simulationTimeLeft is the time left until timeout
+   */
+  statusMsgHandler = (msg) => {
+    const status = JSON.parse(msg);
+    ExperimentWorkbenchService.instance.emit(
+      ExperimentWorkbenchService.EVENTS.SIMULATION_STATUS_UPDATED,
+      status
+    );
+  }
 }
 
 export default ExperimentWorkbenchService;
 
 ExperimentWorkbenchService.EVENTS = Object.freeze({
-  SIMULATION_SET: 'SIMULATION_SET'
+  SIMULATION_SET: 'SIMULATION_SET',
+  SIMULATION_STATUS_UPDATED: 'SIMULATION_STATUS_UPDATED'
 });

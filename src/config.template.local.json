@@ -59,9 +59,9 @@
     "url": "localhost",
     "port": "8883",
     "topics": {
-      "base": "nrp",
-      "time": "time",
-      "errors": "errors"
+      "base": "nrp_simulation",
+      "errors": "runtime_error",
+      "status": "status"
     }
   },
   "ros-topics": {

@@ -1,5 +1,4 @@
 import DialogService from '../../dialog-service.js';
-import RoslibService from '../../roslib-service.js';
 import { HttpService } from '../../http-service.js';
 import { EXPERIMENT_STATE } from '../experiment-constants.js';
 
@@ -96,58 +95,58 @@ class SimulationService extends HttpService {
     });
   };
 
-  /**
-   * Subscribe to status info topics.
-   * @param {string} rosbridgeWebsocket - ROS websocket URL
-   * @param {*} setProgressMessage - callback to be called with new status info
-   */
-  startRosStatusInformation(rosbridgeWebsocket) {
-    this.stopRosStatusInformation(rosbridgeWebsocket);
+  // /**
+  //  * Subscribe to status info topics.
+  //  * @param {string} rosbridgeWebsocket - ROS websocket URL
+  //  * @param {*} setProgressMessage - callback to be called with new status info
+  //  */
+  // startRosStatusInformation(rosbridgeWebsocket) {
+  //   this.stopRosStatusInformation(rosbridgeWebsocket);
 
-    let rosConnection = RoslibService.instance.getConnection(rosbridgeWebsocket);
-    let statusTopic = RoslibService.instance.createStringTopic(
-      rosConnection,
-      config['ros-topics'].status
-    );
-    rosStatusTopics.set(rosbridgeWebsocket, statusTopic);
+  //   let rosConnection = RoslibService.instance.getConnection(rosbridgeWebsocket);
+  //   let statusTopic = RoslibService.instance.createStringTopic(
+  //     rosConnection,
+  //     config['ros-topics'].status
+  //   );
+  //   rosStatusTopics.set(rosbridgeWebsocket, statusTopic);
 
-    this.addRosStatusInfoCallback(rosbridgeWebsocket, (msg) => {
-      if (msg.state && msg.state === EXPERIMENT_STATE.STOPPED) {
-        this.stopRosStatusInformation(rosbridgeWebsocket);
-      }
-    });
-  };
+  //   this.addRosStatusInfoCallback(rosbridgeWebsocket, (msg) => {
+  //     if (msg.state && msg.state === EXPERIMENT_STATE.STOPPED) {
+  //       this.stopRosStatusInformation(rosbridgeWebsocket);
+  //     }
+  //   });
+  // };
 
-  stopRosStatusInformation(rosbridgeWebsocket) {
-    let statusTopic = rosStatusTopics.get(rosbridgeWebsocket);
-    if (!statusTopic) {
-      return;
-    }
+  // stopRosStatusInformation(rosbridgeWebsocket) {
+  //   let statusTopic = rosStatusTopics.get(rosbridgeWebsocket);
+  //   if (!statusTopic) {
+  //     return;
+  //   }
 
-    // remove the progress bar callback only, unsubscribe terminates the rosbridge
-    // connection for any other subscribers on the status topic
-    statusTopic.unsubscribe(); // fully disconnects rosbridge
-    statusTopic.removeAllListeners();
-    rosStatusTopics.delete(rosbridgeWebsocket);
-  }
+  //   // remove the progress bar callback only, unsubscribe terminates the rosbridge
+  //   // connection for any other subscribers on the status topic
+  //   statusTopic.unsubscribe(); // fully disconnects rosbridge
+  //   statusTopic.removeAllListeners();
+  //   rosStatusTopics.delete(rosbridgeWebsocket);
+  // }
 
-  startRosCleErrorInfo(rosbridgeWebsocket) {
-    //TODO
-  }
+  // startRosCleErrorInfo(rosbridgeWebsocket) {
+  //   //TODO
+  // }
 
-  addRosStatusInfoCallback(rosbridgeWebsocket, infoCallback) {
-    if (!rosStatusTopics.has(rosbridgeWebsocket)) {
-      this.startRosStatusInformation(rosbridgeWebsocket);
-    }
+  // addRosStatusInfoCallback(rosbridgeWebsocket, infoCallback) {
+  //   if (!rosStatusTopics.has(rosbridgeWebsocket)) {
+  //     this.startRosStatusInformation(rosbridgeWebsocket);
+  //   }
 
-    let statusTopic = rosStatusTopics.get(rosbridgeWebsocket);
-    statusTopic.subscribe((data) => {
-      let message = JSON.parse(data.data);
-      if (message) {
-        infoCallback(message);
-      }
-    });
-  }
+  //   let statusTopic = rosStatusTopics.get(rosbridgeWebsocket);
+  //   statusTopic.subscribe((data) => {
+  //     let message = JSON.parse(data.data);
+  //     if (message) {
+  //       infoCallback(message);
+  //     }
+  //   });
+  // }
 
   /**
    * Get the state the simulation is currently in.

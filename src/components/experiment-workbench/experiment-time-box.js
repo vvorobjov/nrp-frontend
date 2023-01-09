@@ -1,14 +1,15 @@
 import React from 'react';
 import 'react-tabs/style/react-tabs.css';
 
-
-import MqttClientService from '../../services/mqtt-client-service';
 import ExperimentWorkbenchService from './experiment-workbench-service';
 
 import Typography from '@material-ui/core/Typography';
 
 import './experiment-time-box.css';
 
+/**
+ * The component displaying the simulation time in the experiment workbench
+ */
 export default class ExperimentTimeBox extends React.Component {
 
   constructor(props) {
@@ -20,46 +21,32 @@ export default class ExperimentTimeBox extends React.Component {
   }
 
   async componentDidMount() {
-    if (ExperimentWorkbenchService.simulationID === undefined) {
-      ExperimentWorkbenchService.instance.addListener(
-        ExperimentWorkbenchService.EVENTS.SIMULATION_SET,
-        this.setTopic
-      );
-    }
-    else {
-      this.setTopic(ExperimentWorkbenchService.simulationID);
-    }
+    ExperimentWorkbenchService.instance.addListener(
+      ExperimentWorkbenchService.EVENTS.SIMULATION_STATUS_UPDATED,
+      this.updateTimeHandler
+    );
   }
 
   async componentWillUnmount() {
-    if (this.state.timeToken) {
-      await MqttClientService.instance.unsubscribe(
-        this.state.timeTopic
-      ).then(() => {
-        this.setState({ timeToken: null });
-      });
-    }
+    ExperimentWorkbenchService.instance.removeListener(
+      ExperimentWorkbenchService.EVENTS.SIMULATION_STATUS_UPDATED,
+      this.updateTimeHandler
+    );
   }
 
-  setTopic = (simulationID) => {
-    if (this.state.timeToken) {
-      MqttClientService.instance.unsubscribe(this.state.timeToken);
-      this.setState({ timeToken: null });
-    }
-    if (simulationID === undefined) {
-      this.setState({ simulationTime: '' });
-    }
-    else {
-      const timeTopic = MqttClientService.instance.getConfig().mqtt.topics.base + '/'
-        + simulationID + '/'
-        + MqttClientService.instance.getConfig().mqtt.topics.time;
-      var timeToken = MqttClientService.instance.subscribeToTopic(timeTopic, this.updateTime);
-      this.setState({ timeToken: timeToken });
-    }
-  }
-
-  updateTime = (msg) => {
-    this.setState({ simulationTime: msg.toString()});
+  /**
+   * The handler updating the simulation time from the simulation status
+   *
+   * @callback ExperimentWorkbenchService.EVENTS.SIMULATION_STATUS_UPDATED
+   *
+   * @param {object} status is an object representing the simulation status
+   * @param {float}  status.realTime is the real time of the simulation
+   * @param {float}  status.simulationTime is the simulation time of the simulation
+   * @param {string} status.state is the simulation state
+   * @param {float}  status.simulationTimeLeft is the time left until timeout
+   */
+  updateTimeHandler = (status) => {
+    this.setState({ simulationTime: status.simulationTime.toString()});
   }
 
   render() {
