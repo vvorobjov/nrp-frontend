@@ -30,26 +30,6 @@ class SimulationService extends HttpService {
   }
 
   /**
-   * Initialize config files on a server for a simulation.
-   * @param {string} serverBaseUrl - URL of the server
-   * @param {string} simulationID - ID of the simulation
-   * @returns {object} The initialized config files
-   */
-  async initConfigFiles(serverBaseUrl, simulationID) {
-    let cachedConfigFiles = undefined;
-    try {
-      let url = serverBaseUrl + '/simulation/' + simulationID + '/resources';
-      let response = await (await this.httpRequestGET(url)).json();
-      cachedConfigFiles = response.resources;
-    }
-    catch (error) {
-      DialogService.instance.networkError(error);
-    }
-
-    return cachedConfigFiles;
-  }
-
-  /**
    * Check whether a simulation on a server is ready to be started.
    * @param {string} serverURL - URL of the server where simulation should be run
    * @param {string} creationUniqueID - Unique ID generated while trying to launch experiment
