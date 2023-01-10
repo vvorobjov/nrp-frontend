@@ -31,11 +31,6 @@ class ExperimentExecutionService extends HttpService {
     return _instance;
   }
 
-  // Mock
-  async startNewExperimentMock() {
-    return {id: 'test/0'};
-  }
-
   /**
    * Start a new simulation of an experiment, going through available servers.
    *

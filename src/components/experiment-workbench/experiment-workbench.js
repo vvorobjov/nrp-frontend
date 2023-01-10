@@ -253,7 +253,7 @@ class ExperimentWorkbench extends React.Component {
   async onButtonStart() {
     // if there is no simulation bound
     if (!this.state.runningSimulationID) {
-      await ExperimentExecutionService.instance.startNewExperimentMock(
+      await ExperimentExecutionService.instance.startNewExperiment(
         ExperimentWorkbenchService.instance.experimentInfo,
         true,
         undefined,
@@ -294,7 +294,6 @@ class ExperimentWorkbench extends React.Component {
   }
 
   async setSimulationState(newState) {
-    // !! Remove mock from updateState
     if (this.state.runningSimulationID) {
       await SimulationService.instance.updateState(
         this.serverURL,
