@@ -7,6 +7,7 @@ import ExperimentTimeBox from './experiment-time-box';
 import ExperimentStorageService from '../../services/experiments/files/experiment-storage-service';
 import SimulationService from '../../services/experiments/execution/running-simulation-service';
 import ExperimentExecutionService from '../../services/experiments/execution/experiment-execution-service';
+import ServerResourcesService from '../../services/experiments/execution/server-resources-service.js';
 import DialogService from '../../services/dialog-service';
 import { EXPERIMENT_STATE } from '../../services/experiments/experiment-constants';
 import timeDDHHMMSS from '../../utility/time-filter';
@@ -41,6 +42,7 @@ import PlayCircleFilledWhiteIcon from '@material-ui/icons/PlayCircleFilledWhite'
 import ExitToAppIcon from '@material-ui/icons/ExitToApp';
 import StopIcon from '@material-ui/icons/Stop';
 import PauseIcon from '@material-ui/icons/Pause';
+import FlightTakeoffIcon from '@material-ui/icons/FlightTakeoff';
 
 const jsonBaseLayout = {
   global: {},
@@ -184,7 +186,8 @@ class ExperimentWorkbench extends React.Component {
       nrpVersion: '4.0.0',
       experimentConfiguration: {},
       runningSimulationID: undefined,
-      simulationState: EXPERIMENT_STATE.STOPPED
+      simulationState: EXPERIMENT_STATE.STOPPED,
+      availableServers: []
     };
 
     ExperimentWorkbenchService.instance.experimentID = this.experimentID;
@@ -219,6 +222,15 @@ class ExperimentWorkbench extends React.Component {
       ExperimentWorkbenchService.EVENTS.SIMULATION_STATUS_UPDATED,
       this.updateSimulationStatus
     );
+
+    // update the list of available servers
+    this.state.availableServers = await ServerResourcesService.instance.getServerAvailability();
+
+    // subscribe to server availablility
+    ServerResourcesService.instance.addListener(
+      ServerResourcesService.EVENTS.UPDATE_SERVER_AVAILABILITY,
+      this.onUpdateServerAvailability
+    );
   }
 
   async componentDidUpdate() {
@@ -229,7 +241,15 @@ class ExperimentWorkbench extends React.Component {
       ExperimentWorkbenchService.EVENTS.SIMULATION_STATUS_UPDATED,
       this.updateSimulationStatus
     );
+    ServerResourcesService.instance.removeListener(
+      ServerResourcesService.EVENTS.UPDATE_SERVER_AVAILABILITY,
+      this.onUpdateServerAvailability
+    );
   }
+
+  onUpdateServerAvailability = (availableServers) => {
+    this.setState({ availableServers: availableServers });
+  };
 
   updateSimulationStatus = async (status) => {
     if (Object.values(EXPERIMENT_STATE).indexOf(status.state) > -1) {
@@ -242,17 +262,22 @@ class ExperimentWorkbench extends React.Component {
     }
   }
 
-  onStatusInfoROS(message) {
-    this.setState({
-      timingRealtime: timeDDHHMMSS(message.realTime),
-      timingSimulationTime: timeDDHHMMSS(message.simulationTime),
-      timingTimeout: timeDDHHMMSS(message.timeout)
-    });
-  }
+  // onStatusInfoROS(message) {
+  //   this.setState({
+  //     timingRealtime: timeDDHHMMSS(message.realTime),
+  //     timingSimulationTime: timeDDHHMMSS(message.simulationTime),
+  //     timingTimeout: timeDDHHMMSS(message.timeout)
+  //   });
+  // }
 
-  async onButtonStart() {
+  async onButtonLaunch() {
+    if (this.state.availableServers.length === 0) {
+      DialogService.instance.warningNotification({
+        message: 'No servers are available.'
+      });
+    }
     // if there is no simulation bound
-    if (!this.state.runningSimulationID) {
+    else if (!this.state.runningSimulationID) {
       await ExperimentExecutionService.instance.startNewExperiment(
         ExperimentWorkbenchService.instance.experimentInfo,
         true,
@@ -269,7 +294,15 @@ class ExperimentWorkbench extends React.Component {
         DialogService.instance.simulationError({ message: failure });
       });
     }
+    else {
+      // TODO: allow launching multiple simulations
+      DialogService.instance.warningNotification({
+        message: 'There is the simulation already launched.'
+      });
+    }
+  }
 
+  async onButtonStart() {
     // On START button click, start simulation if it was created
     let newState = EXPERIMENT_STATE.STARTED;
 
@@ -337,41 +370,6 @@ class ExperimentWorkbench extends React.Component {
     const { classes } = this.props;
     return (
       <div className={classes.root}>
-        {/* <div className='simulation-view-header'>
-            <div className='simulation-view-controls'>
-              <div className='simulation-view-control-buttons'>
-                <button className='nrp-btn btn-default' onClick={() => this.showLeaveDialog(true)}>
-                  <GiExitDoor className='icon' />
-                </button>
-                <button disabled={true} className='nrp-btn btn-default'><VscDebugRestart className='icon' /></button>
-                <button className='nrp-btn btn-default' onClick={() => {
-                  this.onButtonStartPause();
-                }}>
-                  {this.state.simulationInfo && this.state.simulationInfo.state === EXPERIMENT_STATE.PAUSED
-                    ? <RiPlayFill className='icon' />
-                    : <RiPauseFill className='icon' />}
-                </button>
-                <button disabled={true} className='nrp-btn btn-default'>
-                  <TiMediaRecord clasexperimentInfosName='icon' /></button>
-              </div>
-
-              <div className='simulation-view-time-info'>
-                <div>Simulation time:</div>
-                <div>{this.state.timingSimulationTime}</div>
-                <div>Real time:</div>
-                <div>{this.state.timingRealtime}</div>
-                <div>Real timeout:</div>
-                <div>{this.state.timingTimeout}</div>
-              </div>
-            </div>
-
-            <div className='simulation-view-experiment-title'>
-              <div>{this.state.experimentName}</div>
-            </div>
-            <button className='nrp-btn btn-default' onClick={() => {
-              this.onButtonLayout();
-            }}><RiLayout6Line className='icon' /></button>
-          </div> */}
         <CssBaseline />
         <AppBar position='absolute' className={clsx(classes.appBar, this.state.drawerOpen && classes.appBarShift)}>
           <Toolbar className={classes.toolbar}>
@@ -384,33 +382,56 @@ class ExperimentWorkbench extends React.Component {
             >
               <MenuIcon />
             </IconButton>
+            {/* Launch button*/}
+            <IconButton color='inherit'
+              className={classes.controlButton}
+              onClick={() => this.onButtonLaunch()}
+              disabled={
+                this.state.showLeaveDialog ||
+                this.state.runningSimulationID ||
+                this.state.simulationState !== EXPERIMENT_STATE.STOPPED
+              }
+              title='Launch experiment'
+            >
+              <FlightTakeoffIcon />
+            </IconButton>
             {/* Play/pause button*/}
             {this.state.simulationState === EXPERIMENT_STATE.STARTED
               ?
               <IconButton color='inherit'
                 onClick={() => this.onButtonPause()}
                 disabled={this.state.showLeaveDialog}
+                title='Pause'
               >
                 <PauseIcon />
               </IconButton>
               :
               <IconButton color='inherit'
                 onClick={() => this.onButtonStart()}
-                disabled={this.state.showLeaveDialog}
+                disabled={
+                  this.state.showLeaveDialog ||
+                  !this.state.runningSimulationID
+                }
+                title='Start'
               >
                 <PlayCircleFilledWhiteIcon />
               </IconButton>
             }
             {/* Stop button*/}
             <IconButton color='inherit' className={classes.controlButton}
-              disabled={this.state.showLeaveDialog}
               onClick={() => this.onButtonStop()}
+              disabled={
+                this.state.showLeaveDialog ||
+                this.state.simulationState === EXPERIMENT_STATE.STOPPED
+              }
+              title='Stop experiment'
             >
               <StopIcon />
             </IconButton>
             {/* Exit button */}
             <IconButton color='inherit'
               onClick={() => this.setState({ showLeaveDialog: true })}
+              title='Leave experiment'
             >
               <ExitToAppIcon />
             </IconButton>

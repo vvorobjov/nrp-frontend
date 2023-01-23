@@ -81,9 +81,27 @@ class ExperimentWorkbenchService extends EventEmitter {
     }
   }
 
+  /**
+   * The handler emitting the new simulation error
+   *
+   * @emits DialogService.EVENTS.ERROR
+   *
+   * @param {string} msg is a string representing the error object
+   * @param {float}  msg.sim_id is the ID of the simulation
+   * @param {float}  msg.msg is the error message
+   * @param {string} msg.error_type is the error type
+   * @param {float}  msg.fileName is the filename with the error
+   * @param {float}  msg.line_number is the line with the error
+   * @param {float}  msg.line_text is the text with the error
+   */
   errorMsgHandler = (msg) => {
-    // TODO: parse error message
-    DialogService.instance.warningNotification({ message: msg.toString() });
+    const msgObj = JSON.parse(msg);
+    const err = {
+      message: msgObj.msg,
+      code: msgObj.error_type,
+      stack: `${msgObj.fileName}:${msgObj.line_number}:${msgObj.line_text}\n`
+    };
+    DialogService.instance.simulationError(err);
   }
 
   /**

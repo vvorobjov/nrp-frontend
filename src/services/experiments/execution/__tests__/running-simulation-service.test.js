@@ -35,21 +35,6 @@ describe.skip('RunningSimulationService', () => {
     expect(instance1).toBe(instance2);
   });
 
-  test('initializes and gets the simulation resources', async () => {
-    let serverBaseURL = MockAvailableServers[0].gzweb['nrp-services'];
-    let simID = 1;
-
-    let resources = await RunningSimulationService.instance.initConfigFiles(serverBaseURL, simID);
-    expect(resources).toBeDefined();
-
-    // failure case
-    jest.spyOn(DialogService.instance, 'networkError').mockImplementation(() => { });
-    let simIDFailure = 0;
-    expect(DialogService.instance.networkError).not.toHaveBeenCalled();
-    resources = await RunningSimulationService.instance.initConfigFiles(serverBaseURL, simIDFailure);
-    expect(DialogService.instance.networkError).toHaveBeenCalled();
-  });
-
   test('verifies whether a simulation is ready', async () => {
     let mockSimulationList = JSON.parse(JSON.stringify(MockSimulations));
     jest.spyOn(RunningSimulationService.instance, 'httpRequestGET').mockImplementation(() => {

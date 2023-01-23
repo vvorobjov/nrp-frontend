@@ -3,6 +3,7 @@ const EXPERIMENT_STATE = {
   STARTED: 'started',
   PAUSED: 'paused',
   INITIALIZED: 'initialized',
+  COMPLETED: 'completed',
   HALTED: 'halted',
   FAILED: 'failed',
   STOPPED: 'stopped'
