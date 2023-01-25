@@ -114,52 +114,24 @@ describe('ExperimentExecutionService', () => {
     });
   });
 
-  test('respects settings for specific dev server to launch and single brain process mode', async () => {
-    jest.spyOn(ExperimentExecutionService.instance, 'launchExperimentOnServer').mockImplementation(() => {
-      return Promise.resolve();
-    });
-
-    let mockExperiment = {
-      id: 'test-experiment-id',
-      devServer: 'test-dev-server-url'
-    };
-    await ExperimentExecutionService.instance.startNewExperiment(mockExperiment, true);
-    expect(ExperimentExecutionService.instance.launchExperimentOnServer).toHaveBeenCalledWith(
-      mockExperiment.id,
-      undefined,
-      1,
-      mockExperiment.devServer,
-      expect.any(Object),
-      undefined,
-      undefined,
-      undefined,
-      expect.any(Function)
-    );
-  });
-
   test('can launch an experiment given a specific server + configuration', async () => {
-    jest.spyOn(ExperimentExecutionService.instance, 'httpRequestPOST').mockImplementation();
     let simulationReadyResult = Promise.resolve(MockSimulations[0]);
-    jest.spyOn(SimulationService.instance, 'simulationReady').mockImplementation(() => {
+    jest.spyOn(ExperimentExecutionService.instance, 'httpRequestPOST').mockImplementation(() => {
       return simulationReadyResult;
     });
 
     let experimentID = 'test-experiment-id';
     let privateExperiment = true;
-    let brainProcesses = 2;
+    let configFile = 'simulation_config.json';
     let serverID = 'test-server-id';
     let serverConfiguration = MockServerConfig;
-    let reservation = {};
-    let playbackRecording = {};
-    let profiler = {};
     let progressCallback = jest.fn();
-    let callParams = [experimentID, privateExperiment, brainProcesses, serverID, serverConfiguration, reservation,
-      playbackRecording, profiler, progressCallback];
+    let callParams = [experimentID, privateExperiment, configFile, serverID, serverConfiguration,
+      progressCallback];
 
     let result = await ExperimentExecutionService.instance.launchExperimentOnServer(...callParams);
     expect(ExperimentExecutionService.instance.httpRequestPOST)
       .toHaveBeenLastCalledWith(serverConfiguration.gzweb['nrp-services'] + '/simulation', expect.any(String));
-    expect(progressCallback).toHaveBeenCalled();
 
     // simulation not being ready should result in a rejection
     let simulationReadyError = 'simulation not ready';

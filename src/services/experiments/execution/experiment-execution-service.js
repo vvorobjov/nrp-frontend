@@ -36,16 +36,9 @@ class ExperimentExecutionService extends HttpService {
    *
    * @param {object} experiment - experiment description
    * @param {boolean} launchSingleMode - launch in single mode
-   * @param {object} reservation - server reservation
-   * @param {object} playbackRecording - a recording of a previous execution
-   * @param {*} profiler - a profiler option
    */
   async startNewExperiment(
-    experiment,
-    launchSingleMode,
-    reservation,
-    playbackRecording,
-    profiler
+    experiment
   ) {
     //TODO: implement NrpAnalyticsService functionality
     //NrpAnalyticsService.instance.eventTrack('Start', { category: 'Experiment' });
@@ -57,8 +50,6 @@ class ExperimentExecutionService extends HttpService {
     let serversToTry = experiment.devServer
       ? [experiment.devServer]
       : (await ServerResourcesService.instance.getServerAvailability(true)).map(s => s.id);
-
-    let brainProcesses = launchSingleMode ? 1 : experiment.configuration.brainProcesses;
 
     //TODO: placeholder, register actual progress callback later
     let progressCallback = (msg) => {
@@ -91,16 +82,13 @@ class ExperimentExecutionService extends HttpService {
       return await this.launchExperimentOnServer(
         experiment.id,
         experiment.private,
-        brainProcesses,
+        experiment.configuration.configFile,
         serverID,
         serverConfig,
-        reservation,
-        playbackRecording,
-        profiler,
         progressCallback
       ).catch((failure) => {
-        if (failure.error) {
-          DialogService.instance.simulationError(failure.error);
+        if (failure) {
+          DialogService.instance.simulationError(failure);
         }
         fatalErrorOccurred = fatalErrorOccurred || failure.isFatal;
 
@@ -115,24 +103,18 @@ class ExperimentExecutionService extends HttpService {
    * Try launching an experiment on a specific server.
    * @param {string} experimentID - ID of the experiment to launch
    * @param {boolean} privateExperiment - whether the experiment is private or not
-   * @param {number} brainProcesses - number of brain processes to start with
+   * @param {string} configFile - experiment configuration file name
    * @param {string} serverID - server ID
    * @param {object} serverConfiguration - configuration of server
-   * @param {object} reservation - server reservation
-   * @param {object} playbackRecording - recording
-   * @param {object} profiler - profiler option
    * @param {function} progressCallback - a callback for progress updates
    * @returns {object} simulation config
    */
   launchExperimentOnServer(
     experimentID,
     privateExperiment,
-    brainProcesses,
+    configFile,
     serverID,
     serverConfiguration,
-    reservation,
-    playbackRecording,
-    profiler,
     progressCallback
   ) {
     return new Promise((resolve, reject) => {
@@ -142,33 +124,40 @@ class ExperimentExecutionService extends HttpService {
       }); //called once caller has the promise
 
       let serverURL = serverConfiguration.gzweb['nrp-services'];
-      let serverJobLocation =
-        serverConfiguration.serverJobLocation || 'local';
-
-      let simInitData = {
-        gzserverHost: serverJobLocation,
-        private: privateExperiment,
-        experimentID: experimentID,
-        brainProcesses: brainProcesses,
-        reservation: reservation,
-        creationUniqueID: (Date.now() + Math.random()).toString(),
-        //ctxId: $stateParams.ctx, seems to not be used?
-        profiler: profiler
-      };
-
-      if (playbackRecording) {
-        simInitData.playbackPath = playbackRecording;
-      }
 
       // Create a new simulation.
-      this.httpRequestPOST(serverURL + '/simulation', JSON.stringify(simInitData));
-      progressCallback({ main: 'Initialize Simulation...' });
-
-      SimulationService.instance.simulationReady(serverURL, simInitData.creationUniqueID)
+      // >>Request:
+      // JSON
+      // {
+      //     'experimentID': string,             # REQUIRED
+      //     'experimentConfiguration': string,  # default = experiment_configuration.json
+      //     'state': string,                    # default = created
+      //     'private': boolean                  # default = False
+      // }
+      let simInitData = {
+        experimentID: experimentID,
+        experimentConfiguration: configFile,
+        state: EXPERIMENT_STATE.CREATED,
+        private: privateExperiment
+      };
+      this.httpRequestPOST(serverURL + '/simulation', JSON.stringify(simInitData))
         .then((simulation) => {
           resolve(simulation);
         })
         .catch(reject);
+      // <<Response:
+      // HTTP 400: Experiment configuration is not valid
+      // HTTP 402: Another simulation is already running on the server
+      // HTTP 201: Simulation created successfully
+      // JSON:
+      // {
+      //     'experimentID': string
+      //     'environmentConfiguration': string
+      //     'state': string,
+      //     'simulationID': int
+      //     'owner': string
+      //     'creationDate': string
+      // }
     });
   };
 

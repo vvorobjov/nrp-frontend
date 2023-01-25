@@ -279,15 +279,13 @@ class ExperimentWorkbench extends React.Component {
     // if there is no simulation bound
     else if (!this.state.runningSimulationID) {
       await ExperimentExecutionService.instance.startNewExperiment(
-        ExperimentWorkbenchService.instance.experimentInfo,
-        true,
-        undefined,
-        undefined
-      ).then((simInfo) => {
+        ExperimentWorkbenchService.instance.experimentInfo
+      ).then(async (simRespose) => {
+        const simInfo = await simRespose.json();
         // TODO: get proper simulation information
         if (simInfo) {
-          ExperimentWorkbenchService.instance.simulationID = simInfo.id;
-          this.setState({ runningSimulationID: simInfo.id });
+          ExperimentWorkbenchService.instance.simulationID = simInfo.simulationID;
+          this.setState({ runningSimulationID: simInfo.simulationID });
           this.setState({ simulationState: simInfo.state });
         }
       }).catch((failure) => {
