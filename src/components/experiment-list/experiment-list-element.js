@@ -208,9 +208,9 @@ class ExperimentListElement extends React.Component {
               : null}
           </div>
           <div>
-            {!this.state.selected && config.SimDescription.length > SHORT_DESCRIPTION_LENGTH ?
-              config.SimDescription.substr(0, SHORT_DESCRIPTION_LENGTH) + ' ...' :
-              config.SimDescription}
+            {!this.state.selected && config.SimulationDescription .length > SHORT_DESCRIPTION_LENGTH ?
+              config.SimulationDescription.substr(0, SHORT_DESCRIPTION_LENGTH) + ' ...' :
+              config.SimulationDescription}
             <br />
           </div>
 

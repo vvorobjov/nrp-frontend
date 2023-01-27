@@ -7,7 +7,7 @@
         "configuration": {
             "maturity": "production",
             "SimulationName": "husky_simulation_0",
-            "SimDescription": "Launches a Gazebo simulation with a Husky robot and a Nest sim with a Braitenberg model which controls the robot",
+            "SimulationDescription": "Launches a Gazebo simulation with a Husky robot and a Nest sim with a Braitenberg model which controls the robot",
             "thumbnail": "/",
             "EngineConfigs": [
                 {
@@ -53,7 +53,7 @@
         "configuration": {
             "maturity": "production",
             "SimulationName": "husky_simulation_1",
-            "SimDescription": "Adaptation of the example `husky_braitenberg` in which a Computational Graph (CG) is used to process and rely data between Engines.",
+            "SimulationDescription": "Adaptation of the example `husky_braitenberg` in which a Computational Graph (CG) is used to process and rely data between Engines.",
             "SimulationTimeout": 20,
             "SimulationLoop": "EventLoop",
             "SimulationTimestep": 0.02,
