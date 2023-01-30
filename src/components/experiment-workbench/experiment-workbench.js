@@ -9,7 +9,7 @@ import SimulationService from '../../services/experiments/execution/running-simu
 import ExperimentExecutionService from '../../services/experiments/execution/experiment-execution-service';
 import ServerResourcesService from '../../services/experiments/execution/server-resources-service.js';
 import DialogService from '../../services/dialog-service';
-import { EXPERIMENT_STATE } from '../../services/experiments/experiment-constants';
+import { EXPERIMENT_STATE, EXPERIMENT_FINAL_STATE } from '../../services/experiments/experiment-constants';
 import timeDDHHMMSS from '../../utility/time-filter';
 
 import LeaveWorkbenchDialog from './leave-workbench-dialog';
@@ -43,6 +43,8 @@ import ExitToAppIcon from '@material-ui/icons/ExitToApp';
 import StopIcon from '@material-ui/icons/Stop';
 import PauseIcon from '@material-ui/icons/Pause';
 import FlightTakeoffIcon from '@material-ui/icons/FlightTakeoff';
+
+import CircularProgress from '@material-ui/core/CircularProgress';
 
 const jsonBaseLayout = {
   global: {},
@@ -175,7 +177,7 @@ class ExperimentWorkbench extends React.Component {
 
     const {experimentID} = props.match.params;
     this.experimentID = experimentID;
-    this.serverURL = 'http://' + this.serverIP + ':8080'; // this should probably be part of some config
+    this.serverURL = ExperimentWorkbenchService.instance.serverURL;
 
     this.state = {
       modelFlexLayout: FlexLayout.Model.fromJson(jsonBaseLayout),
@@ -187,6 +189,7 @@ class ExperimentWorkbench extends React.Component {
       experimentConfiguration: {},
       runningSimulationID: undefined,
       simulationState: EXPERIMENT_STATE.STOPPED,
+      simStateLoading: false,
       availableServers: []
     };
 
@@ -204,11 +207,11 @@ class ExperimentWorkbench extends React.Component {
   };
 
   async componentDidMount() {
-    // Get the simulation ID from ExperimentWorkbenchService, if is defined
+    // Get the simulation ID from ExperimentWorkbenchService, if is defined (for joining the simulation)
     this.state.runningSimulationID = ExperimentWorkbenchService.instance.simulationID;
 
     // Update simulation state, if it is defined
-    if (this.state.runningSimulationID) {
+    if (this.state.runningSimulationID !== undefined) {
       await SimulationService.instance.getInfo(
         this.serverURL,
         this.state.runningSimulationID
@@ -237,23 +240,52 @@ class ExperimentWorkbench extends React.Component {
   }
 
   async componentWillUnmount() {
+    // Subscribe to SIMULATION_STATUS_UPDATED events
     ExperimentWorkbenchService.instance.removeListener(
       ExperimentWorkbenchService.EVENTS.SIMULATION_STATUS_UPDATED,
       this.updateSimulationStatus
     );
+    // Subscribe to UPDATE_SERVER_AVAILABILITY events
     ServerResourcesService.instance.removeListener(
       ServerResourcesService.EVENTS.UPDATE_SERVER_AVAILABILITY,
       this.onUpdateServerAvailability
     );
+    // Remove the simulation when we leave the workbench
+    ExperimentWorkbenchService.instance.simulationID = undefined;
   }
 
+  /**
+   * Sets the new available servers
+   * @listens ExperimentWorkbenchService.EVENTS.SIMULATION_STATUS_UPDATED
+   * @param {Array.<Object>} availableServers list of available servers
+   */
   onUpdateServerAvailability = (availableServers) => {
     this.setState({ availableServers: availableServers });
   };
 
+  /**
+   * Sets the new simulation status to the component state
+   * @listens ExperimentWorkbenchService.EVENTS.SIMULATION_STATUS_UPDATED
+   * @param {EXPERIMENT_STATE} status is a new simulation state
+   */
   updateSimulationStatus = async (status) => {
     if (Object.values(EXPERIMENT_STATE).indexOf(status.state) > -1) {
-      this.setState({simulationState: status.state});
+      // Update the STOPPED state only from the request
+      if (status.state !== EXPERIMENT_STATE.STOPPED) {
+        // update only new states
+        if (status.state !== this.state.simulationState) {
+          this.setState({ simStateLoading: false });
+          this.setState({ simulationState: status.state });
+          DialogService.instance.progressNotification({
+            message: 'The experiment is ' + this.state.simulationState
+          });
+          // clear simulationID for the finilized experiments
+          if (EXPERIMENT_FINAL_STATE.includes(this.state.simulationState)) {
+            ExperimentWorkbenchService.instance.simulationID = undefined;
+            this.setState({ runningSimulationID: undefined });
+          }
+        }
+      }
     }
     else {
       DialogService.instance.simulationError({
@@ -277,17 +309,24 @@ class ExperimentWorkbench extends React.Component {
       });
     }
     // if there is no simulation bound
-    else if (!this.state.runningSimulationID) {
+    else if (this.state.runningSimulationID === undefined) {
+      this.setState({ simulationState: undefined });
       await ExperimentExecutionService.instance.startNewExperiment(
         ExperimentWorkbenchService.instance.experimentInfo
       ).then(async (simRespose) => {
-        const simInfo = await simRespose.json();
+        const simInfo = await simRespose['simulation'].json();
         // TODO: get proper simulation information
         if (simInfo) {
           ExperimentWorkbenchService.instance.simulationID = simInfo.simulationID;
           this.setState({ runningSimulationID: simInfo.simulationID });
-          this.setState({ simulationState: simInfo.state });
+          // get the simulationState from MQTT only
+          this.setState({ simStateLoading: true });
         }
+        else {
+          throw new Error('Could not parse the response from the backend after launching the simulation');
+        }
+        ExperimentWorkbenchService.instance.serverURL = simRespose['serverURL'];
+        this.serverURL = simRespose['serverURL'];
       }).catch((failure) => {
         DialogService.instance.simulationError({ message: failure });
       });
@@ -325,14 +364,22 @@ class ExperimentWorkbench extends React.Component {
   }
 
   async setSimulationState(newState) {
-    if (this.state.runningSimulationID) {
+    if (this.state.runningSimulationID !== undefined) {
+      this.setState({ simStateLoading: true });
       await SimulationService.instance.updateState(
         this.serverURL,
         this.state.runningSimulationID,
         newState
       ).then((simInfo) => {
-        this.setState({ simulationState: simInfo.state });
-        DialogService.instance.progressNotification({ message: 'The experiment is ' + this.state.simulationState });
+        console.debug('New simulation state is set: ' + simInfo.state);
+        // Set STOPPED state by response (the other by MQTT)
+        if (simInfo.state === EXPERIMENT_STATE.STOPPED) {
+          this.setState({ simulationState: simInfo.state });
+          this.setState({ simStateLoading: false });
+          // clear simulationID for the finilized experiments
+          ExperimentWorkbenchService.instance.simulationID = undefined;
+          this.setState({ runningSimulationID: undefined });
+        }
       });
     }
   }
@@ -357,7 +404,7 @@ class ExperimentWorkbench extends React.Component {
       return 'simulation-status-started';
     case EXPERIMENT_STATE.PAUSED:
       return 'simulation-status-paused';
-    case EXPERIMENT_STATE.ERROR:
+    case EXPERIMENT_STATE.FAILED:
       return 'simulation-status-error';
     default:
       return 'simulation-status-default';
@@ -386,10 +433,15 @@ class ExperimentWorkbench extends React.Component {
               onClick={() => this.onButtonLaunch()}
               disabled={
                 this.state.showLeaveDialog ||
-                this.state.runningSimulationID ||
-                this.state.simulationState !== EXPERIMENT_STATE.STOPPED
+                this.state.runningSimulationID !== undefined ||
+                !EXPERIMENT_FINAL_STATE.includes(this.state.simulationState) ||
+                this.state.availableServers.length === 0
               }
-              title='Launch experiment'
+              title={
+                this.state.availableServers.length === 0 ?
+                  'No servers available' :
+                  'Launch experiment'
+              }
             >
               <FlightTakeoffIcon />
             </IconButton>
@@ -398,7 +450,10 @@ class ExperimentWorkbench extends React.Component {
               ?
               <IconButton color='inherit'
                 onClick={() => this.onButtonPause()}
-                disabled={this.state.showLeaveDialog}
+                disabled={
+                  this.state.showLeaveDialog ||
+                  this.state.simulationState !== EXPERIMENT_STATE.STARTED
+                }
                 title='Pause'
               >
                 <PauseIcon />
@@ -408,7 +463,8 @@ class ExperimentWorkbench extends React.Component {
                 onClick={() => this.onButtonStart()}
                 disabled={
                   this.state.showLeaveDialog ||
-                  !this.state.runningSimulationID
+                  this.state.runningSimulationID === undefined ||
+                  this.state.simulationState !== EXPERIMENT_STATE.PAUSED
                 }
                 title='Start'
               >
@@ -420,7 +476,8 @@ class ExperimentWorkbench extends React.Component {
               onClick={() => this.onButtonStop()}
               disabled={
                 this.state.showLeaveDialog ||
-                this.state.simulationState === EXPERIMENT_STATE.STOPPED
+                EXPERIMENT_FINAL_STATE.includes(this.state.simulationState) ||
+                this.state.simulationState === undefined
               }
               title='Stop experiment'
             >
@@ -507,9 +564,13 @@ class ExperimentWorkbench extends React.Component {
                 <Typography align='left' variant='subtitle1' color='inherit' noWrap className={classes.title}>
                   Experiment Timeout: {this.state.experimentConfiguration.SimulationTimeout}
                 </Typography>
-                <ExperimentTimeBox/>
+                <ExperimentTimeBox />
                 <Typography align='left' variant='subtitle1' color='inherit' noWrap className={classes.title}>
-                  Simulation State: {this.state.simulationState}
+                  Simulation State: {
+                    this.state.simStateLoading ?
+                      <CircularProgress size='1rem'/> :
+                      this.state.simulationState
+                  }
                 </Typography>
               </Paper>
             </Grid>

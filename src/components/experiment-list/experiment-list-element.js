@@ -201,7 +201,7 @@ class ExperimentListElement extends React.Component {
               null
             }
 
-            {exp.joinableServers.length = 0 ?
+            {exp.joinableServers.length > 0 ?
               <div className='exp-title-sim-info'>
                 ({exp.joinableServers.length} simulation{exp.joinableServers.length > 1 ? 's' : ''} running)
               </div>

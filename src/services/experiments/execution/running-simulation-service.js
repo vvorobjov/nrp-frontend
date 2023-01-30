@@ -155,7 +155,7 @@ class SimulationService extends HttpService {
     let url = serverURL + '/simulation/' + simulationID + '/state';
     try {
       let response = await this.httpRequestPUT(url, JSON.stringify({ state: state }));
-      return response;
+      return await response.json();
     }
     catch (error) {
       DialogService.instance.simulationError(error);

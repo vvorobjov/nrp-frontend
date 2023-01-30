@@ -107,7 +107,7 @@ class ExperimentExecutionService extends HttpService {
    * @param {string} serverID - server ID
    * @param {object} serverConfiguration - configuration of server
    * @param {function} progressCallback - a callback for progress updates
-   * @returns {object} simulation config
+   * @returns {object} simulation endpoint response and server url
    */
   launchExperimentOnServer(
     experimentID,
@@ -123,7 +123,7 @@ class ExperimentExecutionService extends HttpService {
         progressCallback({ main: 'Create new Simulation...' });
       }); //called once caller has the promise
 
-      let serverURL = serverConfiguration.gzweb['nrp-services'];
+      let serverURL = serverConfiguration['nrp-services'];
 
       // Create a new simulation.
       // >>Request:
@@ -142,10 +142,10 @@ class ExperimentExecutionService extends HttpService {
       };
       this.httpRequestPOST(serverURL + '/simulation', JSON.stringify(simInitData))
         .then((simulation) => {
-          resolve(simulation);
+          resolve({'simulation': simulation, 'serverURL': serverURL});
         })
         .catch(reject);
-      // <<Response:
+      // <<Response: simulation
       // HTTP 400: Experiment configuration is not valid
       // HTTP 402: Another simulation is already running on the server
       // HTTP 201: Simulation created successfully
@@ -179,7 +179,7 @@ class ExperimentExecutionService extends HttpService {
       ServerResourcesService.instance
         .getServerConfig(simulation.server)
         .then((serverConfig) => {
-          let serverURL = serverConfig.gzweb['nrp-services'];
+          let serverURL = serverConfig['nrp-services'];
           let simulationID = simulation.runningSimulation.simulationID;
 
           function updateSimulationState(state) {

@@ -1,14 +1,6 @@
 {
     "internalIp": "http://localhost:8080",
-    "gzweb": {
-        "assets": "http://localhost:8080/assets",
-        "nrp-services": "http://localhost:8080",
-        "videoStreaming": "http://localhost:8080/webstream/",
-        "websocket": "ws://localhost:8080/gzbridge"
-    },
-    "rosbridge": {
-        "websocket": "ws://localhost:8080/rosbridge"
-    },
+    "nrp-services": "http://localhost:8080",
     "serverJobLocation": "local",
     "id": "localhost"
 }

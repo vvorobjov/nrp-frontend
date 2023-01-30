@@ -7,6 +7,7 @@ import timeDDHHMMSS from '../../utility/time-filter.js';
 import { EXPERIMENT_STATE } from '../../services/experiments/experiment-constants.js';
 import ExperimentExecutionService from '../../services/experiments/execution/experiment-execution-service.js';
 import ExperimentWorkbenchService from '../experiment-workbench/experiment-workbench-service';
+import ServerResourcesService from '../../services/experiments/execution/server-resources-service.js';
 
 import './simulation-details.css';
 
@@ -64,8 +65,11 @@ class SimulationDetails extends React.Component {
    */
   joinSimulation(simulationInfo) {
     ExperimentWorkbenchService.instance.simulationID = simulationInfo.runningSimulation.simulationID;
-    this.props.history.push({
-      pathname: '/experiment/' + simulationInfo.runningSimulation.experimentID
+    ServerResourcesService.instance.getServerConfig(simulationInfo.server).then((serverConfig) => {
+      ExperimentWorkbenchService.instance.serverURL = serverConfig['nrp-services'];
+      this.props.history.push({
+        pathname: '/experiment/' + simulationInfo.runningSimulation.experimentID
+      });
     });
   }
 

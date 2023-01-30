@@ -2,12 +2,15 @@ const EXPERIMENT_STATE = {
   CREATED: 'created',
   STARTED: 'started',
   PAUSED: 'paused',
-  INITIALIZED: 'initialized',
   COMPLETED: 'completed',
-  HALTED: 'halted',
   FAILED: 'failed',
   STOPPED: 'stopped'
 };
+
+const EXPERIMENT_FINAL_STATE = [
+  EXPERIMENT_STATE.STOPPED,
+  EXPERIMENT_STATE.FAILED
+];
 
 const EXPERIMENT_RIGHTS = {
   PUBLICLY_SHARED: {
@@ -24,4 +27,4 @@ const EXPERIMENT_RIGHTS = {
   }
 };
 
-module.exports = { EXPERIMENT_STATE, EXPERIMENT_RIGHTS };
+module.exports = { EXPERIMENT_STATE, EXPERIMENT_RIGHTS, EXPERIMENT_FINAL_STATE };

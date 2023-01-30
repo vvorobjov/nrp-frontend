@@ -131,7 +131,7 @@ describe('ExperimentExecutionService', () => {
 
     let result = await ExperimentExecutionService.instance.launchExperimentOnServer(...callParams);
     expect(ExperimentExecutionService.instance.httpRequestPOST)
-      .toHaveBeenLastCalledWith(serverConfiguration.gzweb['nrp-services'] + '/simulation', expect.any(String));
+      .toHaveBeenLastCalledWith(serverConfiguration['nrp-services'] + '/simulation', expect.any(String));
 
     // simulation not being ready should result in a rejection
     let simulationReadyError = 'simulation not ready';

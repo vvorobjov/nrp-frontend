@@ -1,29 +1,13 @@
 [
     {
         "internalIp": "http://localhost:8080",
-        "gzweb": {
-            "assets": "http://localhost:8080/assets",
-            "nrp-services": "http://localhost:8080",
-            "videoStreaming": "http://localhost:8080/webstream/",
-            "websocket": "ws://localhost:8080/gzbridge"
-        },
-        "rosbridge": {
-            "websocket": "ws://localhost:8080/rosbridge"
-        },
+        "nrp-services": "http://localhost:8080",
         "serverJobLocation": "local",
         "id": "localhost"
     },
     {
         "internalIp": "http://1.2.3.4:8080",
-        "gzweb": {
-            "assets": "http://1.2.3.4:8080/assets",
-            "nrp-services": "http://1.2.3.4:8080",
-            "videoStreaming": "http://1.2.3.4:8080/webstream/",
-            "websocket": "ws://1.2.3.4:8080/gzbridge"
-        },
-        "rosbridge": {
-            "websocket": "ws://1.2.3.4:8080/rosbridge"
-        },
+        "nrp-services": "http://1.2.3.4:8080",
         "serverJobLocation": "1.2.3.4",
         "id": "1.2.3.4-port-8080"
     }

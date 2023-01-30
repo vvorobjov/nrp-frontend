@@ -16,6 +16,7 @@ class ExperimentWorkbenchService extends EventEmitter {
       throw new Error('Use ' + this.constructor.name + '.instance');
     }
     this._simulationID = undefined;
+    this._serverURL = undefined;
     this._errorToken = undefined;
     this._statusToken = undefined;
   }
@@ -44,6 +45,14 @@ class ExperimentWorkbenchService extends EventEmitter {
     console.info(['ExperimentWorkbenchService - experimentID', this._experimentID]);
   }
 
+  get serverURL() {
+    return this._serverURL;
+  }
+  set serverURL(serverURL) {
+    this._serverURL = serverURL;
+    console.info(['ExperimentWorkbenchService - serverURL', this._serverURL]);
+  }
+
   get simulationID() {
     return this._simulationID;
   }
@@ -66,7 +75,7 @@ class ExperimentWorkbenchService extends EventEmitter {
       MqttClientService.instance.unsubscribe(this._statusToken);
       this._statusToken = undefined;
     }
-    if (simulationID) {
+    if (simulationID !== undefined) {
       const topicBase = MqttClientService.instance.getConfig().mqtt.topics.base + '/'
         + simulationID + '/';
       // assign error MQTT topic
@@ -116,11 +125,21 @@ class ExperimentWorkbenchService extends EventEmitter {
    * @param {float}  msg.simulationTimeLeft is the time left until timeout
    */
   statusMsgHandler = (msg) => {
-    const status = JSON.parse(msg);
-    ExperimentWorkbenchService.instance.emit(
-      ExperimentWorkbenchService.EVENTS.SIMULATION_STATUS_UPDATED,
-      status
-    );
+    try {
+      const status = JSON.parse(msg);
+      if (status.state) {
+        ExperimentWorkbenchService.instance.emit(
+          ExperimentWorkbenchService.EVENTS.SIMULATION_STATUS_UPDATED,
+          status
+        );
+      }
+    }
+    catch (err) {
+      DialogService.instance.unexpectedError({
+        message: 'Could not parse the status MQTT message:\n' + msg.toString(),
+        data: err.toString()
+      });
+    }
   }
 }
 
