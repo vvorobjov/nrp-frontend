@@ -198,16 +198,8 @@ class ExperimentExecutionService extends HttpService {
                 return Promise.reject();
               }
 
-              // CREATED --(initialize)--> PAUSED --(stop)--> STOPPED
-              if (data.state === EXPERIMENT_STATE.CREATED) {
-                return updateSimulationState(EXPERIMENT_STATE.INITIALIZED).then(
-                  _.partial(updateSimulationState, EXPERIMENT_STATE.STOPPED)
-                );
-              }
               // STARTED/PAUSED/HALTED --(stop)--> STOPPED
-              else if (data.state === EXPERIMENT_STATE.STARTED ||
-                data.state === EXPERIMENT_STATE.PAUSED ||
-                data.state === EXPERIMENT_STATE.HALTED) {
+              else if (data.state !== EXPERIMENT_STATE.FAILED) {
                 return updateSimulationState(EXPERIMENT_STATE.STOPPED);
               }
 

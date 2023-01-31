@@ -17,7 +17,8 @@ class SimulationDetails extends React.Component {
 
     this.state = {
       simUptimes: [],
-      titleButtonStop: ''
+      titleButtonStop: '',
+      stopDisabled: false
     };
   }
 
@@ -34,19 +35,7 @@ class SimulationDetails extends React.Component {
 
   isJoinDisabled(simulation) {
     return simulation.runningSimulation.state === EXPERIMENT_STATE.CREATED ||
-      simulation.stopping;
-  }
-
-  isStopDisabled(simulation) {
-    let disabled = simulation.stopping;
-    if (disabled) {
-      this.titleButtonStop = 'Sorry, you don\'t have sufficient rights to stop the simulation.';
-    }
-    else {
-      this.titleButtonStop = '';
-    }
-
-    return disabled;
+      this.state.stopDisabled;
   }
 
   updateSimUptimes() {
@@ -105,9 +94,19 @@ class SimulationDetails extends React.Component {
                 </button>
                 {/* Stop button enabled provided simulation state is consistent */}
                 <button /*analytics-on analytics-event="Stop" analytics-category="Experiment"*/
-                  onClick={() => ExperimentExecutionService.instance.stopExperiment(simulation)}
+                  onClick={async () => {
+                    this.setState({ stopDisabled: true });
+                    try {
+                      await ExperimentExecutionService.instance.stopExperiment(simulation);
+                      this.setState({ stopDisabled: false });
+                    }
+                    catch (err) {
+                      this.setState({ stopDisabled: false });
+                      console.error(err.toString());
+                    };
+                  }}
                   type="button" className='nrp-btn btn-default'
-                  disabled={this.isStopDisabled(simulation)}
+                  disabled={this.state.stopDisabled}
                   title={this.state.titleButtonStop}>
                   <FaStop className='icon' />Stop
                 </button>
