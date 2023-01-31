@@ -17,6 +17,7 @@ import RemoveExperimentDialog from './remove-experiment-dialog';
 
 import SimulationDetails from './simulation-details';
 import ExperimentOverview from '../experiments-overview/experiments-overview.js';
+import timeDDHHMMSS from '../../utility/time-filter';
 
 import './experiment-list-element.css';
 import '../main.css';
@@ -218,8 +219,7 @@ class ExperimentListElement extends React.Component {
           {this.state.selected &&
             <div className='experiment-details' >
               <i>
-                Timeout: {config.SimulationTimeout}
-                ({(config.timeoutType === 'simulation' ? 'simulation' : 'real')} time)
+                Timeout: {timeDDHHMMSS(parseFloat(config.SimulationTimeout))}
               </i>
               <br />
               {/*<i>
@@ -281,7 +281,7 @@ class ExperimentListElement extends React.Component {
                   : null}
 
                 {/* Records button */}
-                {exp.rights.launch ?
+                {/* {exp.rights.launch ?
                   <Button className='nrp-btn btn-default'
                     variant='secondary'
                     disabled={true}>
@@ -291,7 +291,7 @@ class ExperimentListElement extends React.Component {
                     }
                     Recordings
                   </Button>
-                  : null}
+                  : null} */}
 
                 {/* Export button */}
                 {exp.rights.launch ?

@@ -26,7 +26,7 @@
 
 export default function timeDDHHMMSS(input) {
 
-  if (typeof input !== 'number') {
+  if (typeof input !== 'number' || isNaN(input)) {
     return '--\u00A0--:--:--';
   }
   var timeValue = '';

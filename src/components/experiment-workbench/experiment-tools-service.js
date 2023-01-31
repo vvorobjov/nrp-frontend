@@ -72,24 +72,24 @@ class ExperimentToolsService {
 }
 
 ExperimentToolsService.TOOLS = Object.freeze({
-  NEST_DESKTOP: {
-    singleton: true,
-    flexlayoutNode: {
-      'type': 'tab',
-      'name': 'NEST Desktop',
-      'component': 'nest-desktop'
-    },
-    flexlayoutFactoryCb: () =>  {
-      return <iframe src='http://localhost:8000' title='NEST Desktop' />;
-    },
-    getIcon: () => {
-      return <div>
-        <img src={'https://www.nest-simulator.org/wp-content/uploads/2015/03/nest_logo.png'}
-          alt="NEST Desktop"
-          style={{width: 40+ 'px', height: 20 + 'px'}} />
-      </div>;
-    }
-  },
+  // NEST_DESKTOP: {
+  //   singleton: true,
+  //   flexlayoutNode: {
+  //     'type': 'tab',
+  //     'name': 'NEST Desktop',
+  //     'component': 'nest-desktop'
+  //   },
+  //   flexlayoutFactoryCb: () =>  {
+  //     return <iframe src='http://localhost:8000' title='NEST Desktop' />;
+  //   },
+  //   getIcon: () => {
+  //     return <div>
+  //       <img src={'https://www.nest-simulator.org/wp-content/uploads/2015/03/nest_logo.png'}
+  //         alt="NEST Desktop"
+  //         style={{width: 40+ 'px', height: 20 + 'px'}} />
+  //     </div>;
+  //   }
+  // },
   TEST_NRP_CORE_DOCU: {
     singleton: true,
     flexlayoutNode: {

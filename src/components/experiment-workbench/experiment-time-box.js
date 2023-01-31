@@ -2,6 +2,7 @@ import React from 'react';
 import 'react-tabs/style/react-tabs.css';
 
 import ExperimentWorkbenchService from './experiment-workbench-service';
+import timeDDHHMMSS from '../../utility/time-filter';
 
 import Typography from '@material-ui/core/Typography';
 
@@ -14,9 +15,26 @@ export default class ExperimentTimeBox extends React.Component {
 
   constructor(props) {
     super(props);
+
+    this.type = props.value;
+    switch (this.type) {
+    case 'real':
+      this.title = 'Real Time: ';
+      break;
+    case 'experiment':
+      this.title = 'Simulation Time: ';
+      break;
+    case 'remaining':
+      this.title = 'Simulation Time Left: ';
+      break;
+    default:
+      this.title = 'Unknown: ';
+      break;
+    }
     this.state = {
       simulationID: undefined,
-      timeToken: null
+      timeToken: null,
+      simulationTime: undefined
     };
   }
 
@@ -46,13 +64,26 @@ export default class ExperimentTimeBox extends React.Component {
    * @param {float}  status.simulationTimeLeft is the time left until timeout
    */
   updateTimeHandler = (status) => {
-    this.setState({ simulationTime: status.simulationTime.toString()});
+    switch (this.type) {
+    case 'real':
+      this.setState({ simulationTime: status.realTime.toString()});
+      return;
+    case 'experiment':
+      this.setState({ simulationTime: status.simulationTime.toString()});
+      return;
+    case 'remaining':
+      this.setState({ simulationTime: status.simulationTimeLeft.toString()});
+      return;
+    default:
+      this.setState({ simulationTime: undefined});
+      return;
+    }
   }
 
   render() {
     return (
       <Typography align='left' variant='subtitle1' color='inherit' noWrap className='experiment-time-box'>
-        Simulation Time: {this.state.simulationTime}
+        {this.title}{timeDDHHMMSS(parseFloat(this.state.simulationTime))}
       </Typography>
     );
   }

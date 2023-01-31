@@ -158,6 +158,8 @@ const useStyles = theme => ({
     display: 'flex',
     overflow: 'auto',
     flexDirection: 'row',
+    flexBasis: 0,
+    flexGrow: 1,
     alignItems: 'center'
   },
   // TODO: Fix vertical filling
@@ -435,7 +437,8 @@ class ExperimentWorkbench extends React.Component {
                 this.state.showLeaveDialog ||
                 this.state.runningSimulationID !== undefined ||
                 !EXPERIMENT_FINAL_STATE.includes(this.state.simulationState) ||
-                this.state.availableServers.length === 0
+                this.state.availableServers.length === 0 ||
+                this.state.simStateLoading
               }
               title={
                 this.state.availableServers.length === 0 ?
@@ -452,7 +455,8 @@ class ExperimentWorkbench extends React.Component {
                 onClick={() => this.onButtonPause()}
                 disabled={
                   this.state.showLeaveDialog ||
-                  this.state.simulationState !== EXPERIMENT_STATE.STARTED
+                  this.state.simulationState !== EXPERIMENT_STATE.STARTED ||
+                  this.state.simStateLoading
                 }
                 title='Pause'
               >
@@ -464,7 +468,8 @@ class ExperimentWorkbench extends React.Component {
                 disabled={
                   this.state.showLeaveDialog ||
                   this.state.runningSimulationID === undefined ||
-                  this.state.simulationState !== EXPERIMENT_STATE.PAUSED
+                  this.state.simulationState !== EXPERIMENT_STATE.PAUSED ||
+                  this.state.simStateLoading
                 }
                 title='Start'
               >
@@ -477,7 +482,8 @@ class ExperimentWorkbench extends React.Component {
               disabled={
                 this.state.showLeaveDialog ||
                 EXPERIMENT_FINAL_STATE.includes(this.state.simulationState) ||
-                this.state.simulationState === undefined
+                this.state.simulationState === undefined ||
+                this.state.simStateLoading
               }
               title='Stop experiment'
             >
@@ -492,7 +498,13 @@ class ExperimentWorkbench extends React.Component {
             </IconButton>
             {/* Title */}
             <Typography align='center' component='h1' variant='h6' color='inherit' noWrap className={classes.title}>
-              <span>{this.state.experimentConfiguration.SimulationName}</span>
+              <span>
+                {this.state.experimentConfiguration.SimulationName}
+                {this.state.runningSimulationID !== undefined ?
+                  ': simulation ' + this.state.runningSimulationID.toString() :
+                  null
+                }
+              </span>
             </Typography>
             {/* TODO: Add error popup and notification counter */}
             {/* Notification counter */}
@@ -561,10 +573,9 @@ class ExperimentWorkbench extends React.Component {
             {/* Chart */}
             <Grid item xs={12}>
               <Paper className={clsx(classes.controlContainer, this.getStatusStyle())}>
-                <Typography align='left' variant='subtitle1' color='inherit' noWrap className={classes.title}>
-                  Experiment Timeout: {this.state.experimentConfiguration.SimulationTimeout}
-                </Typography>
-                <ExperimentTimeBox />
+                <ExperimentTimeBox value='real'/>
+                <ExperimentTimeBox value='experiment'/>
+                <ExperimentTimeBox value='remaining'/>
                 <Typography align='left' variant='subtitle1' color='inherit' noWrap className={classes.title}>
                   Simulation State: {
                     this.state.simStateLoading ?

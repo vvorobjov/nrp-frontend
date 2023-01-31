@@ -129,8 +129,8 @@ export default class ExperimentsOverview extends React.Component {
           onSelect={(index, lastIndex) => this.onSelectTab(index, lastIndex)} >
           <TabList>
             <Tab>My Experiments</Tab>
-            <Tab>New Experiment</Tab>
-            <Tab>Model Libraries</Tab>
+            <Tab disabled={true}>New Experiment</Tab>
+            <Tab disabled={true}>Model Libraries</Tab>
             <Tab>Experiment Files</Tab>
             <Tab>Templates</Tab>
             <Tab>Running Simulations</Tab>
