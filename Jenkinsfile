@@ -64,7 +64,7 @@ pipeline {
 
                 // Build operations (starting in .ci directory)
                 dir(env.GIT_CHECKOUT_DIR){
-                    sh 'cp src/config.template.local.json src/config.json'
+                    sh 'cp src/config.json.sample.local src/config.json'
                     sh 'npm run coverage || echo "Tests failed"'
                     catchError(buildResult: 'UNSTABLE', stageResult: 'UNSTABLE', message: 'Test coverage has dropped') {
                         step([$class: 'CoberturaPublisher', 

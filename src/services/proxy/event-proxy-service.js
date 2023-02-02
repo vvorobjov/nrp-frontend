@@ -27,6 +27,7 @@ export default class EventProxyService extends EventEmitter {
 
     this.connected = false;
     this.initialized = false;
+    this.counter = 0;
 
     // add onConnected and onDisconnected functions to the events listeners
     this.on(EventProxyService.EVENTS.CONNECTED, this.onConnected);
@@ -77,6 +78,7 @@ export default class EventProxyService extends EventEmitter {
    */
   onConnected(){
     this.connected = true;
+    this.counter = 0;
     // skip notification at the first connection
     if (this.initialized){
       DialogService.instance.nrpNotification({
