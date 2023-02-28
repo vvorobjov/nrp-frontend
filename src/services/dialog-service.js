@@ -40,18 +40,27 @@ class DialogService extends EventEmitter {
     this.emit(DialogService.EVENTS.ERROR, error);
   }
 
+  // Handling unexpected error
+  unexpectedError(error){
+    error.type = 'Unexpected Error';
+    this.emit(DialogService.EVENTS.ERROR, error);
+  }
+
   simulationError(error) {
     error.type = 'Simulation Error';
     this.emit(DialogService.EVENTS.ERROR, error);
   }
 
   progressNotification(notification) {
-    notification.type = 'Progress Status';
-    this.emit(DialogService.EVENTS.NOTIFICATION, notification);
+    this.nrpNotification(notification, 'Progress Status');
   }
 
   warningNotification(notification) {
-    notification.type = 'Warning';
+    this.nrpNotification(notification, 'Warning');
+  }
+
+  nrpNotification(notification, type = 'Information') {
+    notification.type = type;
     this.emit(DialogService.EVENTS.NOTIFICATION, notification);
   }
 }

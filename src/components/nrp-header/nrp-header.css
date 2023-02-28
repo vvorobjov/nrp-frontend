@@ -34,6 +34,12 @@
   text-decoration: none;
 }
 
+.header-link-disabled {
+  color: rgb(121, 121, 121);
+  text-decoration: none;
+  pointer-events: none;
+}
+
 .header-link:hover {
   opacity: 0.5;
   transition: 200ms linear;

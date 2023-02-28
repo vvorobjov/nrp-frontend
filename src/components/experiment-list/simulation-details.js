@@ -6,6 +6,8 @@ import { withRouter } from 'react-router-dom';
 import timeDDHHMMSS from '../../utility/time-filter.js';
 import { EXPERIMENT_STATE } from '../../services/experiments/experiment-constants.js';
 import ExperimentExecutionService from '../../services/experiments/execution/experiment-execution-service.js';
+import ExperimentWorkbenchService from '../experiment-workbench/experiment-workbench-service';
+import ServerResourcesService from '../../services/experiments/execution/server-resources-service.js';
 
 import './simulation-details.css';
 
@@ -15,7 +17,8 @@ class SimulationDetails extends React.Component {
 
     this.state = {
       simUptimes: [],
-      titleButtonStop: ''
+      titleButtonShutdown: '',
+      shutdownDisabled: false
     };
   }
 
@@ -32,19 +35,7 @@ class SimulationDetails extends React.Component {
 
   isJoinDisabled(simulation) {
     return simulation.runningSimulation.state === EXPERIMENT_STATE.CREATED ||
-      simulation.stopping;
-  }
-
-  isStopDisabled(simulation) {
-    let disabled = simulation.stopping;
-    if (disabled) {
-      this.titleButtonStop = 'Sorry, you don\'t have sufficient rights to stop the simulation.';
-    }
-    else {
-      this.titleButtonStop = '';
-    }
-
-    return disabled;
+      this.state.shutdownDisabled;
   }
 
   updateSimUptimes() {
@@ -55,9 +46,19 @@ class SimulationDetails extends React.Component {
     });
   }
 
+  /**
+   * Join the running simulation.
+   * @param {object} simulationInfo the description of the running simulation
+   *
+   * Opens experiment workbench and sets the running simulation ID in ExperimentWorkbenchService
+   */
   joinSimulation(simulationInfo) {
-    this.props.history.push({
-      pathname: '/simulation-view/' + simulationInfo.server + '/' + simulationInfo.runningSimulation.simulationID
+    ExperimentWorkbenchService.instance.simulationID = simulationInfo.runningSimulation.simulationID;
+    ServerResourcesService.instance.getServerConfig(simulationInfo.server).then((serverConfig) => {
+      ExperimentWorkbenchService.instance.serverURL = serverConfig['nrp-services'];
+      this.props.history.push({
+        pathname: '/experiment/' + simulationInfo.runningSimulation.experimentID
+      });
     });
   }
 
@@ -91,13 +92,23 @@ class SimulationDetails extends React.Component {
                   }}>
                   <ImEnter className='icon' />Join
                 </button>
-                {/* Stop button enabled provided simulation state is consistent */}
-                <button /*analytics-on analytics-event="Stop" analytics-category="Experiment"*/
-                  onClick={() => ExperimentExecutionService.instance.stopExperiment(simulation)}
+                {/* Shutdown button enabled provided simulation state is consistent */}
+                <button
+                  onClick={async () => {
+                    this.setState({ shutdownDisabled: true });
+                    try {
+                      await ExperimentExecutionService.instance.shutdownExperiment(simulation);
+                      this.setState({ shutdownDisabled: false });
+                    }
+                    catch (err) {
+                      this.setState({ shutdownDisabled: false });
+                      console.error(err.toString());
+                    };
+                  }}
                   type="button" className='nrp-btn btn-default'
-                  disabled={this.isStopDisabled(simulation)}
-                  title={this.state.titleButtonStop}>
-                  <FaStop className='icon' />Stop
+                  disabled={this.state.shutdownDisabled}
+                  title={this.state.titleButtonShutdown}>
+                  <FaStop className='icon' />Shutdown
                 </button>
               </div>
             </div>
@@ -105,13 +116,14 @@ class SimulationDetails extends React.Component {
         })
         }
 
-        <div className='table-row'>
+        {/* TODO: [NRRPLT-8773] Add Stop All button */}
+        {/* <div className='table-row'>
           <div className='table-column-last'>
             <button className='nrp-btn btn-default'>
               <FaStopCircle className='icon' />Stop All
             </button>
           </div>
-        </div>
+        </div> */}
       </div >
     );
   }

@@ -20,8 +20,9 @@ export class HttpService extends EventEmitter {
       cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
       credentials: 'same-origin', // include, *same-origin, omit
       headers: {
-        'Content-Type': 'application/json',
-        Referer: 'http://localhost:9000/'
+        'Content-Type': 'application/json'
+        // TODO: is it needed for referrerPolicy: 'no-referrer'?
+        // Referer: 'http://localhost:9000/'
       },
       // redirect: manual, *follow, error
       redirect: 'follow',

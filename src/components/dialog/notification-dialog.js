@@ -11,6 +11,8 @@ class NotificationDialog extends React.Component{
     this.state = {
       notifications: []
     };
+    this.infoDelayMS = 6000;
+    this.warnDelayMS = 15000;
   }
 
   async componentDidMount() {
@@ -30,7 +32,8 @@ class NotificationDialog extends React.Component{
     // avoid duplicates
     var isIn = false;
     this.state.notifications.forEach((notif) =>{
-      if (notification.type===notif.type && notification.message===notif.message){
+      if (notification.type===notif.type
+        && notification.message===notif.message){
         isIn = true;
       }
     });
@@ -49,6 +52,7 @@ class NotificationDialog extends React.Component{
     });
   }
 
+  // TODO: [NRRPLT-8774] the Toast doesn't disappear if there are more than one notification
   render(){
     let notifications = this.state.notifications;
     return(
@@ -59,8 +63,9 @@ class NotificationDialog extends React.Component{
               return (
                 <li key={index} className='no-style'>
                   <Toast className='toast-width' onClose={(index) => this.handleClose(index)}
-                    delay={notification.type==='Warning'? 60000: 10000} autohide>
-                    <Toast.Header className={notification.type==='Warning'? 'warning': 'info'} >
+                    delay={notification.type === 'Warning' ? this.warnDelayMS : this.infoDelayMS}
+                    animation={true} autohide={true}>
+                    <Toast.Header className={notification.type === 'Warning' ? 'warning' : 'info'} >
                       <strong className='mr-auto'>{notification.type}</strong>
                     </Toast.Header>
                     <Toast.Body>

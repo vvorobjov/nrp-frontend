@@ -1,11 +1,13 @@
-import { HttpService } from '../../http-service.js';
+import { HttpProxyService, NRPProxyError } from '../../proxy/http-proxy-service';
 import { EXPERIMENT_RIGHTS } from '../experiment-constants';
 
 import endpoints from '../../proxy/data/endpoints.json';
-import config from '../../../config.json';
-const experimentsURL = `${config.api.proxy.url}${endpoints.proxy.experiments.url}`;
-const experimentImageURL = `${config.api.proxy.url}${endpoints.proxy.experimentImage.url}`;
-const cloneURL = `${config.api.proxy.url}${endpoints.proxy.storage.clone.url}`;
+import DialogService from '../../dialog-service.js';
+
+// const PROXY_URL = config.api.proxy.url;
+const experimentsURL = `${endpoints.proxy.experiments.url}`;
+const experimentImageURL = `${endpoints.proxy.experimentImage.url}`;
+const cloneURL = `${endpoints.proxy.storage.clone.url}`;
 
 let _instance = null;
 const SINGLETON_ENFORCER = Symbol();
@@ -14,7 +16,7 @@ const SINGLETON_ENFORCER = Symbol();
  * Service that handles storage experiment files and configurations given
  * that the user has authenticated successfully.
  */
-class PublicExperimentsService extends HttpService {
+class PublicExperimentsService extends HttpProxyService {
   constructor(enforcer) {
     super();
     if (enforcer !== SINGLETON_ENFORCER) {
@@ -68,11 +70,22 @@ class PublicExperimentsService extends HttpService {
   // move to experiment-configuration-service?
   async getExperiments(forceUpdate = false) {
     if (!this.experiments || forceUpdate) {
-      let experimentList = Object.values(await (await this.httpRequestGET(experimentsURL)).json());
-      this.sortExperiments(experimentList);
-      await this.fillExperimentDetails(experimentList);
-      this.experiments = experimentList;
-      this.emit(PublicExperimentsService.EVENTS.UPDATE_EXPERIMENTS, this.experiments);
+      try {
+        let experimentList = Object.values(await (await this.httpRequestGET(experimentsURL)).json());
+        this.sortExperiments(experimentList);
+        await this.fillExperimentDetails(experimentList);
+        this.experiments = experimentList;
+        this.emit(PublicExperimentsService.EVENTS.UPDATE_EXPERIMENTS, this.experiments);
+      }
+      catch (error) {
+        this.experiments = null;
+        if (error instanceof NRPProxyError) {
+          DialogService.instance.networkError(error);
+        }
+        else {
+          DialogService.instance.unexpectedError(error);
+        }
+      }
     }
 
     return this.experiments;
@@ -116,11 +129,13 @@ class PublicExperimentsService extends HttpService {
       }
 
       // retrieve the experiment thumbnail
-      experimentUpdates.push(this.getThumbnailURL(experiment.configuration.id).then(thumbnailURL => {
-        if (thumbnailURL) {
-          experiment.thumbnailURL = thumbnailURL; //URL.createObjectURL(thumbnail);
-        }
-      }));
+      // TODO: [NRRPLT-8681] Make the proxy request working
+      // experimentUpdates.push(this.getThumbnailURL(experiment.configuration.id).then(thumbnailURL => {
+      //   if (thumbnailURL) {
+      //     experiment.thumbnailURL = thumbnailURL; //URL.createObjectURL(thumbnail);
+      //   }
+      // }));
+      experiment.thumbnailURL = '/thumbnails/Two-sided_Brain_BW.jpg';
 
       experiment.rights = EXPERIMENT_RIGHTS.PUBLICLY_SHARED;
     });
@@ -133,9 +148,12 @@ class PublicExperimentsService extends HttpService {
    * @param {string} experimentName - name of the experiment
    * @param {string} thumbnailFilename - name of the thumbnail file
    *
+   * TODO: [NRRPLT-8681] Fix endpoint
+   *
    * @returns {Blob} image object
    */
   //TODO: between storage experiments and shared experiments, can this be unified?
+  // TODO: The proxy expects to receive the experimentId, which was set to `dir/config.json`
   // move to experiment-configuration-service?
   async getThumbnailURL(experimentName) {
     let url = experimentImageURL + '/' + experimentName;
@@ -143,11 +161,11 @@ class PublicExperimentsService extends HttpService {
   }
 
   /**
-   * Clone an experiment setup to storage
+   * Clone a public experiment setup to storage
    * @param {Object} experiment The Experiment configuration
    */
   async cloneExperiment(experiment) {
-    let experimentConfigFilepath = experiment.configuration.experimentConfiguration;
+    let experimentConfigFilepath = experiment.configuration.experimentId;
     this.httpRequestPOST(cloneURL, JSON.stringify({ expPath: experimentConfigFilepath }));
   }
 }
