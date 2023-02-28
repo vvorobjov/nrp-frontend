@@ -1,0 +1,48 @@
+.tf-editor-header {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+.tf-editor-icon {
+  width: 40px;
+  height: 40px;
+  background-color: yellow;
+  text-align: center;
+  border: 1px solid black;
+  margin: 5px;
+  font-size: 1.5em;
+}
+
+.tf-editor-file-ui {
+  padding: 10px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+.tf-editor-file-ui-item {
+  margin: 5px;
+}
+
+.tf-editor-ui-save {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+.tf-editor-text-saved {
+  color: #1baf0a;
+}
+
+.tf-editor-text-unsaved {
+  color: #f7a156;
+}
+
+.tf-editor-codemirror-container {
+  overflow: scroll;
+}
+
+.tf-editor-unsaved-dialog-wrapper {
+  z-index: 1275;
+}

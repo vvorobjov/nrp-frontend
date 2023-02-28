@@ -1,0 +1,52 @@
+{
+    "proxy": {
+        "availableServers": {
+            "url": "/availableServers"
+        },
+        "experimentImage": {
+            "url": "/experimentImage"
+        },
+        "experiments": {
+            "url": "/experiments"
+        },
+        "models": {
+            "url": "/models"
+        },
+        "identity": {
+            "url": "/identity",
+            "me": {
+                "url": "/identity/me",
+                "groups": {
+                    "url": "/identity/me/groups"
+                }
+            },
+            "gdpr": {
+                "url": "/gdpr"
+            }
+        },
+        "server": {
+            "url": "/server"
+        },
+        "storage": {
+            "url": "/storage",
+            "clone": {
+                "url": "/storage/clone"
+            },
+            "experiments": {
+                "url": "/storage/experiments"
+            },
+            "importExperiment": {
+                "url": "/storage/importExperiment"
+            },
+            "scanStorage": {
+                "url": "/storage/scanStorage"
+            },
+            "allCustomModels": {
+                "url": "/storage/models/all"
+            },
+            "userModels": {
+                "url": "/storage/models/user"
+            }
+        }
+    }
+}

@@ -1,0 +1,13 @@
+.no-style {
+    list-style-type: none;
+}
+
+.experiment-list-wrapper {
+    height: 100vh;
+}
+
+.no-items-notification {
+    margin: 10px;
+    font-size: 1.5em;
+    font-weight: bold;
+}

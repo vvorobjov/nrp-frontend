@@ -1,0 +1,14 @@
+[
+    {
+        "internalIp": "http://localhost:8080",
+        "nrp-services": "http://localhost:8080",
+        "serverJobLocation": "local",
+        "id": "localhost"
+    },
+    {
+        "internalIp": "http://1.2.3.4:8080",
+        "nrp-services": "http://1.2.3.4:8080",
+        "serverJobLocation": "1.2.3.4",
+        "id": "1.2.3.4-port-8080"
+    }
+]

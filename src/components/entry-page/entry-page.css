@@ -1,0 +1,47 @@
+.entry-page-wrapper {
+  height: 100vh;
+  display: grid;
+  grid-template-rows: 200px auto;
+  grid-template-columns: auto minmax(250px, 500px) minmax(250px, 500px) auto;
+  grid-template-areas:
+    "nrp-header nrp-header nrp-header nrp-header"
+    "sidebar-left experiments-left experiments-right sidebar-right";
+}
+
+.entry-page-header {
+  grid-area: nrp-header;
+}
+
+.experiments-left {
+  grid-area: experiments-left;
+  color: black;
+  background-color: white;
+  text-align: left;
+  padding: 20px;
+  display: flex;
+  flex-direction: row;
+}
+
+.experiments-right {
+  grid-area: experiments-right;
+  color: black;
+  background-color: white;
+  text-align: left;
+  padding: 20px;
+}
+
+.img-experiment-list {
+  width: 100px;
+  height: 100px;
+  padding: 10px;
+}
+
+.sidebar-left {
+  grid-area: sidebar-left;
+  background-color: white;
+}
+
+.sidebar-right {
+  grid-area: sidebar-right;
+  background-color: white;
+}

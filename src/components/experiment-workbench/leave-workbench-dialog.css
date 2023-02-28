@@ -1,0 +1,8 @@
+.leave-workbench-dialog-wrapper {
+  z-index: 1275;
+}
+
+.leave-workbench-dialog-header {
+  color: black;
+  background-color: white;
+}

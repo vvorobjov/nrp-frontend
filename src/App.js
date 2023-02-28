@@ -1,25 +1,38 @@
-import logo from './logo.svg';
-import './App.css';
+import React from 'react';
 
-function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+import { BrowserRouter, Switch, Route } from 'react-router-dom';
+
+import EntryPage from './components/entry-page/entry-page';
+import ErrorDialog from './components/dialog/error-dialog.js';
+import ExperimentsOverview from './components/experiments-overview/experiments-overview';
+import ExperimentWorkbench from './components/experiment-workbench/experiment-workbench';
+// import SimulationView from './components/simulation-view/simulation-view';
+import NotificationDialog from './components/dialog/notification-dialog.js';
+import MqttClientService from './services/mqtt-client-service';
+
+class App extends React.Component {
+
+  componentDidMount() {
+    this.mqttClientService = MqttClientService.instance;
+    //MqttClientService.instance.connect('ws://' + window.location.hostname + ':1884');
+  }
+
+  render() {
+    return (
+      <div>
+        <ErrorDialog />
+        <NotificationDialog/>
+        <BrowserRouter>
+          <Switch>
+            <Route path='/experiments-overview' component={ExperimentsOverview} />
+            <Route path='/experiment/:experimentID' component={ExperimentWorkbench} />
+            {/* <Route path='/simulation-view/:serverIP/:simulationID' component={SimulationView} /> */}
+            <Route path='/' component={EntryPage} />
+          </Switch>
+        </BrowserRouter>
+      </div>
+    );
+  }
 }
 
 export default App;

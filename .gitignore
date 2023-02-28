@@ -5,7 +5,7 @@
 
 # Node artifact files
 node_modules/
-dist/
+build/
 
 # Compiled Java class files
 *.class
@@ -25,6 +25,9 @@ dist/
 
 # JetBrains IDE
 .idea/
+
+# VS Code
+.vscode/
 
 # Unit test reports
 TEST*.xml
@@ -48,3 +51,8 @@ Thumbs.db
 *.mov
 *.wmv
 
+src/config.json
+coverage
+junit.xml
+src/config.json.local
+src/config.json.*

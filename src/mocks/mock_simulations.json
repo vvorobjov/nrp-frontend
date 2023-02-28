@@ -1,0 +1,15 @@
+[
+    {
+        "state": "created",
+        "simulationID": 0,
+        "environmentConfiguration": null,
+        "owner": "nrpuser",
+        "creationDate": "2021-01-27T15:51:12.893249+01:00",
+        "gzserverHost": "local",
+        "reservation": null,
+        "experimentID": "braitenberg_husky_holodeck_0",
+        "brainProcesses": 1,
+        "creationUniqueID": "1611759072866.1191",
+        "playbackPath": null
+    }
+]

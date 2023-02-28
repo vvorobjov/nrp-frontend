@@ -1,0 +1,9 @@
+.nrp-btn {
+    padding: 5px 10px 5px 10px;
+    border: 1px solid lightgray;
+}
+
+.nrp-btn-small {
+    width: 25px;
+    height: 25px;
+}

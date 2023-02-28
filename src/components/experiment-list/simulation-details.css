@@ -1,0 +1,27 @@
+.simulations-details-wrapper {
+  width: 90%;
+  text-align: center;
+  align-items: center;
+  align-content: center;
+}
+
+.table-header {
+  font-weight: bold;
+  padding-bottom: 5px;
+  border-bottom: 2px solid lightgray;
+}
+
+.table-row {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(4, 120px) 200px;
+  padding-top: 10px;
+}
+
+.table-column-last {
+  grid-area: 1 / -2 / 2 / -1;
+}
+
+.icon {
+  margin-right: 3px;
+}
