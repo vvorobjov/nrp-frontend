@@ -1,7 +1,7 @@
 {
   "api": {
     "proxy": {
-      "url": "http://localhost:9000/proxy"
+      "url": "http://148.187.148.98:9000/proxy"
     }
   },
   "auth": {
@@ -10,7 +10,7 @@
     "url": "/authentication/loginpage?origin=FS"
   },
   "mqtt": {
-    "url": "localhost",
+    "url": "148.187.148.98",
     "port": "9000",
     "topics": {
       "base": "nrp_simulation",
