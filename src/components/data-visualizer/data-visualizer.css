@@ -1,0 +1,44 @@
+.dv-editor-header {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+.dv-editor-icon {
+  width: 40px;
+  height: 40px;
+  background-color: lightblue;
+  text-align: center;
+  border: 1px solid black;
+  margin: 5px;
+  font-size: 1.5em;
+}
+
+.dv-editor-file-ui {
+  padding: 10px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+.dv-editor-file-ui-item {
+  margin: 5px;
+}
+
+.dv-editor-ui-save {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+.dv-editor-text-saved {
+  color: #8aff7c;
+}
+
+.dv-editor-text-unsaved {
+  color: #ffb97c;
+}
+
+.dv-editor-codemirror-container {
+  overflow: scroll;
+}

@@ -86,7 +86,7 @@ SimulationToolsService.TOOLS = Object.freeze({
     singleton: true,
     flexlayoutNode: {
       'type': 'tab',
-      'name': 'NRP-Core Docs',
+      'name': 'NRP-CorE Docs',
       'component': 'nrp-core-docu'
     },
     flexlayoutFactoryCb: () =>  {

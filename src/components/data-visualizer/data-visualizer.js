@@ -5,9 +5,9 @@ import { Modal, Button } from 'react-bootstrap';
 import ExperimentStorageService from '../../services/experiments/files/experiment-storage-service';
 import ExperimentWorkbenchService from '../experiment-workbench/experiment-workbench-service';
 
-import './tf-editor.css';
+import './data-visualizer.css';
 
-export default class DataVisualizer extends React.Component {
+export default class TransceiverFunctionEditor extends React.Component {
 
   constructor(props) {
     super(props);
@@ -51,7 +51,7 @@ export default class DataVisualizer extends React.Component {
   }
 
   async onUnsavedChangesSave() {
-    let success = await this.saveTF();
+    let success = await this.saveDV();
     if (success) {
       this.loadFileContent(this.pendingFileChange.newFilename);
     }
@@ -81,7 +81,7 @@ export default class DataVisualizer extends React.Component {
     }
   }
 
-  async saveTF() {
+  async saveDV() {
     let response = await ExperimentStorageService.instance.setFile(
       this.state.experimentName, this.state.selectedFilename, this.state.code);
     if (response.ok) {
@@ -93,7 +93,7 @@ export default class DataVisualizer extends React.Component {
       return true;
     }
     else {
-      console.error('Error trying to save TF!');
+      console.error('Error trying to save DV!');
       console.error(response);
       return false;
     }
@@ -101,28 +101,28 @@ export default class DataVisualizer extends React.Component {
 
   render() {
     return (
-      <div className='tf-editor-container'>
-        <div className='tf-editor-header'>
-          <div className='tf-editor-icon'>TF</div>
-          <div className='tf-editor-file-ui'>
+      <div className='dv-editor-container'>
+        <div className='dv-editor-header'>
+          <div className='dv-editor-icon'>DV</div>
+          <div className='dv-editor-file-ui'>
             <select
-              className='tf-editor-file-ui-item'
-              name="selectTFFile"
+              className='dv-editor-file-ui-item'
+              name="selectDVFile"
               value={this.state.selectedFilename}
               onChange={(event) => this.onChangeSelectedFile(event)}>
               {this.files.map(file => {
                 return (<option key={file} value={file}>{file}</option>);
               })}
             </select>
-            <button className='tf-editor-file-ui-item' onClick={() => this.saveTF()}>Save</button>
+            <button className='dv-editor-file-ui-item' onClick={() => this.saveDV()}>Save</button>
             <div className={this.hasUnsavedChanges ?
-              'tf-editor-text-unsaved' : 'tf-editor-text-saved'}>
+              'dv-editor-text-unsaved' : 'dv-editor-text-saved'}>
               {this.state.textChanges}
             </div>
           </div>
         </div>
 
-        <div className='tf-editor-codemirror-container'>
+        <div className='dv-editor-codemirror-container'>
           <CodeMirror
             value={this.state.code}
             onChange={(change, viewUpdate) => this.onChangeCodemirror(change, viewUpdate)}/>

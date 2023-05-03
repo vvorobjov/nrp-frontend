@@ -4,6 +4,7 @@ import TransceiverFunctionEditor from '../tf-editor/tf-editor';
 
 import DescriptionIcon from '@material-ui/icons/Description';
 import ListAltIcon from '@material-ui/icons/ListAlt';
+import DataVisualizer from '../data-visualizer/data-visualizer';
 
 
 let _instance = null;
@@ -94,7 +95,7 @@ ExperimentToolsService.TOOLS = Object.freeze({
     singleton: true,
     flexlayoutNode: {
       'type': 'tab',
-      'name': 'NRP-Core Docs',
+      'name': 'NRP-Core DUcs',
       'component': 'nrp-core-docu'
     },
     flexlayoutFactoryCb: () =>  {
@@ -118,7 +119,22 @@ ExperimentToolsService.TOOLS = Object.freeze({
     getIcon: () => {
       return <ListAltIcon/>;
     }
-  }});
+  },
+  DATA_VISUALIZER: {
+    singleton: true,
+    flexlayoutNode: {
+      'type': 'tab',
+      'name': 'Data Visualizer 3000',
+      'component': 'DataVisualizer'
+    },
+    flexlayoutFactoryCb: () =>  {
+      return <DataVisualizer/>;
+    },
+    getIcon: () => {
+      return <ListAltIcon/>;
+    }
+  }
+});
 
 ExperimentToolsService.CONSTANTS = Object.freeze({
   CATEGORY: {
