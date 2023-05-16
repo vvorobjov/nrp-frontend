@@ -1,6 +1,5 @@
 import { rest } from 'msw';
 
-import config from '../config.json';
 import endpoints from '../services/proxy/data/endpoints';
 import MockExperiments from './mock_experiments.json';
 import MockAvailableServers from './mock_available-servers.json';
@@ -17,6 +16,8 @@ import ImageAI from '../assets/images/Artificial_Intelligence_2.jpg';
 
 const availableServers = MockAvailableServers;
 const experiments = MockExperiments;
+
+const config = window.appConfig;
 
 const PROXY_URL = config.api.proxy.url;
 

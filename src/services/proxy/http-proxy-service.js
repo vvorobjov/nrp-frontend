@@ -2,7 +2,7 @@ import { HttpService } from '../http-service.js';
 import AuthenticationService from '../authentication-service';
 import EventProxyService from './event-proxy-service';
 
-import config from '../../config.json';
+const config = window.appConfig;
 
 export class NRPProxyError extends Error {
   constructor(message, code, data) {

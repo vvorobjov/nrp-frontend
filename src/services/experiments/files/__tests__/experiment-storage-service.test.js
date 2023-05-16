@@ -7,9 +7,9 @@ import 'jest-fetch-mock';
 import ExperimentStorageService from '../experiment-storage-service';
 import DialogService from '../../../dialog-service.js';
 import endpoints from '../../../proxy/data/endpoints.json';
-import config from '../../../../config.json';
 import MockExperiments from '../../../../mocks/mock_experiments.json';
 import {NRPProxyError} from '../../../proxy/http-proxy-service'
+
 
 const proxyEndpoint = endpoints.proxy;
 const experimentsUrl = `${proxyEndpoint.storage.experiments.url}`;

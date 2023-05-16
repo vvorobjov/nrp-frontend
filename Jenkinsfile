@@ -60,7 +60,7 @@ pipeline {
 
                 // Build operations (starting in .ci directory)
                 dir(env.GIT_CHECKOUT_DIR){
-                    sh 'cp src/config.json.sample.local src/config.json'
+                    sh 'cp src/config.js.sample.local public/config.js'
                     sh 'npm run coverage || echo "Tests failed"'
 
                     // Fail on failed tests

@@ -8,7 +8,7 @@ COPY src/ ./src/
 COPY package*.json ./
 COPY README.md ./
 
-RUN cp src/config.json.sample.docker src/config.json
+RUN cp src/config.js.sample.docker public/config.js
 
 RUN npm ci
 

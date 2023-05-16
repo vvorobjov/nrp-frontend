@@ -4,7 +4,7 @@ import { EventEmitter } from 'events';
 //import { DataPackMessage } from 'nrp-jsproto/engine_grpc_pb';
 import jspb from '../../node_modules/google-protobuf/google-protobuf';
 
-import frontendConfig from '../config.json';
+const frontendConfig = window.appConfig;
 
 let _instance = null;
 const SINGLETON_ENFORCER = Symbol();
