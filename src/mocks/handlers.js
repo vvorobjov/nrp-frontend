@@ -17,6 +17,7 @@ import ImageAI from '../assets/images/Artificial_Intelligence_2.jpg';
 const availableServers = MockAvailableServers;
 const experiments = MockExperiments;
 
+import '../../public/config'
 const config = window.appConfig;
 
 const PROXY_URL = config.api.proxy.url;
