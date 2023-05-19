@@ -11,7 +11,7 @@ window.appConfig = {
   },
   mqtt: {
     url: "localhost",
-    port: "8883",
+    port: "9000",
     topics: {
       base: "nrp_simulation",
       errors: "runtime_error",
