@@ -9,18 +9,27 @@ export default class LeaveWorkbenchDialog extends React.Component{
     return (
       <div>
         <div>
-          <Modal show={this.props.visible} onHide={() => this.props.setVisibility(false)}>
+          <Modal  className='leave-workbench-dialog-wrapper'
+            show={this.props.visible} onHide={() => this.props.setVisibility(false)}
+          >
             <Modal.Header closeButton className="leave-workbench-dialog-header">
               <Modal.Title>Exit menu</Modal.Title>
             </Modal.Header>
-            <Modal.Body>Would you like to leave or stop the simulation?</Modal.Body>
+            {this.props.shutdownDisabled ?
+              <Modal.Body>Would you like to leave the simulation?</Modal.Body> :
+              <Modal.Body>Would you like to leave or shutdown the simulation?</Modal.Body>
+            }
             <Modal.Footer>
               <div>
                 <Button variant="light" onClick={() => this.props.leaveWorkbench()}>
                   Leave
                 </Button>
-                <Button variant="danger" onClick={() => this.props.stopSimulation()}>
-                  Stop
+                <Button
+                  disabled={this.props.shutdownDisabled}
+                  variant="danger"
+                  onClick={() => this.props.shutdownSimulation()}
+                >
+                  Shutdown
                 </Button>
               </div>
             </Modal.Footer>

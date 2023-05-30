@@ -1,0 +1,10 @@
+node_modules
+build
+
+.vscode
+Jenkinsfile
+
+.git
+
+src/config.json*
+!src/config.json.sample.docker 

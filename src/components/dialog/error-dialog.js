@@ -28,9 +28,12 @@ class ErrorDialog extends React.Component{
   }
 
   onError(error) {
-    this.setState({
-      error: error
-    });
+    // Do not overwrite with the new incoming errors
+    if (!this.state.error) {
+      this.setState({
+        error: error
+      });
+    }
   }
 
   handleClose() {
@@ -53,11 +56,11 @@ class ErrorDialog extends React.Component{
         {error?
           <div className="error-dialog-wrapper">
             <Modal.Dialog>
-              <Modal.Header className="modal-header">
+              <Modal.Header>
                 <h4>{error.type}</h4>
               </Modal.Header>
               <Modal.Body>
-                {error.message}
+                <pre>{error.message}</pre>
                 {this.state.isErrorSourceDisplayed
                   ? <div>
                     {!error.code && !error.data && !error.stack

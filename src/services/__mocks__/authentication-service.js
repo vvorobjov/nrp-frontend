@@ -1,8 +1,8 @@
 
-/* export const mockGetStoredToken = jest.fn();
+/* export const mockgetStoredLocalToken = jest.fn();
 
 const AthenticationServiceMock = jest.fn().mockImplementation(() => {
-    return { instance: { getStoredToken: mockGetStoredToken } };
+    return { instance: { getStoredLocalToken: mockgetStoredLocalToken } };
 }); */
 class AuthenticationService {
   constructor() {
@@ -25,7 +25,7 @@ class AuthenticationService {
   /**
      * Clear currently stored access token.
      */
-  clearStoredToken() {
+  clearStoredLocalToken() {
 
   }
 
@@ -34,18 +34,24 @@ class AuthenticationService {
      *
      * @return token The stored access token. Or strings identifying 'no-token' / 'malformed-token'.
      */
-  getStoredToken() {
+  getStoredLocalToken() {
     return 'fakeToken';
   }
 
   /**
-     * Opens the proxy's authentication page.
+     * Makes the local authentication.
      *
-     * @param {*} url The URL of the authentication page.
-     * If not an absolute URL it is assumed to be a subpage of the proxy.
+     * @param {*} config Authentication config
      */
-  openAuthenticationPage(url) {
+  authLocal(config) {
+  }
 
+  /**
+     * Performs authentication.
+     * 
+     * @param {*} config Authentication config
+     */
+  authenticate(config) {
   }
 };
 

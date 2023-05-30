@@ -32,13 +32,17 @@
 }
 
 .tf-editor-text-saved {
-  color: green;
+  color: #1baf0a;
 }
 
 .tf-editor-text-unsaved {
-  color: orange;
+  color: #f7a156;
 }
 
 .tf-editor-codemirror-container {
   overflow: scroll;
+}
+
+.tf-editor-unsaved-dialog-wrapper {
+  z-index: 1275;
 }

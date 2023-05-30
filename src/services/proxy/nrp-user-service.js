@@ -1,7 +1,6 @@
-import config from '../../config.json';
 import endpoints from './data/endpoints.json';
 
-import { HttpService } from '../http-service.js';
+import { HttpProxyService } from '../proxy/http-proxy-service';
 
 const USERGROUP_NAME_ADMINS = 'hbp-sp10-administrators';
 const USERGROUP_NAME_CLUSTER_RESERVATION = 'hbp-sp10-cluster-reservation';
@@ -10,20 +9,20 @@ let _instance = null;
 const SINGLETON_ENFORCER = Symbol();
 
 
-const PROXY_URL = config.api.proxy.url;
-const IDENTITY_BASE_URL = `${PROXY_URL}${endpoints.proxy.identity.url}`;
-const IDENTITY_ME_URL = `${PROXY_URL}${endpoints.proxy.identity.me.url}`;
-const IDENTITY_ME_GROUPS_URL = `${PROXY_URL}${endpoints.proxy.identity.me.groups.url}`;
+const IDENTITY_BASE_URL = `${endpoints.proxy.identity.url}`;
+const IDENTITY_ME_URL = `${endpoints.proxy.identity.me.url}`;
+const IDENTITY_ME_GROUPS_URL = `${endpoints.proxy.identity.me.groups.url}`;
 const GDPR_URL = `${IDENTITY_BASE_URL}${endpoints.proxy.identity.gdpr.url}`;
 /**
  * Service managing all data related to NRP users.
  */
-class NrpUserService extends HttpService {
+class NrpUserService extends HttpProxyService {
   constructor(enforcer) {
     super();
     if (enforcer !== SINGLETON_ENFORCER) {
       throw new Error('Use ' + this.constructor.name + '.instance');
     }
+    this.currentUser = null;
   }
 
   static get instance() {
@@ -44,6 +43,14 @@ class NrpUserService extends HttpService {
   }
 
   /**
+   * Checks if the user is set
+   * @returns {bool} The presence of the logged in user
+   */
+  userIsSet() {
+    return this.currentUser !== null;
+  }
+
+  /**
    * Get the name displayed for a user ID.
    * @param {string} userID - the ID of the user
    * @returns {string} user name, or unknown
@@ -59,12 +66,21 @@ class NrpUserService extends HttpService {
    *
    * @return currentUser - the user currently logged in
    */
-  async getCurrentUser() {
-    if (!this.currentUser) {
-      let responseIdentity = await this.httpRequestGET(IDENTITY_ME_URL);
-      if (responseIdentity.ok) {
-        this.currentUser = await responseIdentity.json();
-      }
+  async getCurrentUser(force = false) {
+    if (force || !this.currentUser) {
+      await this.httpRequestGET(IDENTITY_ME_URL).then(async (identity) => {
+        if (identity.ok){
+          this.currentUser = await identity.json();
+          this.emit(NrpUserService.EVENTS.CONNECTED);
+        }
+        else {
+          // TODO: emit some event? error?
+          this.currentUser = null;
+        }
+      }).catch(() => {
+        this.currentUser = null;
+        this.emit(NrpUserService.EVENTS.DISCONNECTED);
+      });
     }
 
     return this.currentUser;
@@ -132,5 +148,10 @@ class NrpUserService extends HttpService {
     return await (await this.httpRequestPOST(GDPR_URL)).json();
   }
 }
+
+NrpUserService.EVENTS = Object.freeze({
+  CONNECTED: 'CONNECTED',
+  DISCONNECTED: 'DISCONNECTED'
+});
 
 export default NrpUserService;

@@ -33,9 +33,9 @@
 
 .user-name {
   font-size: 1.2em;
+  vertical-align: middle;
 }
 
 .user-icon {
-  font-size: 1.5em;
-  padding-right: 10px;
+  margin-right: 10px;
 }

@@ -1,4 +1,5 @@
-import { HttpService } from '../../http-service.js';
+import { EventEmitter } from 'events';
+
 import ExperimentStorageService from './experiment-storage-service';
 import getMimeByExtension from '../../../utility/mime-type';
 import DialogService from '../../dialog-service';
@@ -15,7 +16,7 @@ const SERVER_FILE_TYPE_DIRECTORY = 'folder';
 /**
  * Provides functionality to mirror (up-/download) and manage experiment files locally.
  */
-class RemoteExperimentFilesService extends HttpService {
+class RemoteExperimentFilesService extends EventEmitter {
   constructor(enforcer) {
     super();
     if (enforcer !== SINGLETON_ENFORCER) {
@@ -200,7 +201,7 @@ class RemoteExperimentFilesService extends HttpService {
     for (let experiment of experiments) {
       let serverExperiment = {
         uuid: experiment.uuid,
-        name: experiment.configuration.name
+        name: experiment.configuration.SimulationName
       };
       await getServerDirectoryFiles(serverExperiment);
 
@@ -374,7 +375,7 @@ class RemoteExperimentFilesService extends HttpService {
 
     let serverExperiment = {
       uuid: experiment.uuid,
-      name: experiment.configuration.name
+      name: experiment.configuration.SimulationName
     };
     await downloadFiles(serverExperiment);
 

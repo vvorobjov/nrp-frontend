@@ -17,7 +17,8 @@ export default class ExperimentList extends React.Component {
                   <ExperimentListElement experiment={experiment}
                     availableServers={this.props.availableServers}
                     startingExperiment={this.props.startingExperiment}
-                    selectExperimentOverviewTab={this.props.selectExperimentOverviewTab} />
+                    selectExperimentOverviewTab={this.props.selectExperimentOverviewTab}
+                    templateTab={this.props.templateTab} />
                 </li>
               );
             })}

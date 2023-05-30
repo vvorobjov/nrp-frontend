@@ -1,12 +1,11 @@
-import { HttpService } from '../http-service.js';
+import { HttpProxyService } from '../proxy/http-proxy-service';
 
 import endpoints from '../proxy/data/endpoints.json';
-import config from '../../config.json';
 import DialogService from '../dialog-service';
 
-const storageModelsURL = `${config.api.proxy.url}${endpoints.proxy.models.url}`;
-const allCustomModelsURL = `${config.api.proxy.url}${endpoints.proxy.storage.allCustomModels.url}`;
-const userModelsURL = `${config.api.proxy.url}${endpoints.proxy.storage.userModels.url}`;
+const storageModelsURL = `${endpoints.proxy.models.url}`;
+const allCustomModelsURL = `${endpoints.proxy.storage.allCustomModels.url}`;
+const userModelsURL = `${endpoints.proxy.storage.userModels.url}`;
 
 let _instance = null;
 const SINGLETON_ENFORCER = Symbol();
@@ -15,7 +14,7 @@ const availableModels = ['robots', 'brains', 'environments'];
  * Service that manages the fetching and setting of custom and template
  * models from the proxy.
  */
-class ModelsStorageService extends HttpService {
+class ModelsStorageService extends HttpProxyService {
   constructor(enforcer) {
     super();
     if (enforcer !== SINGLETON_ENFORCER) {

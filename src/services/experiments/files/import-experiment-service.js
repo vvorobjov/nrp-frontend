@@ -1,11 +1,10 @@
-import { HttpService } from '../../http-service.js';
+import { HttpProxyService } from '../../proxy/http-proxy-service';
 import JSZip from 'jszip';
 
 import endpoints from '../../proxy/data/endpoints.json';
-import config from '../../../config.json';
 import DialogService from '../../dialog-service.js';
-const importExperimentURL = `${config.api.proxy.url}${endpoints.proxy.storage.importExperiment.url}`;
-const scanStorageURL = `${config.api.proxy.url}${endpoints.proxy.storage.scanStorage.url}`;
+const importExperimentURL = `${endpoints.proxy.storage.importExperiment.url}`;
+const scanStorageURL = `${endpoints.proxy.storage.scanStorage.url}`;
 
 /**
  * The Import Experiment Service performs the requests (Extract),
@@ -37,7 +36,7 @@ const options = {
   method: 'POST'
 };
 
-export default class ImportExperimentService extends HttpService {
+export default class ImportExperimentService extends HttpProxyService {
   constructor(enforcer) {
     super();
     if (enforcer !== SINGLETON_ENFORCER) {
