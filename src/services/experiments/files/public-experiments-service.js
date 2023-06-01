@@ -83,7 +83,8 @@ class PublicExperimentsService extends HttpProxyService {
           DialogService.instance.networkError(error);
         }
         else {
-          DialogService.instance.unexpectedError(error);
+          const unexpectedError = error || {type : 'unexpected error'};
+          DialogService.instance.unexpectedError(unexpectedError);
         }
       }
     }
@@ -165,8 +166,8 @@ class PublicExperimentsService extends HttpProxyService {
    * @param {Object} experiment The Experiment configuration
    */
   async cloneExperiment(experiment) {
-    let experimentConfigFilepath = experiment.configuration.experimentId;
-    this.httpRequestPOST(cloneURL, JSON.stringify({ expPath: experimentConfigFilepath }));
+    let experimentConfigFilepath = experiment.experimentId;
+    this.httpRequestPOST(cloneURL+ '/' + experimentConfigFilepath);
   }
 }
 

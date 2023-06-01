@@ -6,7 +6,10 @@ import 'jest-fetch-mock';
 
 import { HttpService } from '../http-service';
 import AuthenticationService from '../authentication-service';
+jest.mock('../authentication-service.js');
 
+const authenticateMock = jest
+  .spyOn(AuthenticationService.prototype, 'authenticate');
 const mockURL = 'http://test.url';
 
 describe('HttpService', () => {
@@ -20,7 +23,6 @@ describe('HttpService', () => {
     jest.spyOn(window, 'fetch').mockReturnValue(mockFetchReturnValue);
 
     let baseURL = AuthenticationService.instance.STORAGE_KEY;
-  
     delete window.location;
     window.location = {
       href: baseURL
@@ -32,7 +34,6 @@ describe('HttpService', () => {
       body: {}
     };
     let data = {};
-
     // with response ok
     let response = await httpService.performRequest(mockURL, options, data);
     expect(window.fetch).toHaveBeenCalledWith(mockURL, options);
@@ -44,9 +45,10 @@ describe('HttpService', () => {
     mockFetchReturnValue.status = 477;
     let responseText = 'auth-url';
     mockFetchReturnValue.text = jest.fn().mockReturnValue(responseText);
-    jest.spyOn(AuthenticationService.instance, 'authenticate')
+
     response = await httpService.performRequest(mockURL, options, data);
-    expect(AuthenticationService.instance.authenticate).toBeCalled();
+
+    expect(authenticateMock).toBeCalled();
 
     // response with status 478
     mockFetchReturnValue.status = 478;

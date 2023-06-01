@@ -82,7 +82,6 @@ class NrpUserService extends HttpProxyService {
         this.emit(NrpUserService.EVENTS.DISCONNECTED);
       });
     }
-
     return this.currentUser;
   }
 

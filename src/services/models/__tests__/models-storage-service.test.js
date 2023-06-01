@@ -7,9 +7,14 @@ import 'jest-fetch-mock';
 import ModelsStorageService from '../models-storage-service';
 import DialogService from '../../dialog-service';
 
+jest.mock('../../authentication-service.js');
+
 
 afterEach(() => {
   jest.restoreAllMocks();
+});
+
+beforeEach(() => {
 });
 
 describe('ModelsStorageService', () => {

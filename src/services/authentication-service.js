@@ -1,11 +1,5 @@
 import config from '../config.json';
-
-/* global Keycloak */
-
-let keycloakClient = undefined;
-
-const INIT_CHECK_INTERVAL_MS = 100;
-const INIT_CHECK_MAX_RETRIES = 10;
+import Keycloak from 'keycloak-js';
 
 let _instance = null;
 const SINGLETON_ENFORCER = Symbol();
@@ -25,64 +19,61 @@ class AuthenticationService {
     this.authURL = config.auth.url;
     this.STORAGE_KEY = `tokens-${this.clientId}@https://iam.ebrains.eu/auth/realms/hbp`;
 
-    this.init();
+    if (!this.oidcEnabled) {
+      this.checkForNewLocalTokenToStore();
+      this.promiseInitialized = Promise.resolve();
+    }
+    else {
+      this.authenticate();
+    }
   }
 
   static get instance() {
     if (_instance == null) {
       _instance = new AuthenticationService(SINGLETON_ENFORCER);
     }
-
     return _instance;
   }
 
-  init() {
-    this.initialized = false;
-    if (this.oidcEnabled) {
-      this.authCollab().then(() => {
-        this.initialized = true;
-      });
-    }
-    else {
-      this.checkForNewLocalTokenToStore();
-      this.initialized = true;
+  authenticate(config) {
+    if (this.promiseInitialized && config && !config.force) {
+      return this.promiseInitialized;
     }
 
-    this.promiseInitialized = new Promise((resolve, reject) => {
-      let numChecks = 0;
-      let checkInterval = setInterval(() => {
-        numChecks++;
-        if (numChecks > INIT_CHECK_MAX_RETRIES) {
-          clearInterval(checkInterval);
+    this.promiseInitialized = new Promise(async (resolve, reject) => {
+      this.authURL = this.authURL || config.url;
+      if (this.oidcEnabled) {
+        try {
+          let success = await this.authCollab();
+          success ? resolve() : reject();
+        }
+        catch (error) {
+          console.error(error);
           reject();
         }
-        if (this.initialized) {
-          clearInterval(checkInterval);
-          resolve();
-        }
-      }, INIT_CHECK_INTERVAL_MS);
+      }
+      else {
+        this.authLocal(config);
+        resolve();
+      }
     });
-  }
 
-  authenticate(config) {
-    if (this.oidcEnabled) {
-      this.authCollab(config);
-    }
-    else {
-      this.authLocal(config);
-    }
+    return this.promiseInitialized;
   }
 
   getToken() {
     if (this.oidcEnabled) {
-      if (keycloakClient && keycloakClient.authenticated) {
-        keycloakClient
-          .updateToken(30)
-          .then(function() {})
-          .catch(function() {
+      if (this.keycloakClient && this.keycloakClient.token) {
+        this.keycloakClient
+          .updateToken(30).then(refreshed => {
+            if (refreshed) {
+              console.info('token refreshed');
+            }
+          })
+          .catch(() => {
             console.error('Failed to refresh token');
           });
-        return keycloakClient.token;
+        return this.keycloakClient.token;
       }
       else {
         console.error('getToken() - Client is not authenticated');
@@ -95,9 +86,9 @@ class AuthenticationService {
 
   logout() {
     if (this.oidcEnabled) {
-      if (keycloakClient && keycloakClient.authenticated) {
-        keycloakClient.logout();
-        keycloakClient.clearStoredLocalToken();
+      if (this.keycloakClient && this.keycloakClient.authenticated) {
+        this.keycloakClient.logout();
+        this.keycloakClient.clearStoredLocalToken();
       }
       else {
         console.error('Client is not authenticated');
@@ -108,14 +99,9 @@ class AuthenticationService {
     }
   }
 
-  authLocal(config) {
-    if (this.authenticating) {
-      return;
-    }
-    this.authenticating = true;
-
-    this.authURL = this.authURL || config.url;
-    this.clientId = this.clientId || config.clientId;
+  authLocal(customConfig) {
+    this.authURL = this.authURL || customConfig.url;
+    this.clientId = this.clientId || customConfig.clientId;
 
     let absoluteUrl = /^https?:\/\//i;
     if (!absoluteUrl.test(this.authURL)) {
@@ -125,6 +111,8 @@ class AuthenticationService {
     this.clearStoredLocalToken();
     window.location.href = `${this.authURL}&client_id=${this
       .clientId}&redirect_uri=${encodeURIComponent(window.location.href)}`;
+
+    return true;
   }
 
   checkForNewLocalTokenToStore() {
@@ -133,7 +121,7 @@ class AuthenticationService {
 
     const accessTokenMatch = /&access_token=([^&]*)/.exec(path);
     if (!accessTokenMatch || !accessTokenMatch[1]) {
-      return;
+      return false;
     }
 
     let accessToken = accessTokenMatch[1];
@@ -146,6 +134,8 @@ class AuthenticationService {
     // navigate to clean url
     let cleanedPath = path.substr(0, path.indexOf('&'));
     window.location.href = cleanedPath;
+
+    return true;
   }
 
   clearStoredLocalToken() {
@@ -169,53 +159,54 @@ class AuthenticationService {
     }
   }
 
-  authCollab(config) {
-    if (this.authenticating) {
-      return;
+  async authCollab() {
+    try {
+      let authenticated = await this.initKeycloakClient();
+      if (authenticated) {
+        return true;
+      }
+      else {
+        await this.keycloakClient.login({ scope: 'openid profile email group team' });
+        return true;
+      }
     }
-    this.authenticating = true;
-
-    return new Promise(resolve => {
-      this.authURL = this.authURL || config.url;
-
-      this.initKeycloakClient().then(() => {
-        if (!keycloakClient.authenticated) {
-          // User is not authenticated, run login
-          keycloakClient
-            .login({ scope: 'openid profile email group' })
-            .then(() => {
-              resolve(true);
-            });
-        }
-        else {
-          keycloakClient.loadUserInfo().then(userInfo => {
-            this.userInfo = userInfo;
-            resolve(true);
-          });
-        }
-      });
-    });
+    catch (error) {
+      console.error(error);
+      return false;
+    }
   }
 
-  initKeycloakClient() {
-    return new Promise(resolve => {
-      keycloakClient = Keycloak({
-        realm: 'hbp',
-        clientId: this.clientId,
-        //'public-client': true,
-        'confidential-port': 0,
-        url: this.authURL,
-        redirectUri: window.location.href // 'http://localhost:9001/#/esv-private' //
-      });
-
-      keycloakClient
-        .init({
-          flow: 'hybrid' /*, responseMode: 'fragment'*/
-        })
-        .then(() => {
-          resolve(keycloakClient);
-        });
+  async initKeycloakClient() {
+    this.keycloakClient = new Keycloak({
+      realm: 'hbp',
+      clientId: this.clientId,
+      //'public-client': true,
+      'confidential-port': 0,
+      url: this.authURL,
+      redirectUri: window.location.href
     });
+    /*this.keycloakClient.onReady = (authenticated) => {};
+    this.keycloakClient.onAuthSuccess = () => {};
+    this.keycloakClient.onAuthError = (...params) => {};*/
+    this.keycloakClient.onTokenExpired = (...params) => {
+      this.keycloakClient
+        .updateToken().then(refreshed => {
+          if (refreshed) {
+            console.info('token refreshed');
+          }
+        })
+        .catch(() => {
+          console.error('Failed to refresh token');
+        });
+    };
+
+    let authenticated = await this.keycloakClient.init({
+      flow: 'standard',
+      pkceMethod: 'S256', /*, responseMode: 'fragment'*/
+      checkLoginIframe: false
+    });
+
+    return authenticated;
   }
 }
 

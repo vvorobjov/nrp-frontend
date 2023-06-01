@@ -1,7 +1,7 @@
 [
     {  
         "uuid": "husky_braitenberg_unfilled_uuid",
-        "name": "husky_braitenberg_unfilled_name",
+        "experimentId": "husky_braitenberg_unfilled_namedirectory%2Fsimulation_config.json",
         "owned": true,
         "joinableServers": [],
         "configuration": {
@@ -47,7 +47,7 @@
     },
     {
         "uuid": "husky_braitenberg_cg_uuid",
-        "name": "husky_braitenberg_cg_name",
+        "experimentId": "husky_braitenberg_cg_name%2Fsimulation_config.json",
         "owned": true,
         "joinableServers": [],
         "configuration": {
