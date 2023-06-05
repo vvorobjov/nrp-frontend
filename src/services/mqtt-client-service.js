@@ -71,17 +71,6 @@ export default class MqttClientService extends EventEmitter {
     });
   }
 
-  // disconnect(brokerUrl) {
-  //   console.info('MQTT disconnecting ' + brokerUrl);
-  //   if (this.client){
-  //     this.client.on('disconnect', () => {
-  //       console.info('... MQTT disconnected');
-  //       this.emit(MqttClientService.EVENTS.DISCONNECTED);
-  //     });
-  //     this.client.disconnect();
-  //   }
-  // }
-
   onError(error) {
     console.error(error);
   }
@@ -103,8 +92,6 @@ export default class MqttClientService extends EventEmitter {
       return;
     }
 
-    // console.info('MQTT message: [topic, payload, packet]');
-    // console.info([topic, payload, packet]);
     //Now we see which callbacks have been assigned for a topic
     let subTokens = this.subTokensMap.get(topic);
     if (typeof subTokens !== 'undefined') {
@@ -114,20 +101,6 @@ export default class MqttClientService extends EventEmitter {
       };
     };
 
-    /*try {
-      if (topic.endsWith('/type')) {
-        let msg = String(payload);
-        console.info('"' + topic + '" message format = ' + msg);
-      }
-      else {
-        let msg = DataPackMessage.deserializeBinary(payload);
-        console.info('DataPackMessage');
-        console.info(msg);
-      }
-    }
-    catch (error) {
-      console.error(error);
-    }*/
   }
 
   //callback should have args topic, payload
@@ -150,8 +123,6 @@ export default class MqttClientService extends EventEmitter {
         [token]
       );
     }
-    console.info('You have been subscribed to topic ' + topic);
-    console.info(this.subTokensMap);
     return token;
   }
 
@@ -161,7 +132,6 @@ export default class MqttClientService extends EventEmitter {
       let index = tokens.indexOf(unsubToken);
       if (index !== -1) {
         tokens.splice(index, 1);
-        console.info('You have been unsubscribed from topic ' + unsubToken.topic);
       }
       else {
         console.warn('Your provided token could not be found in the subscription list');

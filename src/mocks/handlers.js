@@ -111,6 +111,6 @@ export const handlers = [
   rest.post(`${PROXY_URL}${endpoints.proxy.models.url}/:modelType/:modelName`,
     (req, res, ctx) => {
       return res(ctx.json(MockCustomModels[2]));
-    }),
+    })
 
 ];

@@ -56,6 +56,7 @@ const jsonBaseLayout = {
       {
         'type': 'tabset',
         'weight': 50,
+        'id': 'defaultTabset',
         'selected': 0,
         'children': [
           {
@@ -198,6 +199,7 @@ class ExperimentWorkbench extends React.Component {
     ExperimentWorkbenchService.instance.experimentID = this.experimentID;
 
     this.refLayout = React.createRef();
+    this.state.modelFlexLayout.doAction(FlexLayout.Actions.setActiveTabset('defaultTabset'));
   }
 
   async UNSAFE_componentWillMount() {

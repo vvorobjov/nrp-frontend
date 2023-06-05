@@ -51,6 +51,7 @@ Thumbs.db
 *.mov
 *.wmv
 
+src/config.json*
 coverage
 junit.xml
 

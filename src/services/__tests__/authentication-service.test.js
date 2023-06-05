@@ -3,22 +3,15 @@
 */
 import '@testing-library/jest-dom';
 import 'jest-fetch-mock';
-
 import AuthenticationService from '../authentication-service';
 
-//import MockLocalShorage from '../__mocks__/local-storage.mock';
-
-/*beforeEach(() => {
-  jest.mock('global.localStorage');
-});*/
-
-/*beforeEach(() => {
+beforeEach(() => {
   jest.spyOn(Storage.prototype, 'setItem');
 });
 
 afterEach(() => {
   localStorage.setItem.mockRestore();
-});*/
+});
 
 describe('AuthenticationService', () => {
 
@@ -72,13 +65,12 @@ describe('AuthenticationService', () => {
     expect(token).toEqual(AuthenticationService.CONSTANTS.MALFORMED_TOKEN);
   });
 
-  test('can redirect to the authentication page', () => {
-    jest.spyOn(AuthenticationService.instance, 'clearStoredLocalToken');
-
-    let orginalLocationURL = 'http://some.url/';
-    window.location.href = orginalLocationURL;
-    AuthenticationService.instance.authLocal({});
+  test('can redirect to the local authentication page', async () => {
+    let originalLocationURL = 'http://some.url/';
+    window.location.href = originalLocationURL;
+    AuthenticationService.instance.oidcEnabled = false;
+    await AuthenticationService.instance.authenticate({force: true});
     expect(window.location.href).toBe(AuthenticationService.instance.authURL +
-      `&client_id=${AuthenticationService.instance.clientId}&redirect_uri=${encodeURIComponent(orginalLocationURL)}`);
+      `&client_id=${AuthenticationService.instance.clientId}&redirect_uri=${encodeURIComponent(originalLocationURL)}`);
   });
 });

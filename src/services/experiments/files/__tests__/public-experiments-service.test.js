@@ -8,7 +8,7 @@ import PublicExperimentsService from '../public-experiments-service';
 import DialogService from '../../../dialog-service.js';
 import endpoints from '../../../proxy/data/endpoints.json';
 import MockExperiments from '../../../../mocks/mock_experiments.json';
-import {NRPProxyError} from '../../../proxy/http-proxy-service'
+import {NRPProxyError} from '../../../proxy/http-proxy-service';
 
 const config = window.appConfig;
 
@@ -16,6 +16,7 @@ const proxyEndpoint = endpoints.proxy;
 const experimentsUrl = `${proxyEndpoint.experiments.url}`;
 
 jest.setTimeout(3 * PublicExperimentsService.CONSTANTS.INTERVAL_POLL_EXPERIMENTS);
+jest.mock('../../../authentication-service');
 
 let onWindowBeforeUnloadCb = undefined;
 beforeEach(() => {
@@ -50,7 +51,7 @@ describe('PublicExperimentsService', () => {
     const experiments = await PublicExperimentsService.instance.getExperiments();
     expect(PublicExperimentsService.instance.performRequest)
       .toHaveBeenCalledWith(experimentsUrl, PublicExperimentsService.instance.GETOptions);
-    expect(experiments[0].name).toBe('husky_braitenberg_unfilled_name');
+    expect(experiments[0].uuid).toBe(MockExperiments[0].uuid);
     expect(experiments[1].configuration.maturity).toBe('production');
 
     // no forced update should not result in additional requests being sent
@@ -126,10 +127,10 @@ describe('PublicExperimentsService', () => {
   });
 
   // TODO: [NRRPLT-8681] Fix endpoint
-  test.skip('gets a thumbnail image for experiments', async () => {
+  test('gets a thumbnail url for an experiment', async () => {
     let experiment = MockExperiments[0];
-    const imageBlob = await PublicExperimentsService.instance.getThumbnail(experiment.name);
-    expect(imageBlob).toBeDefined();
+    const experimentImageURL = await PublicExperimentsService.instance.getThumbnailURL(experiment.name);
+    expect(experimentImageURL).toBeDefined();
   });
 
   test('sorts the local experiment list by display name case-insensitive', async () => {
@@ -156,12 +157,12 @@ describe('PublicExperimentsService', () => {
   });
 
   // TODO: [NRRPLT-8722] unify public and storage experiments object (configuration)
-  test.skip('clones the experiment', async () => {
+  test('clones the experiment', async () => {
     jest.spyOn(PublicExperimentsService.instance, 'httpRequestPOST');
     await PublicExperimentsService.instance.cloneExperiment(MockExperiments[0]);
 
     expect(PublicExperimentsService.instance.httpRequestPOST).toBeCalledWith(
-      `${config.api.proxy.url}${endpoints.proxy.storage.clone.url}/${MockExperiments[0].name}`
+      `${endpoints.proxy.storage.clone.url}/${MockExperiments[0].experimentId}`
     );
   });
 });

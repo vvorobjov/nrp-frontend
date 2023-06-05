@@ -49,20 +49,24 @@ export class HttpProxyService extends HttpService {
       );
     }
 
-    // Add authorization header
-    await AuthenticationService.instance.promiseInitialized;
-    let token = AuthenticationService.instance.getToken();
-    options.headers.Authorization = 'Bearer ' + token;
+    // construct the proper url path
+    // append url to the proxy pathname
+    const path = this.proxyURL.pathname + url;
+    const requestURL = new URL(path, this.proxyURL);
+    try {
+      await AuthenticationService.instance.promiseInitialized;
+      let token = AuthenticationService.instance.getToken();
+      options.headers.Authorization = 'Bearer ' + token;
+    }
+    catch (error) {
+      console.error(error);
+      return false;
+    }
 
     // add data to the request
     if (data) {
       options.body = data;
     }
-
-    // construct the proper url path
-    // append url to the proxy pathname
-    const path = this.proxyURL.pathname + url;
-    const requestURL = new URL(path, this.proxyURL);
 
     let response;
 

@@ -94,8 +94,6 @@ export default class NrpCoreDashboard extends React.Component {
 
   async triggerProxyScanStorage() {
     let result = await ExperimentStorageService.instance.scanStorage();
-    console.info('triggerProxyScanStorage:');
-    console.info(result);
   }
 
   render() {

@@ -1,6 +1,8 @@
 {
     "internalIp": "http://localhost:8080",
-    "nrp-services": "http://localhost:8080",
+    "gzweb": {
+        "nrp-services": "http://localhost:8080"
+    },
     "serverJobLocation": "local",
     "id": "localhost"
 }

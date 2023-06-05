@@ -6,15 +6,17 @@ import '@testing-library/jest-dom/extend-expect';
 import 'jest-localstorage-mock';
 import { server } from './mocks/server';
 
+
 beforeAll(() => {
   // Enable the mocking in tests.
   server.listen();
+  jest.mock('./services/authentication-service.js');
+  // AuthenticationService.instance.mockClear();
 });
 
 afterEach(() => {
   // Reset any runtime handlers tests may use.
   server.resetHandlers();
-
   jest.restoreAllMocks();
 });
 
