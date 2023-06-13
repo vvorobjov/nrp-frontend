@@ -1,4 +1,5 @@
 import React from 'react';
+import Grid from '@material-ui/core/Grid';
 
 import NrpHeader from '../nrp-header/nrp-header.js';
 
@@ -12,9 +13,8 @@ export default class EntryPage extends React.Component {
       <div className='entry-page-wrapper'>
         <div className='entry-page-header'>
           <NrpHeader title1='NEUROROBOTICS' title2='PLATFORM' />
-        </div>
-
-        {/*<div className='sidebar-left'></div>
+        </div >
+        {/* <div className='sidebar-left'></div>
         <div className='experiments-left'>
           <img
             src={PlaceholderImage}
@@ -32,7 +32,10 @@ export default class EntryPage extends React.Component {
         {/* <div>
           <div><b>!!! NRP Core testing !!!</b></div>
         </div> */}
-        <NrpCoreDashboard />
+        <div className='nrp-core-dashboard sidebar-left'>
+          <NrpCoreDashboard />
+        </div >
+        <iframe className='nrp-news sidebar-right' src='https://neurorobotics.net/latest.html' />
         {/*<TransceiverFunctionEditor experimentId='mqtt_simple_1'/>*/}
       </div>
     );
