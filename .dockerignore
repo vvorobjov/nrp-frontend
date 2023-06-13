@@ -8,3 +8,4 @@ Jenkinsfile
 
 src/config.json*
 !src/config.json.sample.docker 
+!src/config.json.sample.oidc

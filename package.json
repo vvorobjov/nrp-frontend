@@ -15,7 +15,7 @@
       "src/services/experiments/files/remote-experiment-files-service.js"
     ]
   },
-  "version": "0.1.0",
+  "version": "4.0.0",
   "private": true,
   "dependencies": {
     "@babel/runtime": "^7.20.13",

@@ -45,7 +45,7 @@ class ExperimentExecutionService extends HttpService {
     ExperimentExecutionService.instance.emit(ExperimentExecutionService.EVENTS.START_EXPERIMENT, experiment);
     let serversToTry = experiment.devServer
       ? [experiment.devServer]
-      : (await ServerResourcesService.instance.getServerAvailability(false))
+      : (await ServerResourcesService.instance.getServerAvailability(true))
         .map(s => s.id);
 
     //TODO: placeholder, register actual progress callback later
@@ -80,6 +80,7 @@ class ExperimentExecutionService extends HttpService {
     return await this.launchExperimentOnServer(
       experiment.id,
       experiment.private,
+      experiment.configuration.configFile,
       serverID,
       serverConfig,
       progressCallback
@@ -188,7 +189,7 @@ class ExperimentExecutionService extends HttpService {
         .getServerConfig(simulation.server)
         .then((serverConfig) => {
           if (serverConfig) {
-            serverURL = serverConfig.gzweb['nrp-services'];
+            serverURL = serverConfig['nrp-services'];
             simulationID = simulation.runningSimulation.simulationID;
           }
           function updateSimulationState(state) {

@@ -1,11 +1,12 @@
 [
     {  
         "uuid": "husky_braitenberg_unfilled_uuid",
-        "experimentId": "husky_braitenberg_unfilled_namedirectory%2Fsimulation_config.json",
+        "name": "husky_braitenberg_unfilled_namedirectory%2Fsimulation_config.json",
         "owned": true,
         "joinableServers": [],
         "configuration": {
             "maturity": "production",
+            "experimentId": "husky_braitenberg_unfilled_namedirectory%2Fsimulation_config.json",
             "SimulationName": "husky_simulation_0",
             "SimulationDescription": "Launches a Gazebo simulation with a Husky robot and a Nest sim with a Braitenberg model which controls the robot",
             "thumbnail": "/",
@@ -47,11 +48,12 @@
     },
     {
         "uuid": "husky_braitenberg_cg_uuid",
-        "experimentId": "husky_braitenberg_cg_name%2Fsimulation_config.json",
+        "name": "husky_braitenberg_cg_name%2Fsimulation_config.json",
         "owned": true,
         "joinableServers": [],
         "configuration": {
             "maturity": "production",
+            "experimentId": "husky_braitenberg_unfilled_namedirectory%2Fsimulation_config.json",
             "SimulationName": "husky_simulation_1",
             "SimulationDescription": "Adaptation of the example `husky_braitenberg` in which a Computational Graph (CG) is used to process and rely data between Engines.",
             "SimulationTimeout": 20,

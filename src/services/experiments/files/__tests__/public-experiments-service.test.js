@@ -160,7 +160,7 @@ describe('PublicExperimentsService', () => {
     await PublicExperimentsService.instance.cloneExperiment(MockExperiments[0]);
 
     expect(PublicExperimentsService.instance.httpRequestPOST).toBeCalledWith(
-      `${endpoints.proxy.storage.clone.url}/${MockExperiments[0].experimentId}`
+      `${endpoints.proxy.storage.clone.url}`, JSON.stringify({ expPath: `${MockExperiments[0].configuration.experimentId}` })
     );
   });
 });

@@ -166,8 +166,8 @@ class PublicExperimentsService extends HttpProxyService {
    * @param {Object} experiment The Experiment configuration
    */
   async cloneExperiment(experiment) {
-    let experimentConfigFilepath = experiment.experimentId;
-    this.httpRequestPOST(cloneURL+ '/' + experimentConfigFilepath);
+    let experimentConfigFilepath = experiment.configuration.experimentId;
+    this.httpRequestPOST(cloneURL, JSON.stringify({ expPath: experimentConfigFilepath }));
   }
 }
 

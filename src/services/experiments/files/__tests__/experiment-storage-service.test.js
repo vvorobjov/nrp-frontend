@@ -129,7 +129,7 @@ describe('ExperimentStorageService', () => {
   // TODO: [NRRPLT-8681]
   test('gets a thumbnail image for experiments', async () => {
     let experiment = MockExperiments[0];
-    const imageBlob = await ExperimentStorageService.instance.getThumbnail(experiment.experimentId,
+    const imageBlob = await ExperimentStorageService.instance.getThumbnail(experiment.name,
       experiment.configuration.thumbnail);
     expect(imageBlob).toBeDefined();
   });
@@ -203,16 +203,16 @@ describe('ExperimentStorageService', () => {
     let data = [];
     let entityName = 'someEntity.txt';
 
-    const res1 = await (await ExperimentStorageService.instance.setFile(MockExperiments[0].experimentId, entityName, data)).json();
-    const res2 = await (await ExperimentStorageService.instance.setFile(MockExperiments[0].experimentId, entityName, data, false, 'application/json')).json();
-    const res3 = await (await ExperimentStorageService.instance.setFile(MockExperiments[0].experimentId, entityName, data, true, 'application/octet-stream')).json();
-    const res4 = await ExperimentStorageService.instance.setFile(MockExperiments[0].experimentId, entityName, data, true, 'throw-error');
+    const res1 = await (await ExperimentStorageService.instance.setFile(MockExperiments[0].name, entityName, data)).json();
+    const res2 = await (await ExperimentStorageService.instance.setFile(MockExperiments[0].name, entityName, data, false, 'application/json')).json();
+    const res3 = await (await ExperimentStorageService.instance.setFile(MockExperiments[0].name, entityName, data, true, 'application/octet-stream')).json();
+    const res4 = await ExperimentStorageService.instance.setFile(MockExperiments[0].name, entityName, data, true, 'throw-error');
 
     // In total, only 3 requests should be sent (4th gives error)
     expect(ExperimentStorageService.instance.httpRequestPOST).toHaveBeenCalledTimes(3);
 
     // checking 1st call
-    let expectedArg = `${endpoints.proxy.storage.url}/${MockExperiments[0].experimentId}/${entityName}?byname=true`;
+    let expectedArg = `${endpoints.proxy.storage.url}/${MockExperiments[0].name}/${entityName}?byname=true`;
     expect(ExperimentStorageService.instance.httpRequestPOST).toHaveBeenNthCalledWith(
       1,
       expectedArg,
@@ -222,7 +222,7 @@ describe('ExperimentStorageService', () => {
     expect(res1.type).toEqual('text/plain');
 
     // checking 2nd call
-    expectedArg = `${endpoints.proxy.storage.url}/${MockExperiments[0].experimentId}/${entityName}?byname=false`;
+    expectedArg = `${endpoints.proxy.storage.url}/${MockExperiments[0].name}/${entityName}?byname=false`;
     expect(ExperimentStorageService.instance.httpRequestPOST).toHaveBeenNthCalledWith(
       2,
       expectedArg,
@@ -232,7 +232,7 @@ describe('ExperimentStorageService', () => {
     expect(res2.type).toEqual('application/json');
 
     // checking 3rd call
-    expectedArg = `${endpoints.proxy.storage.url}/${MockExperiments[0].experimentId}/${entityName}?byname=true`;
+    expectedArg = `${endpoints.proxy.storage.url}/${MockExperiments[0].name}/${entityName}?byname=true`;
     expect(ExperimentStorageService.instance.httpRequestPOST).toHaveBeenNthCalledWith(
       3,
       expectedArg,

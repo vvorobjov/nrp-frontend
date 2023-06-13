@@ -13,12 +13,17 @@ import ExperimentExecutionService from '../../../../services/experiments/executi
 import SimulationService from '../../../../services/experiments/execution/running-simulation-service';
 import ServerResourcesService from '../../../../services/experiments/execution/server-resources-service';
 import { EXPERIMENT_STATE } from '../../../../services/experiments/experiment-constants.js';
+import config from '../../../../config.json';
 
+jest.mock('../../../authentication-service.js');
 //jest.setTimeout(10000);
 
 beforeEach(() => {
   //jest.genMockFromModule('AuthenticationService');
   //jest.mock('AuthenticationService');
+  if (config.auth.enableOIDC) {
+    jest.mock('../../../authentication-service.js');
+  }
 });
 
 afterEach(() => {
@@ -78,7 +83,7 @@ describe('ExperimentExecutionService', () => {
 
     jest.spyOn(ExperimentExecutionService.instance, 'launchExperimentOnServer').mockImplementation(
       // only the last server in the list will return a successful launch
-      (id,privateparam,serverID,serverConfig, progressCallback) => {
+      (id,privateparam,configFile,serverID,serverConfig, progressCallback) => {
         properServerID = serverID;
         return Promise.resolve();
       }
@@ -131,12 +136,16 @@ describe('ExperimentExecutionService', () => {
 
     let mockExperiment = {
       id: 'test-experiment-id',
-      devServer: 'test-dev-server-url'
+      devServer: 'test-dev-server-url',
+      configuration: {
+        configFile: 'test_config.json'
+      }
     };
     await ExperimentExecutionService.instance.startNewExperiment(mockExperiment, true);
     expect(ExperimentExecutionService.instance.launchExperimentOnServer).toHaveBeenCalledWith(
       mockExperiment.id,
       undefined,
+      mockExperiment.configuration.configFile,
       mockExperiment.devServer,
       undefined,
       expect.any(Function)
