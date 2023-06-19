@@ -28,8 +28,9 @@ export default class MqttClientService extends EventEmitter {
 
     this.subTokensMap = new Map();
 
-    // Since it's a singleton, shoud the url be defined here?
-    this.mqttBrokerUrl = 'ws://' + frontendConfig.mqtt.url + ':' + frontendConfig.mqtt.port;
+    // Since it's a- singleton, shoud the url be defined here?
+    const websocket_s = frontendConfig.mqtt.websocket ? frontendConfig.mqtt.websocket : 'ws';
+    this.mqttBrokerUrl = websocket_s + '://' + frontendConfig.mqtt.url + ':' + frontendConfig.mqtt.port;
 
     this.connect();
   }

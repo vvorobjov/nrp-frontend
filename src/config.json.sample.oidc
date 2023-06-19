@@ -12,6 +12,7 @@
   "mqtt": {
     "url": "localhost",
     "port": "9000",
+    "websocket": "ws",
     "topics": {
       "base": "nrp_simulation",
       "errors": "runtime_error",
