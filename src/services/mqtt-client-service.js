@@ -27,9 +27,8 @@ export default class MqttClientService extends EventEmitter {
     };
 
     this.subTokensMap = new Map();
-    this.allPayloadsMap = new Map();
 
-    // Since it's a singleton, shoud the url be defined here?
+    // Since it's a- singleton, shoud the url be defined here?
     const websocket_s = frontendConfig.mqtt.websocket ? frontendConfig.mqtt.websocket : 'ws';
     this.mqttBrokerUrl = websocket_s + '://' + frontendConfig.mqtt.url + ':' + frontendConfig.mqtt.port;
 
@@ -93,25 +92,13 @@ export default class MqttClientService extends EventEmitter {
     if (typeof payload === 'undefined') {
       return;
     }
-    else{
-      // Now there is a map that keeps track of all previous payloads.
-      // Here I check if the current payload is already in the array
-      if (!this.allPayloadsMap.get(topic).includes(payload)){
-        // If not, we add it
-        this.allPayloadsMap.set(
-          topic,
-          this.allPayloadsMap.get(topic).append(payload)
-        );
-      }
-    }
 
     //Now we see which callbacks have been assigned for a topic
     let subTokens = this.subTokensMap.get(topic);
     if (typeof subTokens !== 'undefined') {
       for (var token of subTokens) {
         //Deserializatin of Data must happen here
-        // Now, when we a message comes we apply the callback to the entire array
-        token.callback(this.allPayloadsMap.get(topic));
+        token.callback(payload);
       };
     };
 
