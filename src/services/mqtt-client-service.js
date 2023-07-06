@@ -5,6 +5,7 @@ import { EventEmitter } from 'events';
 import jspb from '../../node_modules/google-protobuf/google-protobuf';
 
 import frontendConfig from '../config.json';
+import ExperimentWorkbenchService from '../../components/experiment-workbench/experiment-workbench-service'
 
 let _instance = null;
 const SINGLETON_ENFORCER = Symbol();
@@ -27,12 +28,20 @@ export default class MqttClientService extends EventEmitter {
     };
 
     this.subTokensMap = new Map();
+    this.topicAndDataTypeList = new Map();
 
     // Since it's a- singleton, shoud the url be defined here?
     const websocket_s = frontendConfig.mqtt.websocket ? frontendConfig.mqtt.websocket : 'ws';
     this.mqttBrokerUrl = websocket_s + '://' + frontendConfig.mqtt.url + ':' + frontendConfig.mqtt.port;
 
     this.connect();
+
+    ExperimentWorkbenchService.instance.on(
+      ExperimentWorkbenchService.EVENTS.SIMULATION_SET,
+      (simulationInfo) => {
+        subscribeToTopic("nrp_simulation/" + simulationInfo.ID + "/data", (topicInfo) => {this.topicAndDataTypeList.set(topicInfo);});
+      }
+    );
   }
 
   static get instance() {
@@ -93,6 +102,11 @@ export default class MqttClientService extends EventEmitter {
       return;
     }
 
+    //See if the topic is the summary of experiments
+    if (topic.match(/nrp/[0-9]*/data/g) !== null) {
+      this.topicAndDataTypeList.set(payload);
+    }
+
     //Now we see which callbacks have been assigned for a topic
     let subTokens = this.subTokensMap.get(topic);
     if (typeof subTokens !== 'undefined') {
@@ -125,6 +139,14 @@ export default class MqttClientService extends EventEmitter {
       );
     }
     return token;
+  }
+
+  getTopicList() {
+    return Array.from(this.topicAndDataTypeList.keys());
+  }
+
+  getDataType(topic) {
+    return this.topicAndDataTypeList.get(topic);
   }
 
   unsubscribe(unsubToken) {
