@@ -7,12 +7,18 @@ import ExperimentStorageService from '../../services/experiments/files/experimen
 import './experiment-list-element.css';
 import './import-experiment-buttons.css';
 
+
+import frontendConfig from '../../config.json';
+
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Tooltip from 'react-bootstrap/Tooltip';
 export default class ImportExperimentButtons extends React.Component {
   constructor(props) {
     super(props);
     this.state = {};
+    // By default, we enable the scan storage button, even if it's not in the config.
+    // For the online version, we explicitly disable it.
+    this.scanStorage = frontendConfig.scanStorage !== undefined ? frontendConfig.scanStorage : true;
   }
 
   importFolderPopupClick() {
@@ -152,47 +158,50 @@ export default class ImportExperimentButtons extends React.Component {
         {/* Import buttons */}
         {/* TODO: [NRRPLT-8721] restore experiment import funtionality */}
         <div className='list-entry-buttons flex-container center'>
-          <input disabled={true} id='folder' type='file' style={{display:'none'}}
+          <input disabled={true} id='folder' type='file' style={{ display: 'none' }}
             multiple directory='' webkitdirectory=''
-            onChange={(event) => this.importExperimentFolderChange(event)}/>
-          <input disabled={true} id='zip' type='file' style={{display:'none'}}
+            onChange={(event) => this.importExperimentFolderChange(event)} />
+          <input disabled={true} id='zip' type='file' style={{ display: 'none' }}
             multiple accept='.zip'
-            onChange={(event) => this.importZippedExperimentChange(event)}/>
-          {!this.state.isImporting
-            ? <div className='btn-group' role='group'>
-              <OverlayTrigger placement='bottom'
-                key='folder-tooltip'
-                overlay={
-                  <Tooltip id='tooltip-folder'>
-                    The import of the experiments is comming soon!
-                  </Tooltip>
-                }
-              >
-                <button type='button' className='btn btn-outline-dark'>
-                  <label htmlFor='folder' className='import-button'>
-                    <FaFolder/> Import folder
-                  </label>
-                </button>
-              </OverlayTrigger>
-              <OverlayTrigger placement='bottom'
-                key='zip-tooltip'
-                overlay={
-                  <Tooltip id='tooltip-zip'>
-                    The import of the zipped experiments is comming soon!
-                  </Tooltip>
-                }
-              >
-                <button type='button' className='btn btn-outline-dark'
-                  data-toggle='tooltip' data-placement='bottom' title='Tooltip on bottom'
-                >
-                  <label htmlFor='zip' className='import-button'><FaFileArchive /> Import zip</label>
-                </button >
-              </OverlayTrigger>
-              <button type='button' className='btn btn-outline-dark' onClick={() => this.scanStorageClick()}>
-                <FaAudible/> Scan Storage
+            onChange={(event) => this.importZippedExperimentChange(event)} />
+          <div className='btn-group' role='group'>
+            <OverlayTrigger placement='bottom'
+              key='folder-tooltip'
+              overlay={
+                <Tooltip id='tooltip-folder'>
+                  The import of the experiments is coming soon!
+                </Tooltip>
+              }
+            >
+              <button type='button' className='btn btn-outline-dark'>
+                <label htmlFor='folder' className='import-button'>
+                  <FaFolder /> Import folder
+                </label>
               </button>
-            </div>
-            : null}
+            </OverlayTrigger>
+            <OverlayTrigger placement='bottom'
+              key='zip-tooltip'
+              overlay={
+                <Tooltip id='tooltip-zip'>
+                  The import of the zipped experiments is coming soon!
+                </Tooltip>
+              }
+            >
+              <button type='button' className='btn btn-outline-dark'
+                data-toggle='tooltip' data-placement='bottom' title='Tooltip on bottom'
+              >
+                <label htmlFor='zip' className='import-button'><FaFileArchive /> Import zip</label>
+              </button >
+            </OverlayTrigger>
+
+            {
+              this.scanStorage ?
+                <button type='button' className='btn btn-outline-dark' onClick={() => this.scanStorageClick()}>
+                  <FaAudible /> Scan Storage
+                </button> :
+                null
+            }
+          </div>
         </div>
       </div>
     );

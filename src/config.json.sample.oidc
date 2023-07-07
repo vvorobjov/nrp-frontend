@@ -18,5 +18,6 @@
       "errors": "runtime_error",
       "status": "status"
     }
-  }
+  },
+  "scanStorage": false
 }

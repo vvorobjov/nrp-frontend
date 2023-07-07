@@ -3,9 +3,14 @@
   "name": "Neurorobotics Platform",
   "icons": [
     {
-      "src": "favicon.ico",
-      "sizes": "64x64 32x32 24x24 16x16",
-      "type": "image/x-icon"
+      "src": "hbp.png",
+      "sizes": "32x32",
+      "type": "image/png"
+    },
+    {
+      "src": "hbp75.png",
+      "sizes": "75x75",
+      "type": "image/png"
     },
     {
       "src": "logo192.png",
