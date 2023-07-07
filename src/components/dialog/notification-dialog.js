@@ -30,14 +30,24 @@ class NotificationDialog extends React.Component{
 
   onNotification(notification) {
     // avoid duplicates
-    var isIn = false;
+    var isType = false;
+    var isMsg = false;
+    var index = 0;
     this.state.notifications.forEach((notif) =>{
-      if (notification.type===notif.type
-        && notification.message===notif.message){
-        isIn = true;
+      if (notification.type===notif.type) {
+        if (notification.message===notif.message){
+          isMsg = true;
+        }
+        else {
+          index = this.state.notifications.indexOf(notif);
+          isType = true;
+        }
       }
     });
-    if (!isIn){
+    if (isType){
+      this.handleClose(index);
+    }
+    if (!isMsg){
       this.setState({
         notifications: [...this.state.notifications, notification]
       });
