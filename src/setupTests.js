@@ -11,7 +11,6 @@ beforeAll(() => {
   // Enable the mocking in tests.
   server.listen();
   jest.mock('./services/authentication-service.js');
-  // AuthenticationService.instance.mockClear();
 });
 
 afterEach(() => {

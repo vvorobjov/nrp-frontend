@@ -4,15 +4,13 @@ import FlexLayout from 'flexlayout-react';
 import ExperimentToolsService from './experiment-tools-service';
 import ExperimentWorkbenchService from './experiment-workbench-service';
 import ExperimentTimeBox from './experiment-time-box';
-import ExperimentStorageService from '../../services/experiments/files/experiment-storage-service';
 import SimulationService from '../../services/experiments/execution/running-simulation-service';
 import ExperimentExecutionService from '../../services/experiments/execution/experiment-execution-service';
 import ServerResourcesService from '../../services/experiments/execution/server-resources-service.js';
 import DialogService from '../../services/dialog-service';
 import { EXPERIMENT_STATE, EXPERIMENT_FINAL_STATE } from '../../services/experiments/experiment-constants';
-import timeDDHHMMSS from '../../utility/time-filter';
-
 import LeaveWorkbenchDialog from './leave-workbench-dialog';
+import { SIM_TOOL } from '../constants';
 
 import '../../../node_modules/flexlayout-react/style/light.css';
 import './experiment-workbench.css';
@@ -33,6 +31,7 @@ import Divider from '@material-ui/core/Divider';
 import List from '@material-ui/core/List';
 import Grid from '@material-ui/core/Grid';
 import Paper from '@material-ui/core/Paper';
+import Tooltip from '@material-ui/core/Tooltip';
 
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
@@ -180,6 +179,7 @@ class ExperimentWorkbench extends React.Component {
 
     const {experimentID} = props.match.params;
     this.experimentID = experimentID;
+    ExperimentWorkbenchService.instance.experimentID = this.experimentID;
     this.serverURL = ExperimentWorkbenchService.instance.serverURL;
 
     this.state = {
@@ -196,33 +196,28 @@ class ExperimentWorkbench extends React.Component {
       availableServers: []
     };
 
-    ExperimentWorkbenchService.instance.experimentID = this.experimentID;
-
     this.refLayout = React.createRef();
     this.state.modelFlexLayout.doAction(FlexLayout.Actions.setActiveTabset('defaultTabset'));
+    ExperimentToolsService.instance.setFlexLayoutModel(this.state.modelFlexLayout);
   }
 
-  async UNSAFE_componentWillMount() {
-    let experiments = await ExperimentStorageService.instance.getExperiments();
-    const experimentInfo = experiments.find(experiment => experiment.id === this.experimentID);
-    ExperimentWorkbenchService.instance.experimentInfo = experimentInfo;
-
-    this.setState({experimentConfiguration: experimentInfo.configuration});
-  };
-
   async componentDidMount() {
-    // Get the simulation ID from ExperimentWorkbenchService, if is defined (for joining the simulation)
+    await ExperimentWorkbenchService.instance.initExperimentInformation(this.experimentID);
+
+    if (ExperimentWorkbenchService.instance.experimentInfo) {
+      this.setState({experimentConfiguration: ExperimentWorkbenchService.instance.experimentInfo.configuration});
+    }
     if (ExperimentWorkbenchService.instance.simulationInfo !== undefined) {
-      this.state.runningSimulationID = ExperimentWorkbenchService.instance.simulationInfo.ID;
+      this.setState({ runningSimulationID: ExperimentWorkbenchService.instance.simulationInfo.ID });
     }
 
     // Update simulation state, if it is defined
     if (this.state.runningSimulationID !== undefined) {
       await SimulationService.instance.getInfo(
-        this.serverURL,
+        ExperimentWorkbenchService.instance.serverURL,
         this.state.runningSimulationID
       ).then((simInfo) => {
-        this.setState({ simulationState: simInfo.state});
+        simInfo && this.setState({ simulationState: simInfo.state});
       });
     }
 
@@ -233,7 +228,7 @@ class ExperimentWorkbench extends React.Component {
     );
 
     // update the list of available servers
-    this.state.availableServers = await ServerResourcesService.instance.getServerAvailability();
+    this.setState({ availableServers: await ServerResourcesService.instance.getServerAvailability() });
 
     // subscribe to server availablility
     ServerResourcesService.instance.addListener(
@@ -318,8 +313,13 @@ class ExperimentWorkbench extends React.Component {
       this.setState({ simulationState: undefined });
       await ExperimentExecutionService.instance.startNewExperiment(
         ExperimentWorkbenchService.instance.experimentInfo
-      ).then(async (simRespose) => {
-        const simInfo = await simRespose['simulation'].json();
+      ).then(async (simResponse) => {
+        if (typeof simResponse === 'undefined') {
+          console.error('startNewExperiment() returned with simResponse === undefined');
+          return;
+        }
+
+        const simInfo = await simResponse.simulation.json();
         // TODO: get proper simulation information
         if (simInfo) {
           ExperimentWorkbenchService.instance.simulationInfo = {
@@ -333,8 +333,8 @@ class ExperimentWorkbench extends React.Component {
         else {
           throw new Error('Could not parse the response from the backend after initializing the simulation');
         }
-        ExperimentWorkbenchService.instance.serverURL = simRespose['serverURL'];
-        this.serverURL = simRespose['serverURL'];
+        ExperimentWorkbenchService.instance.serverURL = simResponse['serverURL'];
+        this.serverURL = simResponse['serverURL'];
       }).catch((failure) => {
         DialogService.instance.simulationError({ message: failure });
       });
@@ -375,7 +375,7 @@ class ExperimentWorkbench extends React.Component {
     if (this.state.runningSimulationID !== undefined) {
       this.setState({ simStateLoading: true });
       await SimulationService.instance.updateState(
-        this.serverURL,
+        ExperimentWorkbenchService.instance.serverURL,
         this.state.runningSimulationID,
         newState
       ).then((simInfo) => {
@@ -542,25 +542,35 @@ class ExperimentWorkbench extends React.Component {
           <Divider />
           <List>
             {Array.from(ExperimentToolsService.instance.tools.values()).map((tool, index) => {
-              return (
-                <ListItem button key={index}
-                  onMouseDown={() => {
-                    ExperimentToolsService.instance.startToolDrag(
-                      tool.flexlayoutNode,
-                      this.refLayout);
-                  }}
-                  onClick={() => {
-                    ExperimentToolsService.instance.addTool(
-                      tool.flexlayoutNode,
-                      this.refLayout);
-                  }}
-                >
-                  <ListItemIcon >
-                    {tool.getIcon()}
-                  </ListItemIcon>
-                  <ListItemText primary={tool.flexlayoutNode.name} />
-                </ListItem>
-              );
+              if (typeof tool.isShown !== 'undefined' && tool.isShown()) {
+                return (
+                  tool.type === SIM_TOOL.TOOL_TYPE.EXTERNAL_TAB ?
+                    <ListItem button key={index}
+                      disabled={typeof tool.isDisabled !== 'undefined' && tool.isDisabled()}>
+                      <ListItemIcon >{tool.getIcon()}</ListItemIcon>
+                      <ListItemText primary={tool.flexlayoutNode.name} />
+                    </ListItem>
+                    :
+                    <ListItem button key={index}
+                      disabled={typeof tool.isDisabled !== 'undefined' && tool.isDisabled()}
+                      onMouseDown={() => {
+                        ExperimentToolsService.instance.startToolDrag(
+                          tool,
+                          this.refLayout);
+                      }}
+                      onClick={() => {
+                        ExperimentToolsService.instance.addTool(
+                          tool,
+                          this.refLayout);
+                      }}
+                    >
+                      <Tooltip title={tool.flexlayoutNode.name} placement="right">
+                        <ListItemIcon >{tool.getIcon()}</ListItemIcon>
+                      </Tooltip>
+                      <ListItemText primary={tool.flexlayoutNode.name} />
+                    </ListItem>
+                );
+              }
             })}
           </List>
         </Drawer>

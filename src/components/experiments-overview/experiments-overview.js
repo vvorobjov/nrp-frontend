@@ -71,7 +71,7 @@ export default class ExperimentsOverview extends React.Component {
       this.onUpdateServerAvailability
     );
 
-    ServerResourcesService.instance.removeListener(
+    ExperimentExecutionService.instance.removeListener(
       ExperimentExecutionService.EVENTS.START_EXPERIMENT,
       this.onStartExperiment
     );

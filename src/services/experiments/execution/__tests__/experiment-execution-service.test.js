@@ -13,18 +13,8 @@ import ExperimentExecutionService from '../../../../services/experiments/executi
 import SimulationService from '../../../../services/experiments/execution/running-simulation-service';
 import ServerResourcesService from '../../../../services/experiments/execution/server-resources-service';
 import { EXPERIMENT_STATE } from '../../../../services/experiments/experiment-constants.js';
-import config from '../../../../config.json';
 
 jest.mock('../../../authentication-service.js');
-//jest.setTimeout(10000);
-
-beforeEach(() => {
-  //jest.genMockFromModule('AuthenticationService');
-  //jest.mock('AuthenticationService');
-  if (config.auth.enableOIDC) {
-    jest.mock('../../../authentication-service.js');
-  }
-});
 
 afterEach(() => {
   jest.restoreAllMocks();
@@ -67,34 +57,37 @@ describe('ExperimentExecutionService', () => {
     );
   });
 
-  test('should go through the list of available servers when trying to start an experiment', (done) => {
+  test('should go through the list of available servers when trying to start an experiment', async () => {
+    const targetServer = MockAvailableServers[MockAvailableServers.length-1];
     jest.spyOn(console, 'error').mockImplementation();
     ServerResourcesService.instance.availableServers = MockAvailableServers;
-    jest.spyOn(ServerResourcesService.instance, 'getServerConfig').mockImplementation((server) =>{
-      if (server===MockAvailableServers[-1]) {
-        return Promise.resolve();
+    jest.spyOn(ServerResourcesService.instance, 'getServerAvailability').mockImplementation((server) =>{
+      return Promise.resolve(MockAvailableServers);
+    });
+    jest.spyOn(ServerResourcesService.instance, 'getServerConfig').mockImplementation((serverId) =>{
+      if (serverId === targetServer.id) {
+        return Promise.resolve(targetServer);
       }
       else {
         return Promise.reject();
       }
-    }
-    );
-    let properServerID;
+    });
 
+    let properServerID;
     jest.spyOn(ExperimentExecutionService.instance, 'launchExperimentOnServer').mockImplementation(
       // only the last server in the list will return a successful launch
-      (id,privateparam,configFile,serverID,serverConfig, progressCallback) => {
+      (id, privateparam, configFile, serverID, serverConfig, progressCallback) => {
         properServerID = serverID;
         return Promise.resolve();
       }
     );
+
     let experiment = MockExperiments[0];
-    ExperimentExecutionService.instance.startNewExperiment(experiment).then(() => {
+    await ExperimentExecutionService.instance.startNewExperiment(experiment).then(() => {
       MockAvailableServers.forEach(server => {
         expect(ServerResourcesService.instance.getServerConfig).toHaveBeenCalledWith(server.id);
       });
-      expect(properServerID).toBe(MockAvailableServers[-1]);
-      done();
+      expect(properServerID).toBe(targetServer.id);
     });
   });
 

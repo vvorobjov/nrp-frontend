@@ -6,6 +6,7 @@ import SimulationService from './running-simulation-service.js';
 import DialogService from '../../dialog-service';
 import { HttpService } from '../../http-service.js';
 import { EXPERIMENT_STATE } from '../experiment-constants.js';
+import ExperimentWorkbenchService from '../../../components/experiment-workbench/experiment-workbench-service.js';
 
 let _instance = null;
 const SINGLETON_ENFORCER = Symbol();
@@ -43,7 +44,7 @@ class ExperimentExecutionService extends HttpService {
     //NrpAnalyticsService.instance.tickDurationEvent('Server-initialization');
 
     ExperimentExecutionService.instance.emit(ExperimentExecutionService.EVENTS.START_EXPERIMENT, experiment);
-    let serversToTry = experiment.devServer
+    let serverIdsToTry = experiment.devServer
       ? [experiment.devServer]
       : (await ServerResourcesService.instance.getServerAvailability(true))
         .map(s => s.id);
@@ -64,11 +65,11 @@ class ExperimentExecutionService extends HttpService {
     };
     let serverConfig;
     let serverFound = false;
-    let serverID;
-    for (let server of serversToTry){
+    let targetServerID;
+    for (let serverId of serverIdsToTry){
       try {
-        serverConfig = await ServerResourcesService.instance.getServerConfig(server);
-        serverID = server;
+        serverConfig = await ServerResourcesService.instance.getServerConfig(serverId);
+        targetServerID = serverId;
         serverFound = true;
         break;
       }
@@ -81,10 +82,13 @@ class ExperimentExecutionService extends HttpService {
       experiment.id,
       experiment.private,
       experiment.configuration.configFile,
-      serverID,
+      targetServerID,
       serverConfig,
       progressCallback
-    ).catch((failure) => {
+    ).then(success => {
+      ExperimentWorkbenchService.instance.xpraConfigUrls = [serverConfig.xpra];
+      return success;
+    }).catch((failure) => {
       if (failure && failure.isFatal) {
         return Promise.reject(ExperimentExecutionService.ERRORS.LAUNCH_FATAL_ERROR);
 
@@ -109,7 +113,7 @@ class ExperimentExecutionService extends HttpService {
    * Try launching an experiment on a specific server.
    * @param {string} experimentID - ID of the experiment to launch
    * @param {boolean} privateExperiment - whether the experiment is private or not
-   * @param {string} configFile - experiment configuration file name
+   * @param {string} experimentConfigFileName - experiment configuration file name
    * @param {string} serverID - server ID
    * @param {object} serverConfiguration - configuration of server
    * @param {function} progressCallback - a callback for progress updates
@@ -118,7 +122,7 @@ class ExperimentExecutionService extends HttpService {
   launchExperimentOnServer(
     experimentID,
     privateExperiment,
-    configFile,
+    experimentConfigFileName,
     serverID,
     serverConfiguration,
     progressCallback
@@ -130,6 +134,7 @@ class ExperimentExecutionService extends HttpService {
       }); //called once caller has the promise
 
       let serverURL = serverConfiguration['nrp-services'];
+      //let serverURL = serverConfiguration.id;
 
       // Create a new simulation.
       // >>Request:
@@ -142,13 +147,13 @@ class ExperimentExecutionService extends HttpService {
       // }
       let simInitData = {
         experimentID: experimentID,
-        experimentConfiguration: configFile,
+        experimentConfiguration: experimentConfigFileName,
         state: EXPERIMENT_STATE.CREATED,
         private: privateExperiment
       };
       this.httpRequestPOST(serverURL + '/simulation', JSON.stringify(simInitData))
-        .then((simulation) => {
-          resolve({'simulation': simulation, 'serverURL': serverURL});
+        .then((response) => {
+          resolve({'simulation': response, 'serverURL': serverURL});
         })
         .catch(reject);
       // <<Response: simulation

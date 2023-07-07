@@ -1,5 +1,4 @@
 import React from 'react';
-import Grid from '@material-ui/core/Grid';
 
 import NrpHeader from '../nrp-header/nrp-header.js';
 
@@ -35,7 +34,8 @@ export default class EntryPage extends React.Component {
         <div className='nrp-core-dashboard sidebar-left'>
           <NrpCoreDashboard />
         </div >
-        <iframe className='nrp-news sidebar-right' src='https://neurorobotics.net/latest.html' />
+        <iframe title='neurorobotics-news' className='nrp-news sidebar-right'
+          src='https://neurorobotics.net/latest.html' />
         {/*<TransceiverFunctionEditor experimentId='mqtt_simple_1'/>*/}
       </div>
     );

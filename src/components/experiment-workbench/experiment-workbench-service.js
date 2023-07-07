@@ -2,6 +2,9 @@ import { EventEmitter } from 'events';
 
 import MqttClientService from '../../services/mqtt-client-service';
 import DialogService from '../../services/dialog-service';
+import ExperimentStorageService from '../../services/experiments/files/experiment-storage-service';
+import ServerResourcesService from '../../services/experiments/execution/server-resources-service.js';
+import { EXPERIMENT_STATE } from '../../services/experiments/experiment-constants';
 
 let _instance = null;
 const SINGLETON_ENFORCER = Symbol();
@@ -19,6 +22,8 @@ class ExperimentWorkbenchService extends EventEmitter {
     this._serverURL = undefined;
     this._errorToken = undefined;
     this._statusToken = undefined;
+    this._xpraUrlsConfig = [];
+    this._xpraUrlsConfirmed = [];
   }
 
   static get instance() {
@@ -34,7 +39,7 @@ class ExperimentWorkbenchService extends EventEmitter {
   }
   set experimentInfo(info) {
     this._expInfo = info;
-    console.info(['ExperimentWorkbenchService - experimentInfo', this._expInfo]);
+    //console.info(['ExperimentWorkbenchService - experimentInfo', this._expInfo]);
   }
 
   get experimentID() {
@@ -42,7 +47,7 @@ class ExperimentWorkbenchService extends EventEmitter {
   }
   set experimentID(experimentID) {
     this._experimentID = experimentID;
-    console.info(['ExperimentWorkbenchService - experimentID', this._experimentID]);
+    //console.info(['ExperimentWorkbenchService - experimentID', this._experimentID]);
   }
 
   get serverURL() {
@@ -50,7 +55,14 @@ class ExperimentWorkbenchService extends EventEmitter {
   }
   set serverURL(serverURL) {
     this._serverURL = serverURL;
-    console.info(['ExperimentWorkbenchService - serverURL', this._serverURL]);
+    //console.info(['ExperimentWorkbenchService - serverURL', this._serverURL]);
+  }
+
+  get simulationState() {
+    return this._simulationState;
+  }
+  set simulationState(state) {
+    this._simulationState = state;
   }
 
   /**
@@ -64,12 +76,67 @@ class ExperimentWorkbenchService extends EventEmitter {
   }
   set simulationInfo(simulationInfo) {
     this._simulationInfo = simulationInfo;
-    console.info(['ExperimentWorkbenchService - simulationInfo', this._simulationInfo]);
+    //console.info(['ExperimentWorkbenchService - simulationInfo', this._simulationInfo]);
     ExperimentWorkbenchService.instance.emit(
       ExperimentWorkbenchService.EVENTS.SIMULATION_SET,
       this._simulationInfo
     );
     this.setTopics(this._simulationInfo);
+  }
+
+  get xpraConfigUrls() {
+    return this._xpraUrlsConfig;
+  }
+  set xpraConfigUrls(urls) {
+    this._xpraUrlsConfig = urls;
+    //console.info(['ExperimentWorkbenchService - xpraUrls', this._xpraConfigUrls]);
+  }
+
+  get xpraUrls() {
+    return this._xpraUrlsConfirmed;
+  }
+
+  async confirmXpraUrls() {
+    const simState = this.simulationState;
+    if (!this._xpraUrlsConfig || this._xpraUrlsConfig.length === 0
+        || !simState || simState === EXPERIMENT_STATE.CREATED
+        || simState === EXPERIMENT_STATE.UNDEFINED || simState === EXPERIMENT_STATE.FAILED) {
+      return;
+    }
+    else {
+      let confirmedUrls = [];
+      for (let url of this._xpraUrlsConfig) {
+        const response = await fetch(url, { method: 'GET' });
+        if (response.ok) {
+          confirmedUrls.push(url);
+        }
+      }
+      this._xpraUrlsConfirmed = confirmedUrls;
+    }
+  }
+
+  /**
+   * Gather experiment information.
+   * @param experimentID The experiment's ID
+   */
+  async initExperimentInformation(experimentID) {
+    let experiments = await ExperimentStorageService.instance.getExperiments();
+    const experimentInfo = experiments.find(experiment => experiment.id === experimentID);
+    this.experimentInfo = experimentInfo;
+
+    if (experimentInfo.joinableServers.length === 1) {
+      const runningSimulation = experimentInfo.joinableServers[0].runningSimulation;
+      if (runningSimulation) {
+        let serverConfig = await ServerResourcesService.instance.getServerConfig(
+          experimentInfo.joinableServers[0].server);
+        this.serverURL = serverConfig['nrp-services'];
+        this.xpraConfigUrls = [serverConfig.xpra];
+        this.simulationInfo = {
+          ID: runningSimulation.simulationID,
+          MQTTPrefix: runningSimulation.MQTTPrefix
+        };
+      }
+    }
   }
 
   /**
@@ -144,6 +211,9 @@ class ExperimentWorkbenchService extends EventEmitter {
     try {
       const status = JSON.parse(msg);
       if (status.state) {
+        this.simulationState = status.state;
+        this.confirmXpraUrls();
+
         ExperimentWorkbenchService.instance.emit(
           ExperimentWorkbenchService.EVENTS.SIMULATION_STATUS_UPDATED,
           status
