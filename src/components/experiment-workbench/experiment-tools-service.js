@@ -3,6 +3,7 @@ import FlexLayout from 'flexlayout-react';
 import DescriptionIcon from '@material-ui/icons/Description';
 import ListAltIcon from '@material-ui/icons/ListAlt';
 
+const appConfig = window.appConfig;
 import NrpCoreDashboard from '../nrp-core-dashboard/nrp-core-dashboard';
 import TransceiverFunctionEditor from '../tf-editor/tf-editor';
 import XpraView from '../xpra/xpra-view';
@@ -111,8 +112,8 @@ ExperimentToolsService.CONSTANTS = Object.freeze({
 ExperimentToolsService.TOOLS = Object.freeze({
   // NEST_DESKTOP: {
   //   singleton: true,
+  //   type: ExperimentToolsService.CONSTANTS.TOOL_TYPE.FLEXLAYOUT_TAB,
   //   flexlayoutNode: {
-  //     'type': 'tab',
   //     'name': 'NEST Desktop',
   //     'component': 'nest-desktop'
   //   },
@@ -134,7 +135,7 @@ ExperimentToolsService.TOOLS = Object.freeze({
       'name': 'NRP-Core Docs',
       'component': 'nrp-core-docu'
     },
-    flexlayoutFactoryCb: () =>  {
+    flexlayoutFactoryCb: () => {
       return <iframe src='https://hbpneurorobotics.bitbucket.io/index.html'
         title='NRP-Core Documentation' />;
     },
@@ -187,8 +188,8 @@ ExperimentToolsService.TOOLS = Object.freeze({
       'name': 'Edit experiment files',
       'component': 'TransceiverFunctionEditor'
     },
-    flexlayoutFactoryCb: () =>  {
-      return <TransceiverFunctionEditor/>;
+    flexlayoutFactoryCb: () => {
+      return <TransceiverFunctionEditor />;
     },
     getIcon: () => {
       return <ListAltIcon/>;
@@ -196,7 +197,29 @@ ExperimentToolsService.TOOLS = Object.freeze({
     isShown: () => {
       return true;
     }
+  },
+  NEST_DESKTOP: {
+    singleton: true,
+    type: SIM_TOOL.TOOL_TYPE.FLEXLAYOUT_TAB,
+    flexlayoutNode: {
+      'name': 'NEST Desktop',
+      'component': 'nest-desktop'
+    },
+    flexlayoutFactoryCb: () =>  {
+      return <iframe src={appConfig.nestDesktop.url} title='NEST Desktop' />;
+    },
+    getIcon: () => {
+      return <div>
+        <img src={'https://www.nest-simulator.org/wp-content/uploads/2015/03/nest_logo.png'}
+          alt="NEST Desktop"
+          style={{width: 40+ 'px', height: 20 + 'px'}} />
+      </div>;
+    },
+    isShown: () => {
+      return appConfig && appConfig.nestDesktop && appConfig.nestDesktop.enabled;
+    }
   }
 });
+
 
 export default ExperimentToolsService;
