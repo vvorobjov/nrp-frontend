@@ -5,7 +5,7 @@ import { EventEmitter } from 'events';
 import jspb from '../../node_modules/google-protobuf/google-protobuf';
 
 import frontendConfig from '../config.json';
-import ExperimentWorkbenchService from '../../components/experiment-workbench/experiment-workbench-service'
+import ExperimentWorkbenchService from '../components/experiment-workbench/experiment-workbench-service';
 
 let _instance = null;
 const SINGLETON_ENFORCER = Symbol();
@@ -39,7 +39,9 @@ export default class MqttClientService extends EventEmitter {
     ExperimentWorkbenchService.instance.on(
       ExperimentWorkbenchService.EVENTS.SIMULATION_SET,
       (simulationInfo) => {
-        subscribeToTopic("nrp_simulation/" + simulationInfo.ID + "/data", (topicInfo) => {this.topicAndDataTypeList.set(topicInfo);});
+        this.subscribeToTopic('nrp_simulation/' + simulationInfo.ID + '/data', (topicInfo) => {
+          this.topicAndDataTypeList.set(topicInfo);
+        });
       }
     );
   }
@@ -103,7 +105,7 @@ export default class MqttClientService extends EventEmitter {
     }
 
     //See if the topic is the summary of experiments
-    if (topic.match(/nrp/[0-9]*/data/g) !== null) {
+    if (topic.match(/nrp_simulation/[0-9]*/data/g) !== null) {
       this.topicAndDataTypeList.set(payload);
     }
 
