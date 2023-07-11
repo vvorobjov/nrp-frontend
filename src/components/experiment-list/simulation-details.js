@@ -53,7 +53,10 @@ class SimulationDetails extends React.Component {
    * Opens experiment workbench and sets the running simulation ID in ExperimentWorkbenchService
    */
   joinSimulation(simulationInfo) {
-    ExperimentWorkbenchService.instance.simulationID = simulationInfo.runningSimulation.simulationID;
+    ExperimentWorkbenchService.instance.simulationInfo = {
+      ID: simulationInfo.runningSimulation.simulationID,
+      MQTTPrefix: simulationInfo.runningSimulation.MQTTPrefix
+    };
     ServerResourcesService.instance.getServerConfig(simulationInfo.server).then((serverConfig) => {
       ExperimentWorkbenchService.instance.serverURL = serverConfig['nrp-services'];
       this.props.history.push({

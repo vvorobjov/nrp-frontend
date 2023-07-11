@@ -32,7 +32,6 @@ export default class ExperimentTimeBox extends React.Component {
       break;
     }
     this.state = {
-      simulationID: undefined,
       timeToken: null,
       simulationTime: undefined
     };

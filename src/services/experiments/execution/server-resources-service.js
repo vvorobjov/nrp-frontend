@@ -67,11 +67,12 @@ class ServerResourcesService extends HttpProxyService {
         this.emit(ServerResourcesService.EVENTS.UPDATE_SERVER_AVAILABILITY, this.availableServers);
       }
       catch (error) {
-        this.availableServers = null;
+        this.availableServers = [];
+        error = error || { message : 'unexpected network error '};
         DialogService.instance.networkError(error);
       }
     }
-
+    this.emit(ServerResourcesService.EVENTS.UPDATE_SERVER_AVAILABILITY, this.availableServers);
     return this.availableServers;
   }
 
@@ -85,7 +86,11 @@ class ServerResourcesService extends HttpProxyService {
       .then(async (response) => {
         return await response.json();
       })
-      .catch(DialogService.instance.networkError);
+      .catch((error) => {
+        error = error || { message: 'getServerConfig request rejected' };
+        DialogService.instance.networkError(error);
+        return error;
+      });
   }
 }
 

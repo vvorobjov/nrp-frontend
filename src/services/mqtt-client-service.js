@@ -28,8 +28,9 @@ export default class MqttClientService extends EventEmitter {
 
     this.subTokensMap = new Map();
 
-    // Since it's a singleton, shoud the url be defined here?
-    this.mqttBrokerUrl = 'ws://' + frontendConfig.mqtt.url + ':' + frontendConfig.mqtt.port;
+    // Since it's a- singleton, shoud the url be defined here?
+    const websocket_s = frontendConfig.mqtt.websocket ? frontendConfig.mqtt.websocket : 'ws';
+    this.mqttBrokerUrl = websocket_s + '://' + frontendConfig.mqtt.url + ':' + frontendConfig.mqtt.port;
 
     this.connect();
   }
@@ -55,7 +56,7 @@ export default class MqttClientService extends EventEmitter {
   }
 
   connect() {
-    console.info('MQTT connecting to ' + this.mqttBrokerUrl + ' ...');
+    //console.info('MQTT connecting to ' + this.mqttBrokerUrl + ' ...');
     this.client = mqtt.connect(this.mqttBrokerUrl, { clientId: 'nrp-frontend'});
     this.client.on('connect', () => {
       this.onConnect();
@@ -63,7 +64,7 @@ export default class MqttClientService extends EventEmitter {
     this.client.on('error', this.onError);
     // TODO: fetch disconnection event properly
     this.client.on('disconnect', () => {
-      console.info('... MQTT disconnected');
+      //console.info('... MQTT disconnected');
       this.emit(MqttClientService.EVENTS.DISCONNECTED);
     });
     this.client.on('message', (topic, message) => {
@@ -71,24 +72,13 @@ export default class MqttClientService extends EventEmitter {
     });
   }
 
-  // disconnect(brokerUrl) {
-  //   console.info('MQTT disconnecting ' + brokerUrl);
-  //   if (this.client){
-  //     this.client.on('disconnect', () => {
-  //       console.info('... MQTT disconnected');
-  //       this.emit(MqttClientService.EVENTS.DISCONNECTED);
-  //     });
-  //     this.client.disconnect();
-  //   }
-  // }
-
   onError(error) {
     console.error(error);
   }
 
   onConnect() {
-    console.info('... MQTT connected');
-    console.info(this.client);
+    //console.info('... MQTT connected');
+    //console.info(this.client);
     // TODO: filter nrp messages
     this.client.subscribe('#', (err) => {
       if (err) {
@@ -103,8 +93,6 @@ export default class MqttClientService extends EventEmitter {
       return;
     }
 
-    // console.info('MQTT message: [topic, payload, packet]');
-    // console.info([topic, payload, packet]);
     //Now we see which callbacks have been assigned for a topic
     let subTokens = this.subTokensMap.get(topic);
     if (typeof subTokens !== 'undefined') {
@@ -114,20 +102,6 @@ export default class MqttClientService extends EventEmitter {
       };
     };
 
-    /*try {
-      if (topic.endsWith('/type')) {
-        let msg = String(payload);
-        console.info('"' + topic + '" message format = ' + msg);
-      }
-      else {
-        let msg = DataPackMessage.deserializeBinary(payload);
-        console.info('DataPackMessage');
-        console.info(msg);
-      }
-    }
-    catch (error) {
-      console.error(error);
-    }*/
   }
 
   //callback should have args topic, payload
@@ -150,8 +124,6 @@ export default class MqttClientService extends EventEmitter {
         [token]
       );
     }
-    console.info('You have been subscribed to topic ' + topic);
-    console.info(this.subTokensMap);
     return token;
   }
 
@@ -161,7 +133,6 @@ export default class MqttClientService extends EventEmitter {
       let index = tokens.indexOf(unsubToken);
       if (index !== -1) {
         tokens.splice(index, 1);
-        console.info('You have been unsubscribed from topic ' + unsubToken.topic);
       }
       else {
         console.warn('Your provided token could not be found in the subscription list');

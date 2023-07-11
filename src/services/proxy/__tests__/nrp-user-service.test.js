@@ -5,9 +5,8 @@ import '@testing-library/jest-dom';
 import 'jest-fetch-mock';
 
 import NrpUserService from '../../../services/proxy/nrp-user-service';
-import { HttpService } from '../../../services/http-service';
-
 import MockUserGroups from '../../../mocks/mock_user-groups.json';
+jest.mock('../../authentication-service.js');
 
 afterEach(() => {
   jest.restoreAllMocks();
@@ -66,7 +65,7 @@ describe('NrpUserService', () => {
     jest.spyOn(NrpUserService.instance, 'httpRequestGET').mockImplementation(async () => {
       return JSON.stringify([{
         response: 'invalid'
-      }])
+      }]);
     });
     let user = await NrpUserService.instance.getCurrentUser(false);
     expect(user.id).toBeDefined();
@@ -77,7 +76,7 @@ describe('NrpUserService', () => {
     jest.spyOn(NrpUserService.instance, 'httpRequestGET').mockImplementation(async () => {
       return JSON.stringify([{
         response: 'invalid'
-      }])
+      }]);
     });
     let user = await NrpUserService.instance.getCurrentUser(true);
     expect(user).toBeNull();

@@ -1,3 +1,4 @@
+/* eslint-disable no-undef */
 /**
  * @jest-environment jsdom
 */
@@ -8,7 +9,7 @@ import MockServerconfig from '../../../../mocks/mock_server-config.json';
 
 import ServerResourcesService from '../../../../services/experiments/execution/server-resources-service';
 import DialogService from '../../../dialog-service';
-
+jest.mock('../../../authentication-service.js');
 jest.setTimeout(10000);
 
 let onWindowBeforeUnloadCb = undefined;
@@ -61,16 +62,17 @@ describe('ModelsStorageService', () => {
   });
 
   test('can get a server config', async () => {
-    // regular call with proper json
-    let config = await ServerResourcesService.instance.getServerConfig('test-server-id');
-    expect(config).toEqual(MockServerconfig);
+    // regular call with proper json*
+    let serverConfig = await ServerResourcesService.instance.getServerConfig('test-server-id');
+    expect(serverConfig).toEqual(MockServerconfig);
 
     // rejected promise on GET
-    jest.spyOn(ServerResourcesService.instance, 'httpRequestGET').mockImplementation(() => {
+    jest.spyOn(ServerResourcesService.instance, 'httpRequestGET').mockImplementation( () => {
       return Promise.reject();
     });
-    jest.spyOn(DialogService.instance, 'networkError').mockImplementation();
-    config = await ServerResourcesService.instance.getServerConfig('test-server-id');
+
+    jest.spyOn(DialogService.instance, 'networkError');
+    serverConfig = await ServerResourcesService.instance.getServerConfig('test-server-id');
     expect(DialogService.instance.networkError).toHaveBeenCalled();
   });
 

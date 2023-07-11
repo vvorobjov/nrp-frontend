@@ -3,22 +3,15 @@
 */
 import '@testing-library/jest-dom';
 import 'jest-fetch-mock';
-
 import AuthenticationService from '../authentication-service';
 
-//import MockLocalShorage from '../__mocks__/local-storage.mock';
-
-/*beforeEach(() => {
-  jest.mock('global.localStorage');
-});*/
-
-/*beforeEach(() => {
+beforeEach(() => {
   jest.spyOn(Storage.prototype, 'setItem');
 });
 
 afterEach(() => {
   localStorage.setItem.mockRestore();
-});*/
+});
 
 describe('AuthenticationService', () => {
 
@@ -76,7 +69,7 @@ describe('AuthenticationService', () => {
     jest.spyOn(AuthenticationService.instance, 'authCollab').mockResolvedValue();
     AuthenticationService.instance.oidcEnabled = true;
 
-    AuthenticationService.instance.init();
+    AuthenticationService.instance.authenticate();
     await AuthenticationService.instance.promiseInitialized;
     expect(AuthenticationService.instance.authCollab).toHaveBeenCalled();
     expect(AuthenticationService.instance.initialized).toBeTruthy();
@@ -100,14 +93,20 @@ describe('AuthenticationService', () => {
     expect(AuthenticationService.instance.authCollab).toHaveBeenCalled();
     expect(AuthenticationService.instance.initialized).toBeFalsy();
   });
-  
+
   test('can redirect to the authentication page', () => {
     jest.spyOn(AuthenticationService.instance, 'clearStoredLocalToken');
 
     let orginalLocationURL = 'http://some.url/';
     window.location.href = orginalLocationURL;
     AuthenticationService.instance.authLocal({});
-    expect(window.location.href).toBe(AuthenticationService.instance.authURL +
-      `&client_id=${AuthenticationService.instance.clientId}&redirect_uri=${encodeURIComponent(orginalLocationURL)}`);
-  });
+    test('can redirect to the local authentication page', async () => {
+      let originalLocationURL = 'http://some.url/';
+      window.location.href = originalLocationURL;
+      AuthenticationService.instance.oidcEnabled = false;
+      await AuthenticationService.instance.authenticate({ force: true });
+      expect(window.location.href).toBe(AuthenticationService.instance.authURL +
+        `&client_id=${AuthenticationService.instance.clientId}&redirect_uri=${encodeURIComponent(originalLocationURL)}`);
+    });
+  })
 });

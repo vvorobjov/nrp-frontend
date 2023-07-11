@@ -92,7 +92,7 @@ class ExperimentStorageService extends HttpProxyService {
           DialogService.instance.networkError(error);
         }
         else {
-          DialogService.instance.unexpectedError(error);
+          DialogService.instance.unexpectedError({ error : 'unexepected error '});
         }
       }
     }

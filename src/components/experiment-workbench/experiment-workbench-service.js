@@ -15,7 +15,7 @@ class ExperimentWorkbenchService extends EventEmitter {
     if (enforcer !== SINGLETON_ENFORCER) {
       throw new Error('Use ' + this.constructor.name + '.instance');
     }
-    this._simulationID = undefined;
+    this._simulationInfo = undefined;
     this._serverURL = undefined;
     this._errorToken = undefined;
     this._statusToken = undefined;
@@ -53,17 +53,23 @@ class ExperimentWorkbenchService extends EventEmitter {
     console.info(['ExperimentWorkbenchService - serverURL', this._serverURL]);
   }
 
-  get simulationID() {
-    return this._simulationID;
+  /**
+   * Returns the simulation MQTT description
+   * @returns {object} the simulation info
+   * @returns {string} simulationInfo.ID the simulation ID
+   * @returns {string} simulationInfo.MQTTPrefix the simulation MQTT Prefix
+   */
+  get simulationInfo() {
+    return this._simulationInfo;
   }
-  set simulationID(simulationID) {
-    this._simulationID = simulationID;
-    console.info(['ExperimentWorkbenchService - simulationID', this._simulationID]);
+  set simulationInfo(simulationInfo) {
+    this._simulationInfo = simulationInfo;
+    console.info(['ExperimentWorkbenchService - simulationInfo', this._simulationInfo]);
     ExperimentWorkbenchService.instance.emit(
       ExperimentWorkbenchService.EVENTS.SIMULATION_SET,
-      this._simulationID
+      this._simulationInfo
     );
-    this.setTopics(this._simulationID);
+    this.setTopics(this._simulationInfo);
   }
 
   /**
@@ -74,7 +80,7 @@ class ExperimentWorkbenchService extends EventEmitter {
     return MqttClientService.instance.isConnected();
   }
 
-  setTopics = (simulationID) => {
+  setTopics = (simulationInfo) => {
     if (this._errorToken) {
       MqttClientService.instance.unsubscribe(this._errorToken);
       this._errorToken = undefined;
@@ -83,9 +89,11 @@ class ExperimentWorkbenchService extends EventEmitter {
       MqttClientService.instance.unsubscribe(this._statusToken);
       this._statusToken = undefined;
     }
-    if (simulationID !== undefined) {
-      const topicBase = MqttClientService.instance.getConfig().mqtt.topics.base + '/'
-        + simulationID + '/';
+    if (simulationInfo !== undefined) {
+      const mqttTopics = MqttClientService.instance.getConfig().mqtt.topics;
+      const topicBase = simulationInfo.MQTTPrefix ?
+        simulationInfo.MQTTPrefix + '/' + mqttTopics.base + '/' + simulationInfo.ID + '/' :
+        mqttTopics.base + '/' + simulationInfo.ID + '/';
       // assign error MQTT topic
       const errorTopic = topicBase + MqttClientService.instance.getConfig().mqtt.topics.errors;
       const errorToken = MqttClientService.instance.subscribeToTopic(errorTopic, this.errorMsgHandler);

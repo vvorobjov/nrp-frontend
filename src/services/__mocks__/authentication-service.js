@@ -1,12 +1,9 @@
+import { resolve } from 'path';
 
-/* export const mockgetStoredLocalToken = jest.fn();
-
-const AthenticationServiceMock = jest.fn().mockImplementation(() => {
-    return { instance: { getStoredLocalToken: mockgetStoredLocalToken } };
-}); */
 class AuthenticationService {
   constructor() {
     this.checkForNewTokenToStore();
+    this.PromiseInitialized = new Promise(()=>resolve());
   }
 
   static get instance() {
@@ -35,9 +32,12 @@ class AuthenticationService {
      * @return token The stored access token. Or strings identifying 'no-token' / 'malformed-token'.
      */
   getStoredLocalToken() {
-    return 'fakeToken';
+    return 'test-auth-token';
   }
 
+  getToken() {
+    return 'test-auth-token';
+  }
   /**
      * Makes the local authentication.
      *
@@ -48,10 +48,8 @@ class AuthenticationService {
 
   /**
      * Performs authentication.
-     * 
-     * @param {*} config Authentication config
      */
-  authenticate(config) {
+  authenticate() {
   }
 };
 

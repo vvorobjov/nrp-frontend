@@ -13,8 +13,18 @@ import ExperimentExecutionService from '../../../../services/experiments/executi
 import SimulationService from '../../../../services/experiments/execution/running-simulation-service';
 import ServerResourcesService from '../../../../services/experiments/execution/server-resources-service';
 import { EXPERIMENT_STATE } from '../../../../services/experiments/experiment-constants.js';
+import config from '../../../../config.json';
 
+jest.mock('../../../authentication-service.js');
 //jest.setTimeout(10000);
+
+beforeEach(() => {
+  //jest.genMockFromModule('AuthenticationService');
+  //jest.mock('AuthenticationService');
+  if (config.auth.enableOIDC) {
+    jest.mock('../../../authentication-service.js');
+  }
+});
 
 afterEach(() => {
   jest.restoreAllMocks();
@@ -59,59 +69,87 @@ describe('ExperimentExecutionService', () => {
 
   test('should go through the list of available servers when trying to start an experiment', (done) => {
     jest.spyOn(console, 'error').mockImplementation();
-    jest.spyOn(ServerResourcesService.instance, 'getServerConfig');
+    ServerResourcesService.instance.availableServers = MockAvailableServers;
+    jest.spyOn(ServerResourcesService.instance, 'getServerConfig').mockImplementation((server) =>{
+      if (server===MockAvailableServers[-1]) {
+        return Promise.resolve();
+      }
+      else {
+        return Promise.reject();
+      }
+    }
+    );
+    let properServerID;
+
     jest.spyOn(ExperimentExecutionService.instance, 'launchExperimentOnServer').mockImplementation(
       // only the last server in the list will return a successful launch
-      (expID, isPrivate, numBrainProc, serverID) => {
-        if (serverID !== MockAvailableServers[MockAvailableServers.length - 1].id) {
-          return Promise.reject({
-            error: {
-              data: 'test rejection for launch on server ' + serverID
-            }
-          });
-        }
-
+      (id,privateparam,configFile,serverID,serverConfig, progressCallback) => {
+        properServerID = serverID;
         return Promise.resolve();
       }
     );
-
     let experiment = MockExperiments[0];
     ExperimentExecutionService.instance.startNewExperiment(experiment).then(() => {
       MockAvailableServers.forEach(server => {
         expect(ServerResourcesService.instance.getServerConfig).toHaveBeenCalledWith(server.id);
       });
+      expect(properServerID).toBe(MockAvailableServers[-1]);
       done();
     });
   });
 
-  test('starting an experiment should abort early if a fatal error occurs', (done) => {
+  test('starting an experiment should abort early if a fatal error occurs', async () => {
     jest.spyOn(ExperimentExecutionService.instance, 'launchExperimentOnServer').mockImplementation(
       () => {
-        return Promise.reject({
-          isFatal: true
-        });
+        return Promise.reject({ isFatal: true });
       }
     );
+    jest.spyOn(ServerResourcesService.instance, 'getServerConfig').mockImplementation(() => {
+      return Promise.resolve();
+    });
 
     let experiment = MockExperiments[0];
-    ExperimentExecutionService.instance.startNewExperiment(experiment).catch(error => {
-      expect(error).toEqual(ExperimentExecutionService.ERRORS.LAUNCH_FATAL_ERROR);
-      done();
-    });
+    await expect(ExperimentExecutionService.instance.startNewExperiment(experiment)).rejects
+      .toMatch(ExperimentExecutionService.ERRORS.LAUNCH_FATAL_ERROR);
   });
 
-  test('starting an experiment should fail if no server is ready', (done) => {
-    jest.spyOn(ExperimentExecutionService.instance, 'launchExperimentOnServer').mockImplementation(
-      () => {
-        return Promise.reject({});
-      }
-    );
+  test('starting an experiment should fail if no server is ready', async () => {
+    jest.spyOn(ExperimentExecutionService.instance, 'launchExperimentOnServer').mockImplementation(() => {
+      return Promise.reject({});
+    });
+    jest.spyOn(ServerResourcesService.instance, 'getServerConfig').mockImplementation(() => {
+      return Promise.reject();
+    });
 
     let experiment = MockExperiments[0];
-    ExperimentExecutionService.instance.startNewExperiment(experiment).catch(error => {
-      expect(error).toEqual(ExperimentExecutionService.ERRORS.LAUNCH_NO_SERVERS_LEFT);
-      done();
+    await expect(ExperimentExecutionService.instance.startNewExperiment(experiment)).rejects
+      .toMatch(ExperimentExecutionService.ERRORS.LAUNCH_NO_SERVERS_LEFT);
+  });
+
+  test('respects settings for specific dev server to launch and single brain process mode', async () => {
+    jest.spyOn(ExperimentExecutionService.instance, 'launchExperimentOnServer').mockImplementation(() => {
+      return Promise.resolve();
     });
+    jest.spyOn(ServerResourcesService.instance, 'getServerConfig').mockImplementation(() => {
+      return Promise.resolve();
+    });
+
+    let mockExperiment = {
+      id: 'test-experiment-id',
+      devServer: 'test-dev-server-url',
+      configuration: {
+        configFile: 'test_config.json'
+      }
+    };
+    await ExperimentExecutionService.instance.startNewExperiment(mockExperiment, true);
+    expect(ExperimentExecutionService.instance.launchExperimentOnServer).toHaveBeenCalledWith(
+      mockExperiment.id,
+      undefined,
+      mockExperiment.configuration.configFile,
+      mockExperiment.devServer,
+      undefined,
+      expect.any(Function)
+    );
   });
 
   test('can launch an experiment given a specific server + configuration', async () => {
@@ -129,7 +167,7 @@ describe('ExperimentExecutionService', () => {
     let callParams = [experimentID, privateExperiment, configFile, serverID, serverConfiguration,
       progressCallback];
 
-    let result = await ExperimentExecutionService.instance.launchExperimentOnServer(...callParams);
+    await ExperimentExecutionService.instance.launchExperimentOnServer(...callParams);
     expect(ExperimentExecutionService.instance.httpRequestPOST)
       .toHaveBeenLastCalledWith(serverConfiguration['nrp-services'] + '/simulation', expect.any(String));
 
@@ -140,7 +178,7 @@ describe('ExperimentExecutionService', () => {
       .rejects.toEqual(simulationReadyError);
   });
 
-  test.skip('should be able to stop an experiment', async () => {
+  test('should be able to stop an experiment', async () => {
     let getStateResult = undefined;
     jest.spyOn(SimulationService.instance, 'getState').mockImplementation(() => {
       return getStateResult;
@@ -149,7 +187,9 @@ describe('ExperimentExecutionService', () => {
     jest.spyOn(SimulationService.instance, 'updateState').mockImplementation(() => {
       return updateStateResult;
     });
-
+    jest.spyOn(ServerResourcesService.instance, 'getServerConfig').mockImplementation(async () => {
+      return MockServerConfig;
+    });
     let simulation = {
       server: 'test-server',
       runningSimulation: {
@@ -173,13 +213,20 @@ describe('ExperimentExecutionService', () => {
     expect(SimulationService.instance.updateState).toHaveBeenCalledWith(
       expect.any(String), expect.any(String), EXPERIMENT_STATE.STOPPED);
 
-    // shutdown a HALTED simulation
+    // shutdown a STOPPED simulation
     SimulationService.instance.updateState.mockClear();
-    getStateResult = Promise.resolve({ state: EXPERIMENT_STATE.HALTED });
+    getStateResult = Promise.resolve({ state: EXPERIMENT_STATE.STOPPED });
     await ExperimentExecutionService.instance.shutdownExperiment(simulation);
     expect(SimulationService.instance.updateState).toHaveBeenCalledTimes(1);
     expect(SimulationService.instance.updateState).toHaveBeenCalledWith(
       expect.any(String), expect.any(String), EXPERIMENT_STATE.STOPPED);
+
+    // shutdown a FAILED simulation
+    SimulationService.instance.updateState.mockClear();
+    getStateResult = Promise.resolve({ state: EXPERIMENT_STATE.FAILED });
+    await expect(ExperimentExecutionService.instance.shutdownExperiment(simulation))
+      .rejects.toEqual();
+    expect(SimulationService.instance.updateState).toHaveBeenCalledTimes(0);
 
     // shutdown a simulation in an undefined state, error
     SimulationService.instance.updateState.mockClear();

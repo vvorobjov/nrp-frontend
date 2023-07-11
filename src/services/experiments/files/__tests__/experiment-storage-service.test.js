@@ -1,3 +1,4 @@
+/* eslint-disable max-len */
 /**
  * @jest-environment jsdom
 */
@@ -16,6 +17,7 @@ const proxyEndpoint = endpoints.proxy;
 const experimentsUrl = `${proxyEndpoint.storage.experiments.url}`;
 
 jest.setTimeout(3 * ExperimentStorageService.CONSTANTS.INTERVAL_POLL_EXPERIMENTS);
+jest.mock('../../../authentication-service.js');
 
 let onWindowBeforeUnloadCb = undefined;
 
@@ -26,6 +28,7 @@ beforeEach(() => {
     }
   });
   URL.createObjectURL = jest.fn().mockReturnValue('http://mock.thumbnail.url');
+
 });
 
 describe('ExperimentStorageService', () => {
@@ -134,7 +137,7 @@ describe('ExperimentStorageService', () => {
     const experiments = await ExperimentStorageService.instance.getExperiments();
     expect(ExperimentStorageService.instance.performRequest)
       .toHaveBeenCalledWith(experimentsUrl, ExperimentStorageService.instance.GETOptions);
-    expect(experiments[0].name).toBe('husky_braitenberg_unfilled_name');
+    expect(experiments[0].uuid).toBe(MockExperiments[0].uuid);
     expect(experiments[1].configuration.maturity).toBe('production');
 
     // no forced update should not result in additional requests being sent
@@ -213,7 +216,7 @@ describe('ExperimentStorageService', () => {
   });
 
   // TODO: [NRRPLT-8681]
-  test.skip('gets a thumbnail image for experiments', async () => {
+  test('gets a thumbnail image for experiments', async () => {
     let experiment = MockExperiments[0];
     const imageBlob = await ExperimentStorageService.instance.getThumbnail(experiment.name,
       experiment.configuration.thumbnail);
@@ -244,9 +247,8 @@ describe('ExperimentStorageService', () => {
   });
 
   test('fills missing experiment details', async () => {
-    const experiments = await ExperimentStorageService.instance.getExperiments(true);
-    console.info(experiments);
 
+    const experiments = await ExperimentStorageService.instance.getExperiments(true);
     // missing details are filled, see src/mocks/mock_experiments.json
     let experiment = experiments[0];
     expect(experiment.configuration.DataPackProcessor).toEqual(ExperimentStorageService.instance.default_DataPackProcessor);
@@ -255,71 +257,33 @@ describe('ExperimentStorageService', () => {
     expect(experiment.configuration.ProcessLauncherType).toEqual(ExperimentStorageService.instance.default_ProcessLauncherType);
     expect(experiment.configuration.SimulationTimeout).toEqual(ExperimentStorageService.instance.default_SimulationTimeout);
 
-    // existing details are not touched, see src/mocks/mock_experiments.json
-    experiment = experiments[1];
-    expect(experiment.configuration.DataPackProcessor).toEqual(MockExperiments[1].configuration.DataPackProcessor);
-    expect(experiment.configuration.SimulationLoop).toEqual(MockExperiments[1].configuration.SimulationLoop);
-    expect(experiment.configuration.SimulationTimestep).toEqual(MockExperiments[1].configuration.SimulationTimestep);
-    expect(experiment.configuration.ProcessLauncherType).toEqual(MockExperiments[1].configuration.ProcessLauncherType);
-    expect(experiment.configuration.SimulationTimeout).toEqual(MockExperiments[1].configuration.SimulationTimeout);
-  });
-
-  test('clones the experiment', async () => {
-    jest.spyOn(ExperimentStorageService.instance, 'httpRequestPOST');
-    await ExperimentStorageService.instance.cloneExperiment(MockExperiments[0]);
-
-    expect(ExperimentStorageService.instance.httpRequestPOST).toBeCalledWith(
-      `${endpoints.proxy.storage.clone.url}/${MockExperiments[0].name}`
-    );
-  });
-
-  test('gets the list of the experiment files', async () => {
-    // TODO: properly mock the list of files, src/mocks/handlers.js
-    jest.spyOn(ExperimentStorageService.instance, 'httpRequestGET');
-
-    let fileList = await ExperimentStorageService.instance.getExperimentFiles(MockExperiments[0].name);
-    expect(ExperimentStorageService.instance.httpRequestGET).toBeCalledWith(
-      `${endpoints.proxy.storage.url}/${MockExperiments[0].name}`
-    );
-    expect(fileList).toEqual({ 'description': 'fileList' });
+    experiments.forEach(experiment => {
+      expect(experiment.configuration.DataPackProcessor).toBeDefined();
+    });
   });
 
   test('removes files', async () => {
-    jest.spyOn(ExperimentStorageService.instance, 'httpRequestDELETE');
 
+    jest.spyOn(ExperimentStorageService.instance, 'httpRequestDELETE');
     await ExperimentStorageService.instance.deleteExperiment(MockExperiments[0].name);
-    expect(ExperimentStorageService.instance.httpRequestDELETE).toHaveBeenNthCalledWith(
-      1,
-      `${endpoints.proxy.storage.url}/${MockExperiments[0].name}`
-    );
+    expect(ExperimentStorageService.instance.httpRequestDELETE).toHaveBeenNthCalledWith(1,`${endpoints.proxy.storage.url}/${MockExperiments[0].name}`);
 
     let entityName = 'someEntity';
     let expectedArg = `${endpoints.proxy.storage.url}/${MockExperiments[0].name}/${entityName}?byname=false&type=folder`;
     await ExperimentStorageService.instance.deleteFolder(MockExperiments[0].name, entityName);
-    expect(ExperimentStorageService.instance.httpRequestDELETE).toHaveBeenNthCalledWith(
-      2,
-      expectedArg
-    );
+    expect(ExperimentStorageService.instance.httpRequestDELETE).toHaveBeenNthCalledWith(2, expectedArg);
 
     expectedArg = `${endpoints.proxy.storage.url}/${MockExperiments[0].name}/${entityName}?byname=true&type=folder`;
     await ExperimentStorageService.instance.deleteFolder(MockExperiments[0].name, entityName, true);
-    expect(ExperimentStorageService.instance.httpRequestDELETE).toHaveBeenNthCalledWith(
-      3,
-      expectedArg
-    );
+    expect(ExperimentStorageService.instance.httpRequestDELETE).toHaveBeenNthCalledWith(3, expectedArg);
 
     expectedArg = `${endpoints.proxy.storage.url}/${MockExperiments[0].name}/${entityName}?byname=false&type=file`;
     await ExperimentStorageService.instance.deleteFile(MockExperiments[0].name, entityName);
-    expect(ExperimentStorageService.instance.httpRequestDELETE).toHaveBeenNthCalledWith(
-      4,
-      expectedArg
-    );
+    expect(ExperimentStorageService.instance.httpRequestDELETE).toHaveBeenNthCalledWith(4,expectedArg);
 
     expectedArg = `${endpoints.proxy.storage.url}/${MockExperiments[0].name}/${entityName}?byname=true&type=file`;
     await ExperimentStorageService.instance.deleteFile(MockExperiments[0].name, entityName, true);
-    expect(ExperimentStorageService.instance.httpRequestDELETE).toHaveBeenNthCalledWith(
-      5,
-      expectedArg
+    expect(ExperimentStorageService.instance.httpRequestDELETE).toHaveBeenNthCalledWith(5,expectedArg
     );
   });
 

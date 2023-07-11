@@ -2,7 +2,7 @@
   height: 100vh;
   display: grid;
   grid-template-rows: 200px auto;
-  grid-template-columns: auto minmax(250px, 500px) minmax(250px, 500px) auto;
+  grid-template-columns: auto auto auto auto;
   grid-template-areas:
     "nrp-header nrp-header nrp-header nrp-header"
     "sidebar-left experiments-left experiments-right sidebar-right";
@@ -28,12 +28,8 @@
   background-color: white;
   text-align: left;
   padding: 20px;
-}
-
-.img-experiment-list {
-  width: 100px;
-  height: 100px;
-  padding: 10px;
+  display: flex;
+  flex-direction: row;
 }
 
 .sidebar-left {
@@ -44,4 +40,14 @@
 .sidebar-right {
   grid-area: sidebar-right;
   background-color: white;
+}
+
+.img-experiment-list {
+  width: 100px;
+  height: 100px;
+  padding: 10px;
+}
+
+.nrp-news {
+  border: 0;
 }

@@ -5,13 +5,14 @@
     }
   },
   "auth": {
-    "enableOIDC": false,
+    "enableOIDC": true,
     "clientId": "nrp-test-frontend",
-    "url": "/authentication/loginpage?origin=FS"
+    "url": "https://iam-int.ebrains.eu/auth/"
   },
   "mqtt": {
     "url": "localhost",
     "port": "9000",
+    "websocket": "ws",
     "topics": {
       "base": "nrp_simulation",
       "errors": "runtime_error",

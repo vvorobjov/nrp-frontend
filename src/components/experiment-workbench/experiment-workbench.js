@@ -212,7 +212,9 @@ class ExperimentWorkbench extends React.Component {
 
   async componentDidMount() {
     // Get the simulation ID from ExperimentWorkbenchService, if is defined (for joining the simulation)
-    this.state.runningSimulationID = ExperimentWorkbenchService.instance.simulationID;
+    if (ExperimentWorkbenchService.instance.simulationInfo !== undefined) {
+      this.state.runningSimulationID = ExperimentWorkbenchService.instance.simulationInfo.ID;
+    }
 
     // Update simulation state, if it is defined
     if (this.state.runningSimulationID !== undefined) {
@@ -255,7 +257,7 @@ class ExperimentWorkbench extends React.Component {
       this.onUpdateServerAvailability
     );
     // Remove the simulation when we leave the workbench
-    ExperimentWorkbenchService.instance.simulationID = undefined;
+    ExperimentWorkbenchService.instance.simulationInfo = undefined;
   }
 
   /**
@@ -283,9 +285,9 @@ class ExperimentWorkbench extends React.Component {
           DialogService.instance.progressNotification({
             message: 'The experiment is ' + this.state.simulationState
           });
-          // clear simulationID for the finilized experiments
+          // clear simulationInfo for the finilized experiments
           if (EXPERIMENT_FINAL_STATE.includes(this.state.simulationState)) {
-            ExperimentWorkbenchService.instance.simulationID = undefined;
+            ExperimentWorkbenchService.instance.simulationInfo = undefined;
             this.setState({ runningSimulationID: undefined });
           }
         }
@@ -320,7 +322,10 @@ class ExperimentWorkbench extends React.Component {
         const simInfo = await simRespose['simulation'].json();
         // TODO: get proper simulation information
         if (simInfo) {
-          ExperimentWorkbenchService.instance.simulationID = simInfo.simulationID;
+          ExperimentWorkbenchService.instance.simulationInfo = {
+            ID: simInfo.simulationID,
+            MQTTPrefix: simInfo.MQTTPrefix
+          };
           this.setState({ runningSimulationID: simInfo.simulationID });
           // get the simulationState from MQTT only
           this.setState({ simStateLoading: true });
@@ -361,7 +366,7 @@ class ExperimentWorkbench extends React.Component {
     await this.setSimulationState(newState).then(() => {
       if (this.state.simulationState === EXPERIMENT_STATE.STOPPED) {
         this.setState({ runningSimulationID: undefined });
-        ExperimentWorkbenchService.instance.simulationID = undefined;
+        ExperimentWorkbenchService.instance.simulationInfo = undefined;
       }
     });
   }
@@ -379,8 +384,8 @@ class ExperimentWorkbench extends React.Component {
         if (simInfo.state === EXPERIMENT_STATE.STOPPED) {
           this.setState({ simulationState: simInfo.state });
           this.setState({ simStateLoading: false });
-          // clear simulationID for the finilized experiments
-          ExperimentWorkbenchService.instance.simulationID = undefined;
+          // clear simulationInfo for the finilized experiments
+          ExperimentWorkbenchService.instance.simulationInfo = undefined;
           this.setState({ runningSimulationID: undefined });
         }
       });

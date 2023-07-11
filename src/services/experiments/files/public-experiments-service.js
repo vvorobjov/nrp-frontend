@@ -83,7 +83,8 @@ class PublicExperimentsService extends HttpProxyService {
           DialogService.instance.networkError(error);
         }
         else {
-          DialogService.instance.unexpectedError(error);
+          const unexpectedError = error || {type : 'unexpected error'};
+          DialogService.instance.unexpectedError(unexpectedError);
         }
       }
     }

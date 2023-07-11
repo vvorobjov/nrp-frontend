@@ -37,19 +37,16 @@ class ExperimentExecutionService extends HttpService {
    * @param {object} experiment - experiment description
    * @param {boolean} launchSingleMode - launch in single mode
    */
-  async startNewExperiment(
-    experiment
-  ) {
+  async startNewExperiment(experiment) {
     //TODO: implement NrpAnalyticsService functionality
     //NrpAnalyticsService.instance.eventTrack('Start', { category: 'Experiment' });
     //NrpAnalyticsService.instance.tickDurationEvent('Server-initialization');
 
     ExperimentExecutionService.instance.emit(ExperimentExecutionService.EVENTS.START_EXPERIMENT, experiment);
-
-    let fatalErrorOccurred = false;
     let serversToTry = experiment.devServer
       ? [experiment.devServer]
-      : (await ServerResourcesService.instance.getServerAvailability(true)).map(s => s.id);
+      : (await ServerResourcesService.instance.getServerAvailability(true))
+        .map(s => s.id);
 
     //TODO: placeholder, register actual progress callback later
     let progressCallback = (msg) => {
@@ -65,38 +62,47 @@ class ExperimentExecutionService extends HttpService {
         }
       }
     };
+    let serverConfig;
+    let serverFound = false;
+    let serverID;
+    for (let server of serversToTry){
+      try {
+        serverConfig = await ServerResourcesService.instance.getServerConfig(server);
+        serverID = server;
+        serverFound = true;
+        break;
+      }
+      catch (error) {
+        continue;
+      }
+    }
 
-    let launchOnNextServer = async () => {
-      if (!serversToTry.length) {
+    return await this.launchExperimentOnServer(
+      experiment.id,
+      experiment.private,
+      experiment.configuration.configFile,
+      serverID,
+      serverConfig,
+      progressCallback
+    ).catch((failure) => {
+      if (failure && failure.isFatal) {
+        return Promise.reject(ExperimentExecutionService.ERRORS.LAUNCH_FATAL_ERROR);
+
+      }
+      else if (failure && failure.error) {
+        DialogService.instance.simulationError(failure.error);
+        return Promise.reject(ExperimentExecutionService.ERRORS.LAUNCH_NO_SERVERS_LEFT);
+      }
+      else if (!failure) {
+        return Promise.reject(ExperimentExecutionService.ERRORS.LAUNCH_FATAL_ERROR);
+
+      }
+
+      if (!serverFound) {
         //TODO: GUI feedback
         return Promise.reject(ExperimentExecutionService.ERRORS.LAUNCH_NO_SERVERS_LEFT);
       }
-      if (fatalErrorOccurred) {
-        //TODO: GUI feedback
-        return Promise.reject(ExperimentExecutionService.ERRORS.LAUNCH_FATAL_ERROR);
-      }
-
-      let serverID = serversToTry.splice(0, 1)[0];
-      let serverConfig = await ServerResourcesService.instance.getServerConfig(serverID);
-
-      return await this.launchExperimentOnServer(
-        experiment.id,
-        experiment.private,
-        experiment.configuration.configFile,
-        serverID,
-        serverConfig,
-        progressCallback
-      ).catch((failure) => {
-        if (failure) {
-          DialogService.instance.simulationError(failure);
-        }
-        fatalErrorOccurred = fatalErrorOccurred || failure.isFatal;
-
-        return launchOnNextServer();
-      });
-    };
-
-    return launchOnNextServer();
+    });
   };
 
   /**
@@ -176,12 +182,16 @@ class ExperimentExecutionService extends HttpService {
         simulationID: simulation.runningSimulation.experimentID
       });*/
 
+      let serverURL;
+      let simulationID;
+
       ServerResourcesService.instance
         .getServerConfig(simulation.server)
         .then((serverConfig) => {
-          let serverURL = serverConfig['nrp-services'];
-          let simulationID = simulation.runningSimulation.simulationID;
-
+          if (serverConfig) {
+            serverURL = serverConfig['nrp-services'];
+            simulationID = simulation.runningSimulation.simulationID;
+          }
           function updateSimulationState(state) {
             /*eslint-disable camelcase*/
             return SimulationService.instance.updateState(

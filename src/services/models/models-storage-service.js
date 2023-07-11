@@ -79,6 +79,7 @@ class ModelsStorageService extends HttpProxyService {
       return (await this.httpRequestGET(customModelsURL)).json();
     }
     catch (error) {
+      error = error || { type : 'unexpected error'};
       DialogService.instance.networkError(error);
     }
   }

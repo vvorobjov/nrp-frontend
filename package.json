@@ -11,10 +11,11 @@
     "coveragePathIgnorePatterns": [
       "src/services/experiments/execution/running-simulation-service.js",
       "src/services/roslib-service.js",
-      "src/services/experiments/files/import-experiment-service.js"
+      "src/services/experiments/files/import-experiment-service.js",
+      "src/services/experiments/files/remote-experiment-files-service.js"
     ]
   },
-  "version": "0.1.0",
+  "version": "4.0.0",
   "private": true,
   "dependencies": {
     "@babel/runtime": "^7.20.13",
@@ -30,6 +31,7 @@
     "google-protobuf": "3.21.0",
     "jquery": "3.6.0",
     "jszip": "3.2.0",
+    "keycloak-js": "21.1.1",
     "mqtt": "4.3.5",
     "nrp-jsproto": "1.1.1-alpha.20",
     "protobufjs": "6.11.2",

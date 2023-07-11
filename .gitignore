@@ -51,8 +51,11 @@ Thumbs.db
 *.mov
 *.wmv
 
-src/config.json
+src/config.json*
 coverage
 junit.xml
 src/config.json.local
 src/config.json.*
+
+!src/config.json.sample.docker 
+!src/config.json.sample.oidc
