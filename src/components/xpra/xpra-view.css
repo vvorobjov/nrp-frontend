@@ -1,0 +1,18 @@
+.xpra-view-wrapper {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.xpra-url-selector-header {
+    display: flex;
+    flex-direction: row;
+}
+
+.xpra-url-dropdown-selector {
+    margin-left: 10px;
+}
+
+.note-no-streams {
+    margin: 20px;
+}

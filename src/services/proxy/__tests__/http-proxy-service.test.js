@@ -2,10 +2,10 @@
  * @jest-environment jsdom
 */
 import '@testing-library/jest-dom';
-import 'jest-fetch-mock';
 
 import { HttpProxyService } from '../http-proxy-service';
-import AuthenticationService from '../../authentication-service';
+import EventProxyService from '../event-proxy-service';
+jest.mock('../../authentication-service.js');
 
 const mockURL = 'http://test.url';
 const mockEndpoint = '/test/endpoint';
@@ -105,5 +105,43 @@ describe('HttpProxyService', () => {
     expect(httpService.createRequestURL('/api/endpoint', {q: 'a'})).toEqual('/api/endpoint?q=a');
     expect(httpService.createRequestURL('/api', {q: 'a', a: 'q'})).toEqual('/api?q=a&a=q');
     expect(httpService.createRequestURL('/api', {q: 'a', a: 'q'}, 'tag')).toEqual('/api?q=a&a=q#tag');
+  });
+
+  test('emits DISCONNECTED after 3 subsequent failed requests', async () => {
+    let mockResponse = {};
+
+    const httpService = new HttpProxyService();
+    let spyFetch = jest.spyOn(global, 'fetch');
+
+    // Prepare fetch mock to throw exceptions
+    spyFetch.mockImplementationOnce(() => Promise.reject('Failed request'));
+    spyFetch.mockImplementationOnce(() => Promise.reject('Failed request'));
+    spyFetch.mockImplementationOnce(() =>
+      Promise.resolve({ status: 200, ok: true, json: () => Promise.resolve({}) })
+    );
+    spyFetch.mockImplementationOnce(() => Promise.reject('Failed request'));
+    spyFetch.mockImplementationOnce(() => Promise.reject('Failed request'));
+    spyFetch.mockImplementationOnce(() => Promise.reject('Failed request'));
+    
+    // Mock the emitDisconnected method
+    const emitDisconnectedSpy = jest.spyOn(EventProxyService.instance, 'emitDisconnected');
+    const emitConnectedSpy = jest.spyOn(EventProxyService.instance, 'emitConnected');
+
+    // The first 2 requests should be 404 but not emit DISCONNECTED
+    expect((await httpService.httpRequestGET(mockEndpoint)).ok).toBe(false);
+    expect((await httpService.httpRequestGET(mockEndpoint)).ok).toBe(false);
+    // The OK request should reset the counter
+    expect((await httpService.httpRequestGET(mockEndpoint)).ok).toBe(true);
+    expect(emitConnectedSpy).toHaveBeenCalledTimes(1);
+
+    expect((await httpService.httpRequestGET(mockEndpoint)).ok).toBe(false);
+    expect((await httpService.httpRequestGET(mockEndpoint)).ok).toBe(false);
+    expect(emitDisconnectedSpy).not.toHaveBeenCalled();
+    try {
+      await httpService.httpRequestGET(mockEndpoint);
+    }
+    catch (error) {
+      expect(emitDisconnectedSpy).toHaveBeenCalledTimes(1);
+    }
   });
 });

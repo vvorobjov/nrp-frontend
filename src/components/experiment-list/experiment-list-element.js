@@ -1,7 +1,7 @@
 import React from 'react';
 // import { Link, useHistory } from 'react-router-dom';
 import { withRouter } from 'react-router-dom';
-import { FaTrash, FaFileExport, FaShareAlt, FaClone, FaBullseye, FaLastfmSquare } from 'react-icons/fa';
+import { FaTrash, FaFileExport, FaShareAlt, FaClone } from 'react-icons/fa';
 // import { MdOutlineDownloadDone } from 'react-icons/md';
 // import { RiPlayFill, RiPlayLine, RiPlayList2Fill } from 'react-icons/ri';
 // import { GoX } from 'react-icons/go';
@@ -49,7 +49,7 @@ class ExperimentListElement extends React.Component {
   }
 
   async componentDidMount() {
-    this.state.edibleName = this.state.visibleName;
+    this.setState({ edibleName: this.state.visibleName });
     this.handleClickOutside = this.handleClickOutside.bind(this);
     document.addEventListener('mousedown', this.handleClickOutside);
   }

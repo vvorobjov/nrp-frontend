@@ -1,4 +1,5 @@
 import mqtt from 'mqtt';
+import { v4 as uuidv4 } from 'uuid';
 import { EventEmitter } from 'events';
 
 //import { DataPackMessage } from 'nrp-jsproto/engine_grpc_pb';
@@ -30,7 +31,7 @@ export default class MqttClientService extends EventEmitter {
     this.subTokensMap = new Map();
     this.topicAndDataTypeList = new Map();
 
-    // Since it's a- singleton, shoud the url be defined here?
+    // Since it's a singleton, shoud the url be defined here?
     const websocket_s = frontendConfig.mqtt.websocket ? frontendConfig.mqtt.websocket : 'ws';
     this.mqttBrokerUrl = websocket_s + '://' + frontendConfig.mqtt.url + ':' + frontendConfig.mqtt.port;
 
@@ -68,7 +69,7 @@ export default class MqttClientService extends EventEmitter {
 
   connect() {
     console.info('MQTT connecting to ' + this.mqttBrokerUrl + ' ...');
-    this.client = mqtt.connect(this.mqttBrokerUrl, { clientId: 'nrp-frontend'});
+    this.client = mqtt.connect(this.mqttBrokerUrl, { clientId: 'nrp-frontend_' + uuidv4() });
     this.client.on('connect', () => {
       this.onConnect();
     });

@@ -1,5 +1,5 @@
 import React from 'react';
-import { FaStop, FaStopCircle } from 'react-icons/fa';
+import { FaStop } from 'react-icons/fa';
 import { ImEnter } from 'react-icons/im';
 import { withRouter } from 'react-router-dom';
 

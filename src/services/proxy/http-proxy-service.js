@@ -12,6 +12,8 @@ export class NRPProxyError extends Error {
   }
 }
 
+const MAX_FAILED_REQUESTS = 3;
+
 /**
  * Class that performs http requests with default request options to proxy
  * and monitors proxy connectivity.
@@ -27,6 +29,7 @@ export class HttpProxyService extends HttpService {
 
     this.proxyURL = new URL(config.api.proxy.url);
     this.connected = true;
+    this.failedRequestsCount = 0;
   }
 
   /**
@@ -71,17 +74,20 @@ export class HttpProxyService extends HttpService {
     let response;
 
     try {
-      // try to fetch the request
       response = await fetch(requestURL, options);
-      // emit CONNECTED event, if needed
       EventProxyService.instance.emitConnected();
+      this.failedRequestsCount = 0;
     }
-    catch {
-      // Throw NRPProxyError once
-      EventProxyService.instance.emitDisconnected({
-        code: requestURL.href,
-        data: JSON.stringify(options, null, 4)
-      });
+    catch (error) {
+      this.failedRequestsCount++;
+      if (this.failedRequestsCount >= MAX_FAILED_REQUESTS) {
+        EventProxyService.instance.emitDisconnected({
+          code: requestURL.href,
+          data:
+            'Error occured: \n' + error.message + '\nwith options:\n' + JSON.stringify(options, null, 4)
+        });
+      }
+      // TODO: the Error is thrown (emitDisconnected) before the response is generated ??
       return new Response(JSON.stringify([]), {status: 404});
     }
 

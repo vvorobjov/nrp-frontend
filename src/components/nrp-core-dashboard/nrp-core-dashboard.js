@@ -5,6 +5,8 @@ import NrpUserService from '../../services/proxy/nrp-user-service.js';
 import EventProxyService from '../../services/proxy/event-proxy-service';
 import ExperimentStorageService from '../../services/experiments/files/experiment-storage-service';
 
+import frontendConfig from '../../config.json';
+
 import Grid from '@material-ui/core/Grid';
 import { Alert, AlertTitle } from '@material-ui/lab';
 import Button from '@material-ui/core/Button';
@@ -29,6 +31,9 @@ export default class NrpCoreDashboard extends React.Component {
       proxyConnected: EventProxyService.instance.isConnected(),
       reconnectDisabled: EventProxyService.instance.isConnected()
     };
+    // By default, we enable the scan storage button, even if it's not in the config.
+    // For the online version, we explicitly disable it.
+    this.scanStorage = frontendConfig.scanStorage !== undefined ? frontendConfig.scanStorage : true;
 
     this.mqttBrokerUrl = MqttClientService.instance.getBrokerURL();
   }
@@ -130,11 +135,15 @@ export default class NrpCoreDashboard extends React.Component {
             {this.state.proxyConnected ? 'Connected' : 'Could not get response from the Proxy'}
           </Alert>
         </Grid>
-        <Grid item xs={12}>
-          <Button onClick={this.triggerProxyScanStorage} disabled={!this.state.proxyConnected}>
-            Proxy Scan Storage
-          </Button>
-        </Grid>
+        {
+          this.scanStorage ?
+            <Grid item xs={12}>
+              <Button onClick={this.triggerProxyScanStorage} disabled={!this.state.proxyConnected}>
+                Proxy Scan Storage
+              </Button>
+            </Grid> :
+            null
+        }
         {/*<Grid item xs={12}>
           <button onClick={NrpUserService.instance.getCurrentUser()}>Try to login</button>
           </Grid> */}
