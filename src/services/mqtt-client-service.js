@@ -29,7 +29,6 @@ export default class MqttClientService extends EventEmitter {
     };
 
     this.subTokensMap = new Map();
-    this.topicAndDataTypeList = new Map();
 
     // Since it's a singleton, shoud the url be defined here?
     const websocket_s = frontendConfig.mqtt.websocket ? frontendConfig.mqtt.websocket : 'ws';
@@ -37,14 +36,6 @@ export default class MqttClientService extends EventEmitter {
 
     this.connect();
 
-    ExperimentWorkbenchService.instance.on(
-      ExperimentWorkbenchService.EVENTS.SIMULATION_SET,
-      (simulationInfo) => {
-        this.subscribeToTopic('nrp_simulation/' + simulationInfo.ID + '/data', (topicInfo) => {
-          this.topicAndDataTypeList.set(topicInfo);
-        });
-      }
-    );
   }
 
   static get instance() {
@@ -106,9 +97,9 @@ export default class MqttClientService extends EventEmitter {
     }
 
     //See if the topic is the summary of experiments
-    if (topic.match(/nrp_simulation/[0-9]*/data/g) !== null) {
-      this.topicAndDataTypeList.set(payload);
-    }
+    //if (topic.match(/nrp_simulation/[0-9]*/data/g) !== null) {
+    //  this.topicAndDataTypeList.set(payload);
+    //}
 
     //Now we see which callbacks have been assigned for a topic
     let subTokens = this.subTokensMap.get(topic);
@@ -142,14 +133,6 @@ export default class MqttClientService extends EventEmitter {
       );
     }
     return token;
-  }
-
-  getTopicList() {
-    return Array.from(this.topicAndDataTypeList.keys());
-  }
-
-  getDataType(topic) {
-    return this.topicAndDataTypeList.get(topic);
   }
 
   unsubscribe(unsubToken) {
