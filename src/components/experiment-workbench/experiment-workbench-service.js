@@ -24,6 +24,7 @@ class ExperimentWorkbenchService extends EventEmitter {
     this._statusToken = undefined;
     this._xpraUrlsConfig = [];
     this._xpraUrlsConfirmed = [];
+    this._topicAndDataTypeList = new Map();
   }
 
   static get instance() {
@@ -63,6 +64,13 @@ class ExperimentWorkbenchService extends EventEmitter {
   }
   set simulationState(state) {
     this._simulationState = state;
+  }
+
+  get topicList() {
+    return Array.from(this.topicAndDataTypeList.keys());
+  }
+  set topicList(topicList) {
+    this._topicAndDataTypeList = topicList;
   }
 
   /**
@@ -156,6 +164,10 @@ class ExperimentWorkbenchService extends EventEmitter {
       MqttClientService.instance.unsubscribe(this._statusToken);
       this._statusToken = undefined;
     }
+    if (this._topicsToken) {
+      MqttClientService.instance.unsubscribe(this._topicsToken);
+      this._topicsToken = undefined;
+    }
     if (simulationInfo !== undefined) {
       const mqttTopics = MqttClientService.instance.getConfig().mqtt.topics;
       const topicBase = simulationInfo.MQTTPrefix ?
@@ -170,6 +182,13 @@ class ExperimentWorkbenchService extends EventEmitter {
       const statusTopic = topicBase + MqttClientService.instance.getConfig().mqtt.topics.status;
       const statusToken = MqttClientService.instance.subscribeToTopic(statusTopic, this.statusMsgHandler);
       this._statusToken = statusToken;
+
+      // assign topics MQTT topic
+      const topicsTopic = 'nrp_simulation/' + simulationInfo.ID + '/data';
+      const topicsToken = MqttClientService.instance.subscribeToTopic(topicsTopic, (topicInfo) => {
+        this.setTopics(topicInfo);
+      });
+      this._topicsToken = topicsToken;
     }
   }
 
@@ -227,7 +246,12 @@ class ExperimentWorkbenchService extends EventEmitter {
       });
     }
   }
+
+  getDataType(topic){
+    return this.topicAndDataTypeList.get(topic);
+  }
 }
+
 
 export default ExperimentWorkbenchService;
 
