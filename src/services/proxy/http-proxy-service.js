@@ -74,17 +74,13 @@ export class HttpProxyService extends HttpService {
     let response;
 
     try {
-      // try to fetch the request
       response = await fetch(requestURL, options);
-      // emit CONNECTED event, if needed
       EventProxyService.instance.emitConnected();
       this.failedRequestsCount = 0;
     }
     catch (error) {
-      this.failedRequestsCount++; // increment counter on unsuccessful request
-      // only emit event after MAX_FAILED_REQUESTS unsuccessful requests
+      this.failedRequestsCount++;
       if (this.failedRequestsCount >= MAX_FAILED_REQUESTS) {
-        // emit DISCONNECTED event
         EventProxyService.instance.emitDisconnected({
           code: requestURL.href,
           data:
