@@ -88,11 +88,11 @@ export class HttpService extends EventEmitter {
    */
   httpRequestPOST = async (url, data, options) => {
     // copy to avoid messing up the options object in case we need to reuse it
-    let { ...postOptions } = this.POSTOptions;
+    let { ...postOptions } = this.PUTOptions;
     if (options) {
       postOptions = options;
     }
-
+    console.info('sending my put request : ', url);
     return this.performRequest(url, postOptions, data);
   };
 

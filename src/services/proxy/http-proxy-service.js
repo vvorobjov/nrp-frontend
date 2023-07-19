@@ -82,7 +82,8 @@ export class HttpProxyService extends HttpService {
     }
     catch (error) {
       this.failedRequestsCount++; // increment counter on unsuccessful request
-      if (this.failedRequestsCount >= MAX_FAILED_REQUESTS) { // only emit event after MAX_FAILED_REQUESTS unsuccessful requests
+      // only emit event after MAX_FAILED_REQUESTS unsuccessful requests
+      if (this.failedRequestsCount >= MAX_FAILED_REQUESTS) {
         // emit DISCONNECTED event
         EventProxyService.instance.emitDisconnected({
           code: requestURL.href,
