@@ -181,7 +181,7 @@ class ExperimentStorageService extends HttpProxyService {
    */
   async cloneExperiment(experiment) {
     let experimentName = experiment.name;
-    this.httpRequestPOST(cloneURL + '/' + experimentName);
+    this.httpRequestPUT(cloneURL + '/' + experimentName);
   }
 
   /**
@@ -346,7 +346,7 @@ class ExperimentStorageService extends HttpProxyService {
 
   async renameExperiment(experimentID, newName) {
     const url = storageExperimentsURL + '/' + experimentID + '/rename';
-    return await this.httpRequestPOST(url, JSON.stringify({newSimulationName: newName}));
+    return await this.httpRequestPUT(url, JSON.stringify({newSimulationName: newName}));
   }
 }
 
