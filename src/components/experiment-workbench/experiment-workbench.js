@@ -1,6 +1,8 @@
 import React from 'react';
 import FlexLayout from 'flexlayout-react';
 
+import { withCookies } from 'react-cookie';
+
 import ExperimentToolsService from './experiment-tools-service';
 import ExperimentWorkbenchService from './experiment-workbench-service';
 import ExperimentTimeBox from './experiment-time-box';
@@ -203,6 +205,7 @@ class ExperimentWorkbench extends React.Component {
 
   async componentDidMount() {
     await ExperimentWorkbenchService.instance.initExperimentInformation(this.experimentID);
+    this.updateLastExperiments();
 
     if (ExperimentWorkbenchService.instance.experimentInfo) {
       this.setState({experimentConfiguration: ExperimentWorkbenchService.instance.experimentInfo.configuration});
@@ -237,16 +240,43 @@ class ExperimentWorkbench extends React.Component {
     );
   }
 
+  updateLastExperiments(){
+    const {cookies} = this.props;
+    var experimentIDs = undefined;
+    experimentIDs = cookies.get('experimentIDs');
+    if (experimentIDs) {
+      var isIn = false;
+      var index = 0;
+      experimentIDs.forEach((expID) =>{
+        if (this.experimentID===expID) {
+          index = experimentIDs.indexOf(expID);
+          isIn = true;
+        }
+      });
+      // ensure no duplicates
+      if (isIn) {
+        experimentIDs.splice(index, 1);
+      }
+      experimentIDs = [this.experimentID, ...experimentIDs];
+      // limit to max 3 experimentIDs
+      if (experimentIDs.length > 3) {
+        experimentIDs = experimentIDs.slice(0, 3);
+      }
+    }
+    else {
+      experimentIDs = [this.experimentID];
+    }
+    cookies.set('experimentIDs', experimentIDs, { path: '/' });
+  }
+
   async componentDidUpdate() {
   }
 
   async componentWillUnmount() {
-    // Subscribe to SIMULATION_STATUS_UPDATED events
     ExperimentWorkbenchService.instance.removeListener(
       ExperimentWorkbenchService.EVENTS.SIMULATION_STATUS_UPDATED,
       this.updateSimulationStatus
     );
-    // Subscribe to UPDATE_SERVER_AVAILABILITY events
     ServerResourcesService.instance.removeListener(
       ServerResourcesService.EVENTS.UPDATE_SERVER_AVAILABILITY,
       this.onUpdateServerAvailability
@@ -629,7 +659,7 @@ ExperimentWorkbench.propTypes = {
   classes: PropTypes.object.isRequired
 };
 
-export default withStyles(useStyles)(ExperimentWorkbench);
+export default withCookies(withStyles(useStyles)(ExperimentWorkbench));
 
 ExperimentWorkbench.CONSTANTS = Object.freeze({
   INTERVAL_INTERNAL_UPDATE_MS: 1000

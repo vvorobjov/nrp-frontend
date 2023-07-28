@@ -8,6 +8,7 @@ import { SIM_TOOL } from '../constants';
 
 const appConfig = window.appConfig;
 
+
 let _instance = null;
 const SINGLETON_ENFORCER = Symbol();
 
