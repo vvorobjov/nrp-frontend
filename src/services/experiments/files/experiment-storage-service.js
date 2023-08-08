@@ -185,6 +185,25 @@ class ExperimentStorageService extends HttpProxyService {
   }
 
   /**
+   * Export a storage experiment
+   * @param {Object} experiment The Experiment configuration
+   */
+  async exportExperiment(experiment) {
+    let experimentName = experiment.name;
+    const url = storageExperimentsURL + '/' + experimentName + '/zip';
+
+    try {
+      const response = await this.httpRequestGET(url);
+      const blob = await response.blob();
+      const objectUrl = URL.createObjectURL(blob);
+      return objectUrl;
+    }
+    catch (err) {
+      DialogService.instance.unexpectedError({ error: 'Failed to export the experiment.', data: err });
+    }
+  }
+
+  /**
    * Gets an experiment file from the storage.
    * @param {string} experimentDirectoryPath - path of experiment folder + possibly subfolders
    * @param {string} filename - name of the file

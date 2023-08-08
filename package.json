@@ -28,6 +28,7 @@
     "@uiw/react-codemirror": "4.12.4",
     "babel-preset-react-app": "^7.0.0",
     "bootstrap": "4.5",
+    "file-saver": "^2.0.5",
     "flexlayout-react": "0.5.5",
     "google-protobuf": "3.21.0",
     "jquery": "3.6.0",
