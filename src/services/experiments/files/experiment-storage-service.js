@@ -307,7 +307,6 @@ class ExperimentStorageService extends HttpProxyService {
    */
   async setFile(experimentName, filename, data, byname = true, contentType = 'text/plain') {
     let directory = experimentName.replace(/[\/]/g, '%2F');
-    console.info(`${endpoints.proxy.storage.url}/${directory}/${filename}`);
     const url = this.createRequestURL(
       `${endpoints.proxy.storage.url}/${directory}/${filename}`,
       {

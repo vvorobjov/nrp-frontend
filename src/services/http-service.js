@@ -92,7 +92,6 @@ export class HttpService extends EventEmitter {
     if (options) {
       postOptions = options;
     }
-    console.info('sending my put request : ', url);
     return this.performRequest(url, postOptions, data);
   };
 
@@ -106,7 +105,6 @@ export class HttpService extends EventEmitter {
     if (options) {
       putOptions = options;
     }
-
     return this.performRequest(url, putOptions, data);
   };
 
