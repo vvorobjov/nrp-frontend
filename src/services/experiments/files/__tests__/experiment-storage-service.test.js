@@ -244,4 +244,15 @@ describe('ExperimentStorageService', () => {
     // unknown data type should give an error
     expect(res4).toBeInstanceOf(Error);
   });
+
+  test('export experiment', async () => {
+    jest.spyOn(ExperimentStorageService.instance, 'httpRequestGET');
+
+    await ExperimentStorageService.instance.exportExperiment(MockExperiments[0]);
+
+    let expectedArg = `${endpoints.proxy.storage.experiments.url}/${MockExperiments[0].name}/zip`;
+    expect(ExperimentStorageService.instance.httpRequestGET).toHaveBeenCalledWith(
+      expectedArg
+    );
+  });
 });

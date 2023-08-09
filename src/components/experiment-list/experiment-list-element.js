@@ -25,6 +25,8 @@ import { Button } from 'react-bootstrap';
 import Spinner from 'react-bootstrap/Spinner';
 // import { TiEjectOutline } from 'react-icons/ti';
 
+import { saveAs } from 'file-saver';
+
 const CLUSTER_THRESHOLDS = {
   UNAVAILABLE: 2,
   AVAILABLE: 4
@@ -40,7 +42,8 @@ class ExperimentListElement extends React.Component {
       nameEditingVisible: false,
       templateTab: props.templateTab,
       visibleName: props.experiment.configuration.SimulationName,
-      cloneInProgress: false
+      cloneInProgress: false,
+      exportInProgress: false
     };
 
     this.launchButtonTitle = '';
@@ -294,13 +297,23 @@ class ExperimentListElement extends React.Component {
                   : null} */}
 
                 {/* Export button */}
-                {exp.rights.launch ?
+                {exp.rights.launch ? (
                   <Button className='nrp-btn btn-default'
                     variant='secondary'
-                    disabled={true}>
-                    <FaFileExport className='icon' />Export
+                    onClick={async () => {
+                      this.setState({ exportInProgress: true });
+                      if (exp.name) {
+                        // Clone storage experiment
+                        const object = await ExperimentStorageService.instance.exportExperiment(exp);
+                        saveAs(object, exp.name + '.zip');
+                        URL.revokeObjectURL(object);
+                      }
+                      this.setState({ exportInProgress: false });
+                    }}
+                    disabled={this.state.exportInProgress}>
+                    <FaFileExport className='icon' />Download
                   </Button>
-                  : null}
+                ) : null}
 
                 {/* Simulations button */}
                 {exp.rights.launch && exp.joinableServers.length > 0 ?
