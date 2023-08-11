@@ -181,7 +181,7 @@ class ExperimentStorageService extends HttpProxyService {
    */
   async cloneExperiment(experiment) {
     let experimentName = experiment.name;
-    this.httpRequestPUT(cloneURL + '/' + experimentName);
+    this.httpRequestPOST(cloneURL + '/' + experimentName);
   }
 
   /**
