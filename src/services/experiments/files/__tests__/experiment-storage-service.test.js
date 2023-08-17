@@ -199,7 +199,7 @@ describe('ExperimentStorageService', () => {
   });
 
   test('creates files', async () => {
-    jest.spyOn(ExperimentStorageService.instance, 'httpRequestPUT');
+    jest.spyOn(ExperimentStorageService.instance, 'httpRequestPOST');
     let data = [];
     let entityName = 'someEntity.txt';
 
@@ -209,11 +209,11 @@ describe('ExperimentStorageService', () => {
     const res4 = await ExperimentStorageService.instance.setFile(MockExperiments[0].name, entityName, data, true, 'throw-error');
 
     // In total, only 3 requests should be sent (4th gives error)
-    expect(ExperimentStorageService.instance.httpRequestPUT).toHaveBeenCalledTimes(3);
+    expect(ExperimentStorageService.instance.httpRequestPOST).toHaveBeenCalledTimes(3);
 
     // checking 1st call
     let expectedArg = `${endpoints.proxy.storage.url}/${MockExperiments[0].name}/${entityName}?byname=true`;
-    expect(ExperimentStorageService.instance.httpRequestPUT).toHaveBeenNthCalledWith(
+    expect(ExperimentStorageService.instance.httpRequestPOST).toHaveBeenNthCalledWith(
       1,
       expectedArg,
       data,
@@ -223,7 +223,7 @@ describe('ExperimentStorageService', () => {
 
     // checking 2nd call
     expectedArg = `${endpoints.proxy.storage.url}/${MockExperiments[0].name}/${entityName}?byname=false`;
-    expect(ExperimentStorageService.instance.httpRequestPUT).toHaveBeenNthCalledWith(
+    expect(ExperimentStorageService.instance.httpRequestPOST).toHaveBeenNthCalledWith(
       2,
       expectedArg,
       JSON.stringify(data),
@@ -233,7 +233,7 @@ describe('ExperimentStorageService', () => {
 
     // checking 3rd call
     expectedArg = `${endpoints.proxy.storage.url}/${MockExperiments[0].name}/${entityName}?byname=true`;
-    expect(ExperimentStorageService.instance.httpRequestPUT).toHaveBeenNthCalledWith(
+    expect(ExperimentStorageService.instance.httpRequestPOST).toHaveBeenNthCalledWith(
       3,
       expectedArg,
       data,

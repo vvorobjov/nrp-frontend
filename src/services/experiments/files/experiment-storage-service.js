@@ -334,19 +334,19 @@ class ExperimentStorageService extends HttpProxyService {
     );
 
     let requestOptions = {
-      ...this.PUTOptions, ...{ headers: { 'Content-Type': contentType } }
+      ...this.POSTOptions, ...{ headers: { 'Content-Type': contentType } }
     };
 
     if (contentType === 'text/plain') {
-      return this.httpRequestPUT(url, data, requestOptions);
+      return this.httpRequestPOST(url, data, requestOptions);
     }
     else if (contentType === 'application/json') {
-      return this.httpRequestPUT(url, JSON.stringify(data), requestOptions);
+      return this.httpRequestPOST(url, JSON.stringify(data), requestOptions);
     }
     else if (contentType === 'application/octet-stream') {
       // placeholder for blob files where the data has to be transormed,
       // possibly to Uint8Array
-      return this.httpRequestPUT(url,/* new Uint8Array(data) */data, requestOptions);
+      return this.httpRequestPOST(url,/* new Uint8Array(data) */data, requestOptions);
     }
     else {
       return new Error('Content-Type for setFile request not specified,' +

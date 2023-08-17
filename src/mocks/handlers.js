@@ -66,10 +66,6 @@ export const handlers = [
     (req, res, ctx) => {
       return res(ctx.json({ 'type': req.headers.get('content-type') }));
     }),
-  rest.put(`${PROXY_URL}${endpoints.proxy.storage.url}/:experimentName/:filename`,
-    (req, res, ctx) => {
-      return res(ctx.json({ 'type': req.headers.get('content-type') }));
-    }),
   rest.get(`${PROXY_URL}${endpoints.proxy.availableServers.url}`, (req, res, ctx) => {
     return res(ctx.json(availableServers));
   }),
