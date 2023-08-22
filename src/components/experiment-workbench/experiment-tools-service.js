@@ -1,7 +1,6 @@
 import FlexLayout from 'flexlayout-react';
 import DescriptionIcon from '@material-ui/icons/Description';
 import ListAltIcon from '@material-ui/icons/ListAlt';
-
 import NrpCoreDashboard from '../nrp-core-dashboard/nrp-core-dashboard';
 import TransceiverFunctionEditor from '../tf-editor/tf-editor';
 import XpraView from '../xpra/xpra-view';
