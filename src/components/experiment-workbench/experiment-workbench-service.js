@@ -71,6 +71,15 @@ class ExperimentWorkbenchService extends EventEmitter {
   }
   set topicList(topicList) {
     this._topicAndDataTypeList = topicList;
+    console.info('set topicList - this._topicAndDataTypeList:');
+    //console.info(this._topicAndDataTypeList);
+    /*console.info(String(topicList));
+    console.info(topicList.buffer.toString());*/
+
+    var enc = new TextDecoder('utf-8');
+    console.info(enc.decode(topicList));
+
+    //console.info(String.fromCharCode.apply(null, topicList.buffer));
   }
 
   /**
@@ -84,7 +93,7 @@ class ExperimentWorkbenchService extends EventEmitter {
   }
   set simulationInfo(simulationInfo) {
     this._simulationInfo = simulationInfo;
-    //console.info(['ExperimentWorkbenchService - simulationInfo', this._simulationInfo]);
+    console.info(['ExperimentWorkbenchService - set simulationInfo', this._simulationInfo]);
     ExperimentWorkbenchService.instance.emit(
       ExperimentWorkbenchService.EVENTS.SIMULATION_SET,
       this._simulationInfo
@@ -135,10 +144,14 @@ class ExperimentWorkbenchService extends EventEmitter {
     if (experimentInfo.joinableServers.length === 1) {
       const runningSimulation = experimentInfo.joinableServers[0].runningSimulation;
       if (runningSimulation) {
-        let serverConfig = await ServerResourcesService.instance.getServerConfig(
+        console.info('runningSimulation');
+        console.info(runningSimulation);
+        this.serverConfig = await ServerResourcesService.instance.getServerConfig(
           experimentInfo.joinableServers[0].server);
-        this.serverURL = serverConfig['nrp-services'];
-        this.xpraConfigUrls = [serverConfig.xpra];
+        console.info('serverConfig');
+        console.info(this.serverConfig);
+        this.serverURL = this.serverConfig['nrp-services'];
+        this.xpraConfigUrls = [this.serverConfig.xpra];
         this.simulationInfo = {
           ID: runningSimulation.simulationID,
           MQTTPrefix: runningSimulation.MQTTPrefix
@@ -156,6 +169,9 @@ class ExperimentWorkbenchService extends EventEmitter {
   }
 
   setTopics = (simulationInfo) => {
+    console.info('ExpWorkbenchService.setTopics()');
+    console.info('ExpWorkbenchService');
+    console.info(simulationInfo);
     if (this._errorToken) {
       MqttClientService.instance.unsubscribe(this._errorToken);
       this._errorToken = undefined;
@@ -184,11 +200,13 @@ class ExperimentWorkbenchService extends EventEmitter {
       this._statusToken = statusToken;
 
       // assign topics MQTT topic
-      const topicsTopic = 'nrp_simulation/' + simulationInfo.ID + '/data';
-      const topicsToken = MqttClientService.instance.subscribeToTopic(topicsTopic, (topicInfo) => {
-        this.setTopics(topicInfo);
+      const topicsTopic = this.serverConfig.id + '/nrp_simulation/' + simulationInfo.ID + '/data';
+      console.info('ExpWorkbenchService.setTopics() - subscribing to ' + topicsTopic);
+      this._topicsToken = MqttClientService.instance.subscribeToTopic(topicsTopic, (topicInfo) => {
+        /*console.info('subCallback ' + topicsTopic + ' received topicInfo:');
+        console.info(topicInfo);*/
+        this.topicList = topicInfo;
       });
-      this._topicsToken = topicsToken;
     }
   }
 

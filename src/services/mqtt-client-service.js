@@ -83,15 +83,24 @@ export default class MqttClientService extends EventEmitter {
     console.info('... MQTT connected');
     console.info(this.client);
     // TODO: filter nrp messages
-    this.client.subscribe('#', (err) => {
+    /*this.client.subscribe('#', (err) => {
       if (err) {
         console.error(err);
       }
-    });
+    });*/
     this.emit(MqttClientService.EVENTS.CONNECTED, this.client);
   }
 
   onMessage(topic, payload, packet) {
+    /*console.info('MqttClientService.onMessage() - topic=' + topic);*/
+    if (topic.includes('/data')) {
+      console.info(topic);
+      console.info(payload);
+      console.info(typeof payload);
+      console.info(packet);
+      console.info(payload.toString());
+      console.info(payload.toJSON());
+    }
     if (typeof payload === 'undefined') {
       return;
     }
@@ -131,6 +140,11 @@ export default class MqttClientService extends EventEmitter {
         token.topic,
         [token]
       );
+      this.client.subscribe(topic, (err) => {
+        if (err) {
+          console.error(err);
+        }
+      });
     }
     return token;
   }
