@@ -8,6 +8,8 @@ import jspb from '../../node_modules/google-protobuf/google-protobuf';
 import frontendConfig from '../config.json';
 import ExperimentWorkbenchService from '../components/experiment-workbench/experiment-workbench-service';
 
+const REGEX_TOPIC_DATATYPES = /.\/nrp_simulation\/[0-9]+\/data/g;
+
 let _instance = null;
 const SINGLETON_ENFORCER = Symbol();
 
@@ -83,24 +85,16 @@ export default class MqttClientService extends EventEmitter {
     console.info('... MQTT connected');
     console.info(this.client);
     // TODO: filter nrp messages
-    /*this.client.subscribe('#', (err) => {
+    this.client.subscribe('#', (err) => {
       if (err) {
         console.error(err);
       }
-    });*/
+    });
     this.emit(MqttClientService.EVENTS.CONNECTED, this.client);
   }
 
   onMessage(topic, payload, packet) {
     /*console.info('MqttClientService.onMessage() - topic=' + topic);*/
-    if (topic.includes('/data')) {
-      console.info(topic);
-      console.info(payload);
-      console.info(typeof payload);
-      console.info(packet);
-      console.info(payload.toString());
-      console.info(payload.toJSON());
-    }
     if (typeof payload === 'undefined') {
       return;
     }
@@ -113,9 +107,17 @@ export default class MqttClientService extends EventEmitter {
     //Now we see which callbacks have been assigned for a topic
     let subTokens = this.subTokensMap.get(topic);
     if (typeof subTokens !== 'undefined') {
+      let msg;
+      if (REGEX_TOPIC_DATATYPES.test(topic)) {
+        msg = payload.toString();
+      }
+      else {
+        msg = payload;
+      }
+
       for (var token of subTokens) {
         //Deserializatin of Data must happen here
-        token.callback(payload);
+        token.callback(msg);
       };
     };
 

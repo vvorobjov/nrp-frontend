@@ -72,12 +72,14 @@ class ExperimentWorkbenchService extends EventEmitter {
   set topicList(topicList) {
     this._topicAndDataTypeList = topicList;
     console.info('set topicList - this._topicAndDataTypeList:');
+    console.info(this._topicAndDataTypeList);
     //console.info(this._topicAndDataTypeList);
     /*console.info(String(topicList));
     console.info(topicList.buffer.toString());*/
 
-    var enc = new TextDecoder('utf-8');
+    /*var enc = new TextDecoder('utf-8');
     console.info(enc.decode(topicList));
+    console.info(topicList.toString());*/
 
     //console.info(String.fromCharCode.apply(null, topicList.buffer));
   }
@@ -200,13 +202,18 @@ class ExperimentWorkbenchService extends EventEmitter {
       this._statusToken = statusToken;
 
       // assign topics MQTT topic
-      const topicsTopic = this.serverConfig.id + '/nrp_simulation/' + simulationInfo.ID + '/data';
-      console.info('ExpWorkbenchService.setTopics() - subscribing to ' + topicsTopic);
-      this._topicsToken = MqttClientService.instance.subscribeToTopic(topicsTopic, (topicInfo) => {
-        /*console.info('subCallback ' + topicsTopic + ' received topicInfo:');
-        console.info(topicInfo);*/
-        this.topicList = topicInfo;
-      });
+      if (this.serverConfig) {
+        const topicsTopic = this.serverConfig.id + '/nrp_simulation/' + simulationInfo.ID + '/data';
+        console.info('ExpWorkbenchService.setTopics() - subscribing to ' + topicsTopic);
+        this._topicsToken = MqttClientService.instance.subscribeToTopic(topicsTopic, (topicInfo) => {
+          /*console.info('subCallback ' + topicsTopic + ' received topicInfo:');
+          console.info(topicInfo);*/
+          this.topicList = topicInfo;
+        });
+      }
+      else {
+        console.error('ExpWorkbenchService is missing serverConfig for subscription to .../data meta topic');
+      }
     }
   }
 
