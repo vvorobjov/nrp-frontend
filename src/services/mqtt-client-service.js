@@ -8,7 +8,8 @@ import jspb from '../../node_modules/google-protobuf/google-protobuf';
 import frontendConfig from '../config.json';
 import ExperimentWorkbenchService from '../components/experiment-workbench/experiment-workbench-service';
 
-const REGEX_TOPIC_DATATYPES = /.\/nrp_simulation\/[0-9]+\/data/g;
+const REGEX_TOPIC_DATATYPES = /.\/nrp_simulation\/[0-9]+\/data/;
+const REGEX_SIMULATION_STATUS = /nrp_simulation\/[0-9]+\/status/;
 
 let _instance = null;
 const SINGLETON_ENFORCER = Symbol();
@@ -99,20 +100,24 @@ export default class MqttClientService extends EventEmitter {
       return;
     }
 
-    //See if the topic is the summary of experiments
-    //if (topic.match(/nrp_simulation/[0-9]*/data/g) !== null) {
-    //  this.topicAndDataTypeList.set(payload);
-    //}
-
     //Now we see which callbacks have been assigned for a topic
     let subTokens = this.subTokensMap.get(topic);
     if (typeof subTokens !== 'undefined') {
       let msg;
       if (REGEX_TOPIC_DATATYPES.test(topic)) {
-        msg = payload.toString();
+        msg = JSON.parse(payload.toString());
+      }
+      else if (REGEX_SIMULATION_STATUS.test(topic)) {
+        msg = payload;
       }
       else {
-        msg = payload;
+        let protoMessage = ExperimentWorkbenchService.instance.getProtoMsgFromTopic(topic);
+        if (typeof protoMessage === 'undefined') {
+          console.error('could not find protobuf message class for topic "'
+            + topic + '" (' + ExperimentWorkbenchService.instance.getTopicType(topic) + ')');
+          return;
+        }
+        msg = protoMessage.deserializeBinary(payload);
       }
 
       for (var token of subTokens) {

@@ -1,4 +1,6 @@
 import { EventEmitter } from 'events';
+import jspb from 'google-protobuf';
+import 'nrp-jsproto/dump_msgs_pb';  //missing compilation for wrappers etc.
 
 import MqttClientService from '../../services/mqtt-client-service';
 import DialogService from '../../services/dialog-service';
@@ -24,7 +26,7 @@ class ExperimentWorkbenchService extends EventEmitter {
     this._statusToken = undefined;
     this._xpraUrlsConfig = [];
     this._xpraUrlsConfirmed = [];
-    this._topicAndDataTypeList = new Map();
+    this._topicAndDataTypeMap = new Map();
   }
 
   static get instance() {
@@ -70,9 +72,23 @@ class ExperimentWorkbenchService extends EventEmitter {
     return Array.from(this.topicAndDataTypeList.keys());
   }
   set topicList(topicList) {
-    this._topicAndDataTypeList = topicList;
+    this._topicAndDataTypeMap = new Map();
+    for (let entry of topicList) {
+      this._topicAndDataTypeMap.set(entry.topic, entry.type);
+    }
     console.info('set topicList - this._topicAndDataTypeList:');
-    console.info(this._topicAndDataTypeList);
+    console.info(this._topicAndDataTypeMap);
+
+    // testing
+    console.info(jspb);
+    console.info(window.proto);
+    for (let key of this._topicAndDataTypeMap.keys()) {
+      let message = this.getProtoMsgFromTopic(key);
+      console.info(message);
+    }
+
+    //this.getTopicType
+
     //console.info(this._topicAndDataTypeList);
     /*console.info(String(topicList));
     console.info(topicList.buffer.toString());*/
@@ -215,6 +231,30 @@ class ExperimentWorkbenchService extends EventEmitter {
         console.error('ExpWorkbenchService is missing serverConfig for subscription to .../data meta topic');
       }
     }
+  }
+
+  getTopicType(topic) {
+    return this._topicAndDataTypeMap.get(topic);
+  }
+
+  getProtoMsgFromTopic(topic) {
+    return this.getProtoMsgFromPackageString(this.getTopicType(topic));
+  }
+
+  getProtoMsgFromPackageString(packageString) {
+    if (packageString === undefined) {
+      return;
+    }
+
+    let packageNamespaceArray = packageString.split('.');
+    let protobufMsg = window.proto;
+    packageNamespaceArray.forEach((subpackage) => {
+      if (typeof protobufMsg !== 'undefined') {
+        protobufMsg = protobufMsg[subpackage] || undefined;
+      }
+    });
+
+    return protobufMsg;
   }
 
   /**
