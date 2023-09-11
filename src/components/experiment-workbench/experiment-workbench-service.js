@@ -76,15 +76,20 @@ class ExperimentWorkbenchService extends EventEmitter {
     for (let entry of topicList) {
       this._topicAndDataTypeMap.set(entry.topic, entry.type);
     }
-    console.info('set topicList - this._topicAndDataTypeList:');
+    console.info('set topicList - this._topicAndDataTypeMap:');
     console.info(this._topicAndDataTypeMap);
 
     // testing
-    console.info(jspb);
-    console.info(window.proto);
-    for (let key of this._topicAndDataTypeMap.keys()) {
-      let message = this.getProtoMsgFromTopic(key);
-      console.info(message);
+    this.testSubscriptions = [];
+    for (let topic of this._topicAndDataTypeMap.keys()) {
+      let message = this.getProtoMsgFromTopic(topic);
+      if (typeof message !== 'undefined') {
+        let subToken = MqttClientService.instance.subscribeToTopic(topic, (msg) => {
+          console.info(topic);
+          console.info(msg);
+        });
+        this.testSubscriptions.push(subToken);
+      }
     }
 
     //this.getTopicType
