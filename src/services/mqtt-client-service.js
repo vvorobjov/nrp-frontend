@@ -8,7 +8,7 @@ import jspb from '../../node_modules/google-protobuf/google-protobuf';
 import frontendConfig from '../config.json';
 import ExperimentWorkbenchService from '../components/experiment-workbench/experiment-workbench-service';
 
-const REGEX_TOPIC_DATATYPES = /.\/nrp_simulation\/[0-9]+\/data$/;
+const REGEX_TOPIC_DATATYPES = /[./]?nrp_simulation\/[0-9]+\/data$/;
 const REGEX_SIMULATION_STATUS = /nrp_simulation\/[0-9]+\/status/;
 
 let _instance = null;
@@ -123,7 +123,9 @@ export default class MqttClientService extends EventEmitter {
             + topic + '" (' + ExperimentWorkbenchService.instance.getTopicType(topic) + ')');
           return;
         }
-        msg = protoMessage.deserializeBinary(payload).toObject();
+        let deserialized = protoMessage.deserializeBinary(payload);
+        let object = deserialized.toObject();
+        msg = object;
       }
 
       for (var token of subTokens) {
