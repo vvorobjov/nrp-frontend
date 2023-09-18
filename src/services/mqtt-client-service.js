@@ -87,7 +87,7 @@ export default class MqttClientService extends EventEmitter {
   }
 
   onConnect() {
-    console.info('... MQTT connected');
+    console.info('... MQTT connected HELLO EVAN');
     console.info(this.client);
     // TODO: filter nrp messages
     this.client.subscribe('#', (err) => {

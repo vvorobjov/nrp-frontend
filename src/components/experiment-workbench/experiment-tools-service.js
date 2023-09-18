@@ -4,8 +4,10 @@ import TransceiverFunctionEditor from '../tf-editor/tf-editor';
 
 import DescriptionIcon from '@material-ui/icons/Description';
 import ListAltIcon from '@material-ui/icons/ListAlt';
+import TimelineIcon from '@material-ui/icons/Timeline';
 import DataVisualizer from '../data-visualizer/data-visualizer';
-
+import { Modal, Button, Accordion, Dropdown, DropdownButton, Card, Form } from 'react-bootstrap';
+import Plot from 'react-plotly.js';
 
 let _instance = null;
 const SINGLETON_ENFORCER = Symbol();
@@ -95,7 +97,7 @@ ExperimentToolsService.TOOLS = Object.freeze({
     singleton: true,
     flexlayoutNode: {
       'type': 'tab',
-      'name': 'NRP-Core DUcs',
+      'name': 'NRP-Core Docs',
       'component': 'nrp-core-docu'
     },
     flexlayoutFactoryCb: () =>  {
@@ -124,14 +126,14 @@ ExperimentToolsService.TOOLS = Object.freeze({
     singleton: true,
     flexlayoutNode: {
       'type': 'tab',
-      'name': 'Data Visualizer 3000',
+      'name': 'Data Visualizer',
       'component': 'DataVisualizer'
     },
     flexlayoutFactoryCb: () =>  {
-      return <DataVisualizer/>;
+      return <DataVisualizer/>;//<TransceiverFunctionEditor/>;
     },
     getIcon: () => {
-      return <ListAltIcon/>;
+      return <TimelineIcon/>;
     }
   }
 });

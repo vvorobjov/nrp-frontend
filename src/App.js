@@ -14,7 +14,11 @@ class App extends React.Component {
 
   componentDidMount() {
     this.mqttClientService = MqttClientService.instance;
+    console.log('Debug Tag 1');
+    //this.mqttClientService.subscribeToTopic('');
     //MqttClientService.instance.connect('ws://' + window.location.hostname + ':1884');
+    //MqttClientService.instance.connect('ws://' + window.location.hostname + ':1884');
+    console.log('Debug Tag 2');
   }
 
   render() {
