@@ -80,15 +80,18 @@ class ExperimentWorkbenchService extends EventEmitter {
     console.info(this._topicAndDataTypeMap);
 
     // testing
-    this.testSubscriptions = [];
-    for (let topic of this._topicAndDataTypeMap.keys()) {
-      let message = this.getProtoMsgFromTopic(topic);
-      if (typeof message !== 'undefined') {
-        let subToken = MqttClientService.instance.subscribeToTopic(topic, (msg) => {
-          console.info(topic);
-          console.info(msg);
-        });
-        this.testSubscriptions.push(subToken);
+    const TEST_CONSOLE_OUTPUT = false;
+    if (TEST_CONSOLE_OUTPUT) {
+      this.testSubscriptions = [];
+      for (let topic of this._topicAndDataTypeMap.keys()) {
+        let message = this.getProtoMsgFromTopic(topic);
+        if (typeof message !== 'undefined') {
+          let subToken = MqttClientService.instance.subscribeToTopic(topic, (msg) => {
+            console.info(topic);
+            console.info(msg);
+          });
+          this.testSubscriptions.push(subToken);
+        }
       }
     }
   }
