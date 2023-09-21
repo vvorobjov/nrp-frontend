@@ -2,12 +2,9 @@ import DialogService from '../../dialog-service.js';
 import { HttpService } from '../../http-service.js';
 import { EXPERIMENT_STATE } from '../experiment-constants.js';
 
-import config from '../../../config.json';
-
 let _instance = null;
 const SINGLETON_ENFORCER = Symbol();
 
-let rosStatusTopics = new Map();
 const INTERVAL_CHECK_SIMULATION_READY = 1000;
 
 /**

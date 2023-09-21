@@ -571,37 +571,40 @@ class ExperimentWorkbench extends React.Component {
           </div>
           <Divider />
           <List>
-            {Array.from(ExperimentToolsService.instance.tools.values()).map((tool, index) => {
-              if (typeof tool.isShown !== 'undefined' && tool.isShown()) {
-                return (
-                  tool.type === SIM_TOOL.TOOL_TYPE.EXTERNAL_TAB ?
-                    <ListItem button key={index}
-                      disabled={typeof tool.isDisabled !== 'undefined' && tool.isDisabled()}>
-                      <ListItemIcon >{tool.getIcon()}</ListItemIcon>
-                      <ListItemText primary={tool.flexlayoutNode.name} />
-                    </ListItem>
-                    :
-                    <ListItem button key={index}
-                      disabled={typeof tool.isDisabled !== 'undefined' && tool.isDisabled()}
-                      onMouseDown={() => {
-                        ExperimentToolsService.instance.startToolDrag(
-                          tool,
-                          this.refLayout);
-                      }}
-                      onClick={() => {
-                        ExperimentToolsService.instance.addTool(
-                          tool,
-                          this.refLayout);
-                      }}
-                    >
-                      <Tooltip title={tool.flexlayoutNode.name} placement="right">
+            {
+              // eslint-disable-next-line array-callback-return
+              Array.from(ExperimentToolsService.instance.tools.values()).map((tool, index) => {
+                if (typeof tool.isShown !== 'undefined' && tool.isShown()) {
+                  return (
+                    tool.type === SIM_TOOL.TOOL_TYPE.EXTERNAL_TAB ?
+                      <ListItem button key={index}
+                        disabled={typeof tool.isDisabled !== 'undefined' && tool.isDisabled()}>
                         <ListItemIcon >{tool.getIcon()}</ListItemIcon>
-                      </Tooltip>
-                      <ListItemText primary={tool.flexlayoutNode.name} />
-                    </ListItem>
-                );
-              }
-            })}
+                        <ListItemText primary={tool.flexlayoutNode.name} />
+                      </ListItem>
+                      :
+                      <ListItem button key={index}
+                        disabled={typeof tool.isDisabled !== 'undefined' && tool.isDisabled()}
+                        onMouseDown={() => {
+                          ExperimentToolsService.instance.startToolDrag(
+                            tool,
+                            this.refLayout);
+                        }}
+                        onClick={() => {
+                          ExperimentToolsService.instance.addTool(
+                            tool,
+                            this.refLayout);
+                        }}
+                      >
+                        <Tooltip title={tool.flexlayoutNode.name} placement="right">
+                          <ListItemIcon >{tool.getIcon()}</ListItemIcon>
+                        </Tooltip>
+                        <ListItemText primary={tool.flexlayoutNode.name} />
+                      </ListItem>
+                  );
+                }
+              })
+            }
           </List>
         </Drawer>
         {/* This is the leaving dialog */}

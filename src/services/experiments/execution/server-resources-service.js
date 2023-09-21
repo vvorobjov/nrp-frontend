@@ -68,8 +68,8 @@ class ServerResourcesService extends HttpProxyService {
       }
       catch (error) {
         this.availableServers = [];
-        error = error || { message : 'unexpected network error '};
-        DialogService.instance.networkError(error);
+        const err = error || { message : 'unexpected network error '};
+        DialogService.instance.networkError(err);
       }
     }
     this.emit(ServerResourcesService.EVENTS.UPDATE_SERVER_AVAILABILITY, this.availableServers);

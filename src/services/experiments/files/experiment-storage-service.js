@@ -212,7 +212,9 @@ class ExperimentStorageService extends HttpProxyService {
    * @returns the file contents (as a request object)
    */
   async getFile(experimentDirectoryPath, filename, byName = false) {
+    // eslint-disable-next-line no-useless-escape
     let directory = experimentDirectoryPath.replace(/[\/]/g, '%2F');
+    // eslint-disable-next-line no-useless-escape
     let file = filename.replace(/[\/]/g, '%2F');
     const url = `${endpoints.proxy.storage.url}/${directory}/${file}?byname=${byName}`;
     return this.httpRequestGET(url);
@@ -225,6 +227,7 @@ class ExperimentStorageService extends HttpProxyService {
    * @returns {Array} the list of experiment files
    */
   async getExperimentFiles(experimentName) {
+    // eslint-disable-next-line no-useless-escape
     let experiment = experimentName.replace(/[\/]/g, '%2F');
     let url = `${endpoints.proxy.storage.url}/${experiment}`;
     const files = await (await this.httpRequestGET(url)).json();
@@ -325,6 +328,7 @@ class ExperimentStorageService extends HttpProxyService {
    * @returns the request object containing the status code
    */
   async setFile(experimentName, filename, data, byname = true, contentType = 'text/plain') {
+    // eslint-disable-next-line no-useless-escape
     let directory = experimentName.replace(/[\/]/g, '%2F');
     const url = this.createRequestURL(
       `${endpoints.proxy.storage.url}/${directory}/${filename}`,
