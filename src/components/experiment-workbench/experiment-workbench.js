@@ -1,8 +1,8 @@
 import React from 'react';
 import FlexLayout from 'flexlayout-react';
-
 import { withCookies } from 'react-cookie';
 
+import ExperimentTools from './experiment-tools';
 import ExperimentToolsService from './experiment-tools-service';
 import ExperimentWorkbenchService from './experiment-workbench-service';
 import ExperimentTimeBox from './experiment-time-box';
@@ -12,7 +12,6 @@ import ServerResourcesService from '../../services/experiments/execution/server-
 import DialogService from '../../services/dialog-service';
 import { EXPERIMENT_STATE, EXPERIMENT_FINAL_STATE } from '../../services/experiments/experiment-constants';
 import LeaveWorkbenchDialog from './leave-workbench-dialog';
-import { SIM_TOOL } from '../constants';
 
 import '../../../node_modules/flexlayout-react/style/light.css';
 import './experiment-workbench.css';
@@ -30,14 +29,8 @@ import MenuIcon from '@material-ui/icons/Menu';
 import Typography from '@material-ui/core/Typography';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import Divider from '@material-ui/core/Divider';
-import List from '@material-ui/core/List';
 import Grid from '@material-ui/core/Grid';
 import Paper from '@material-ui/core/Paper';
-import Tooltip from '@material-ui/core/Tooltip';
-
-import ListItem from '@material-ui/core/ListItem';
-import ListItemIcon from '@material-ui/core/ListItemIcon';
-import ListItemText from '@material-ui/core/ListItemText';
 
 import PlayCircleFilledWhiteIcon from '@material-ui/icons/PlayCircleFilledWhite';
 import ExitToAppIcon from '@material-ui/icons/ExitToApp';
@@ -198,7 +191,7 @@ class ExperimentWorkbench extends React.Component {
       availableServers: []
     };
 
-    this.refLayout = React.createRef();
+    this.flexlayoutReference = React.createRef();
     this.state.modelFlexLayout.doAction(FlexLayout.Actions.setActiveTabset('defaultTabset'));
     ExperimentToolsService.instance.setFlexLayoutModel(this.state.modelFlexLayout);
   }
@@ -570,42 +563,7 @@ class ExperimentWorkbench extends React.Component {
             </IconButton>
           </div>
           <Divider />
-          <List>
-            {
-              // eslint-disable-next-line array-callback-return
-              Array.from(ExperimentToolsService.instance.tools.values()).map((tool, index) => {
-                if (typeof tool.isShown !== 'undefined' && tool.isShown()) {
-                  return (
-                    tool.type === SIM_TOOL.TOOL_TYPE.EXTERNAL_TAB ?
-                      <ListItem button key={index}
-                        disabled={typeof tool.isDisabled !== 'undefined' && tool.isDisabled()}>
-                        <ListItemIcon >{tool.getIcon()}</ListItemIcon>
-                        <ListItemText primary={tool.flexlayoutNode.name} />
-                      </ListItem>
-                      :
-                      <ListItem button key={index}
-                        disabled={typeof tool.isDisabled !== 'undefined' && tool.isDisabled()}
-                        onMouseDown={() => {
-                          ExperimentToolsService.instance.startToolDrag(
-                            tool,
-                            this.refLayout);
-                        }}
-                        onClick={() => {
-                          ExperimentToolsService.instance.addTool(
-                            tool,
-                            this.refLayout);
-                        }}
-                      >
-                        <Tooltip title={tool.flexlayoutNode.name} placement="right">
-                          <ListItemIcon >{tool.getIcon()}</ListItemIcon>
-                        </Tooltip>
-                        <ListItemText primary={tool.flexlayoutNode.name} />
-                      </ListItem>
-                  );
-                }
-              })
-            }
-          </List>
+          <ExperimentTools flexlayoutReference={this.flexlayoutReference} />
         </Drawer>
         {/* This is the leaving dialog */}
         <LeaveWorkbenchDialog visible={this.state.showLeaveDialog}
@@ -644,7 +602,7 @@ class ExperimentWorkbench extends React.Component {
             </Grid>
             <Grid item xs={12}>
               <Paper className={classes.contentContainer}>
-                <FlexLayout.Layout ref={this.refLayout} model={this.state.modelFlexLayout}
+                <FlexLayout.Layout ref={this.flexlayoutReference} model={this.state.modelFlexLayout}
                   factory={(node) => {
                     return ExperimentToolsService.instance.flexlayoutNodeFactory(node);
                   }} />

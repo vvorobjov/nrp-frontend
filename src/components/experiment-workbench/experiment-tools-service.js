@@ -1,6 +1,9 @@
 import FlexLayout from 'flexlayout-react';
 import DescriptionIcon from '@material-ui/icons/Description';
 import ListAltIcon from '@material-ui/icons/ListAlt';
+import OndemandVideoIcon from '@material-ui/icons/OndemandVideo';
+
+import ExperimentWorkbenchService from './experiment-workbench-service';
 import NrpCoreDashboard from '../nrp-core-dashboard/nrp-core-dashboard';
 import TransceiverFunctionEditor from '../tf-editor/tf-editor';
 import XpraView from '../xpra/xpra-view';
@@ -162,9 +165,9 @@ ExperimentToolsService.TOOLS = Object.freeze({
       </div>;
     }
   },*/
-  /*XPRA: {
+  XPRA: {
     singleton: true,
-    type: ExperimentToolsService.CONSTANTS.TOOL_TYPE.FLEXLAYOUT_TAB,
+    type: SIM_TOOL.TOOL_TYPE.FLEXLAYOUT_TAB,
     flexlayoutNode: {
       'name': 'Server Videostream (Xpra)',
       'component': 'xpra'
@@ -179,7 +182,7 @@ ExperimentToolsService.TOOLS = Object.freeze({
       const xpra = ExperimentWorkbenchService.instance.xpraUrls;
       return xpra && xpra.length > 0;
     }
-  },*/
+  },
   TRANSCEIVER_FUNCTIONS_EDITOR: {
     singleton: true,
     type: SIM_TOOL.TOOL_TYPE.FLEXLAYOUT_TAB,

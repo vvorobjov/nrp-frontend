@@ -24,6 +24,14 @@ class ExperimentWorkbenchService extends EventEmitter {
     this._statusToken = undefined;
     this._xpraUrlsConfig = [];
     this._xpraUrlsConfirmed = [];
+
+    ExperimentStorageService.instance.addListener(
+      ExperimentStorageService.EVENTS.UPDATE_EXPERIMENTS,
+      async () => {
+        let experiments = await ExperimentStorageService.instance.getExperiments();
+        const experimentInfo = experiments.find(experiment => experiment.id === this.experimentID);
+        this.experimentInfo = experimentInfo;
+      });
   }
 
   static get instance() {
@@ -97,6 +105,7 @@ class ExperimentWorkbenchService extends EventEmitter {
   }
 
   async confirmXpraUrls() {
+    console.info('confirmXpraUrls');
     const simState = this.simulationState;
     if (!this._xpraUrlsConfig || this._xpraUrlsConfig.length === 0
         || !simState || simState === EXPERIMENT_STATE.CREATED
@@ -120,21 +129,24 @@ class ExperimentWorkbenchService extends EventEmitter {
    * @param experimentID The experiment's ID
    */
   async initExperimentInformation(experimentID) {
+    this.experimentID = experimentID;
     let experiments = await ExperimentStorageService.instance.getExperiments();
-    const experimentInfo = experiments.find(experiment => experiment.id === experimentID);
-    this.experimentInfo = experimentInfo;
+    if (experiments) {
+      const experimentInfo = experiments.find(experiment => experiment.id === experimentID);
+      this.experimentInfo = experimentInfo;
 
-    if (experimentInfo.joinableServers.length === 1) {
-      const runningSimulation = experimentInfo.joinableServers[0].runningSimulation;
-      if (runningSimulation) {
-        let serverConfig = await ServerResourcesService.instance.getServerConfig(
-          experimentInfo.joinableServers[0].server);
-        this.serverURL = serverConfig['nrp-services'];
-        this.xpraConfigUrls = [serverConfig.xpra];
-        this.simulationInfo = {
-          ID: runningSimulation.simulationID,
-          MQTTPrefix: runningSimulation.MQTTPrefix
-        };
+      if (experimentInfo.joinableServers.length === 1) {
+        const runningSimulation = experimentInfo.joinableServers[0].runningSimulation;
+        if (runningSimulation) {
+          let serverConfig = await ServerResourcesService.instance.getServerConfig(
+            experimentInfo.joinableServers[0].server);
+          this.serverURL = serverConfig['nrp-services'];
+          this.xpraConfigUrls = [serverConfig.xpra];
+          this.simulationInfo = {
+            ID: runningSimulation.simulationID,
+            MQTTPrefix: runningSimulation.MQTTPrefix
+          };
+        }
       }
     }
   }
@@ -211,8 +223,11 @@ class ExperimentWorkbenchService extends EventEmitter {
     try {
       const status = JSON.parse(msg);
       if (status.state) {
+        let oldState = this.simulationState;
         this.simulationState = status.state;
-        this.confirmXpraUrls();
+        if (status.state !== oldState) {
+          this.confirmXpraUrls();
+        }
 
         ExperimentWorkbenchService.instance.emit(
           ExperimentWorkbenchService.EVENTS.SIMULATION_STATUS_UPDATED,

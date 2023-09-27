@@ -341,21 +341,33 @@ class ExperimentStorageService extends HttpProxyService {
       ...this.POSTOptions, ...{ headers: { 'Content-Type': contentType } }
     };
 
+    let transferData;
     if (contentType === 'text/plain') {
-      return this.httpRequestPOST(url, data, requestOptions);
+      transferData = data;
+      //this.httpRequestPOST(url, data, requestOptions);
     }
     else if (contentType === 'application/json') {
-      return this.httpRequestPOST(url, JSON.stringify(data), requestOptions);
+      transferData = JSON.stringify(data);
+      //return this.httpRequestPOST(url, JSON.stringify(data), requestOptions);
     }
     else if (contentType === 'application/octet-stream') {
       // placeholder for blob files where the data has to be transormed,
       // possibly to Uint8Array
-      return this.httpRequestPOST(url,/* new Uint8Array(data) */data, requestOptions);
+      transferData = data;
+      //return this.httpRequestPOST(url,/* new Uint8Array(data) */data, requestOptions);
     }
     else {
       return new Error('Content-Type for setFile request not specified,' +
         'please make sure that the contentType and the body type match.');
     }
+
+    let result = await this.httpRequestPOST(url, transferData, requestOptions);
+    if (result.ok) {
+      this.emit(ExperimentStorageService.EVENTS.FILES_CHANGED, {
+        experimentName, filename
+      });
+    }
+    return result;
   }
 
   /**
@@ -373,7 +385,8 @@ class ExperimentStorageService extends HttpProxyService {
 }
 
 ExperimentStorageService.EVENTS = Object.freeze({
-  UPDATE_EXPERIMENTS: 'UPDATE_EXPERIMENTS'
+  UPDATE_EXPERIMENTS: 'UPDATE_EXPERIMENTS',
+  FILES_CHANGED: 'FILES_CHANGED'
 });
 
 ExperimentStorageService.CONSTANTS = Object.freeze({
