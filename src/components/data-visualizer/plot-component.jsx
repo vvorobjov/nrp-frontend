@@ -13,17 +13,16 @@ class PlotElement extends React.Component {
       <Plot
         data={[
           {
-            x: [1, 2, 3],
-            y: [2, 6, 3],
+            x: [1, 2, 3, 4, 5, 6],
+            y: [2, 6, 4, 3, 5, 7],
+            name: 'channel_name',
             type: 'scatter',
             mode: 'lines+markers',
             marker: {color: 'red'}
           },
-          {type: 'bar', x: [1, 2, 3], y: [2, 5, 3]}
-        ]}
-        //layout={ {width: 320, height: 240, title: 'A Fancy Plot'} }
-        //layout={ { title: 'A Fancy Plot'}
-        layout={ { title: this.state.graphType}}
+          {type: 'scatter', x: [1, 2, 3, 4, 5, 6], y: [2, 5, 7, 2, 6, 3]}
+        ]}//TODO: Replace with list of channels, and corresponding associated properties
+        layout={ { title: 'Braitenberg Experiment'}}// *TODO: Replace with the Graph Title placeholderc after in herting
       />
     );
   }

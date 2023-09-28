@@ -12,11 +12,7 @@ import { InputGroup, FormControl } from 'react-bootstrap';
 import { useState } from 'react';
 import ReactDOM from 'react-dom';
 
-//import TopicSub from './mqtt-topic-sub_2.js';
 //import TopicSub from './mqtt-topic-sub.js';
-
-import ExperimentStorageService from '../../services/experiments/files/experiment-storage-service';
-import ExperimentWorkbenchService from '../experiment-workbench/experiment-workbench-service';
 
 import './data-visualizer.css';
 
@@ -37,7 +33,7 @@ export default class DataVisualizer extends React.Component {
     //this.topic_sub = new TopicSub();
   }
 
-  DV_Accordion() {
+  dataVisualizerInterface() {
     return (
       <div>
         <Accordion defaultActiveKey='0'>
@@ -107,72 +103,11 @@ export default class DataVisualizer extends React.Component {
   }
 
   async componentDidMount() {
-
-    const workbench = await ExperimentWorkbenchService.instance;
-    this.experimentID = workbench.experimentID;
-
+    //TODO: initiate the list with all the topics & other initial vars
     this.setState({experimentName: this.experimentID});
     await this.loadExperimentFiles();
     this.setState({selectedFilename:  this.files.at(0)});
     const filename = '';
-    if (this.hasUnsavedChanges) {
-      this.pendingFileChange = {
-        newFilename: filename,
-        oldFilename: this.state.selectedFilename
-      };
-      this.setState({showDialogUnsavedChanges: true});
-    }
-    else {
-      this.loadFileContent(filename);
-    }
-  }
-
-  onUnsavedChangesDiscard() {
-    this.loadFileContent(this.pendingFileChange.newFilename);
-  }
-
-  async onUnsavedChangesSave() {
-    let success = await this.saveDV();
-    if (success) {
-      this.loadFileContent(this.pendingFileChange.newFilename);
-    }
-  }
-
-  async loadExperimentFiles() {
-    const filelist = await ExperimentStorageService.instance.getExperimentFiles(this.state.experimentName);
-    for (const obj of filelist) { // Not checking for nested files yet
-      if (obj.type === 'file') {
-        this.files.push(obj.name);
-      }
-    }
-  }
-
-  async loadFileContent(filename) {
-    let fileContent = await ExperimentStorageService.instance.getFileText(this.state.experimentName, filename);
-    this.fileLoading = true;
-    this.setState({selectedFilename: filename, code: fileContent, showDialogUnsavedChanges: false});
-  }
-
-  handleGraphChange(){
-    return false;
-  }
-
-  async saveDV() {
-    let response = await ExperimentStorageService.instance.setFile(
-      this.state.experimentName, this.state.selectedFilename, this.state.code);
-    if (response.ok) {
-      this.hasUnsavedChanges = false;
-      this.setState({textChanges: 'Plot was created succesfully'});
-      setTimeout(() => {
-        this.setState({textChanges: ''});
-      }, 3000);
-      return true;
-    }
-    else {
-      console.error('Error trying to save DV!');
-      console.error(response);
-      return false;
-    }
   }
 
   async dummy_render() {
@@ -272,10 +207,8 @@ export default class DataVisualizer extends React.Component {
   }
 
   render(){
-    //console.log("Ayayay ");
-    //console.log(mqtt);
     return(
-      <this.DV_Accordion />
+      <this.dataVisualizerInterface />
     );
   }
 
