@@ -2,6 +2,12 @@ import React, { useState } from 'react';
 import { Button } from 'react-bootstrap';
 import ChannelSelector from './channel-selector';
 
+
+/**
+ * Generates the elements for setting up the detailed properties of the graph.
+ * @param {} - nothing
+ * @returns {JSX} ChannelsSelector - JSX Element with interface for addig or removing multiple ChanelSelector Components
+ */
 const ChannelsSelector = () => {
   const [channels, setChannels] = useState([]);
   const [selectedChannels, setSelectedChannels] = useState([]);
@@ -43,8 +49,8 @@ const ChannelsSelector = () => {
               />
               {channel.name}
               <ChannelSelector />
-              <Button variant="danger" onClick={() => handleDeleteClick(channel.id)}>
-                Delete
+              <Button variant="secondary" onClick={() => handleDeleteClick(channel.id)}>
+                X  Delete channel and remove it from plot
               </Button>
             </li>
           );

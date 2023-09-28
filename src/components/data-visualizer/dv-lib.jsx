@@ -4,6 +4,11 @@ import { Card } from 'react-bootstrap';
 import { Dropdown, DropdownButton, Form } from 'react-bootstrap';
 import './data-visualizer.css';
 
+/**
+ * Generates the elements for setting up the detailed properties of the graph.
+ * @param {} - nothing
+ * @returns {JSX} DetailedProperties - JSX Element with interface for selecting the detailed properties for the plot.
+ */
 export function DetailedProperties() {
   // TODO replace hard coded cards and items in the body by the real graph properties
   return (
@@ -16,7 +21,6 @@ export function DetailedProperties() {
         </Card.Header>
         <Accordion.Collapse eventKey="0">
           <Card.Body>
-            +++ X Range, Y Range, Refreshing freq?, filename?, more?
             <Accordion>
               <Card>
                 <Card.Header>
@@ -46,6 +50,33 @@ export function DetailedProperties() {
                   </Card.Body>
                 </Accordion.Collapse>
               </Card>
+              <Card>
+                <Card.Header>
+                  <Accordion.Toggle as={Button} variant="link" eventKey="2">
+                      Data Points
+                  </Accordion.Toggle>
+                </Card.Header>
+                <Accordion.Collapse eventKey="2">
+                  <Card.Body>
+                    Select the amount of values from the buffered channel to use in the plot
+                    Or Select the amount of time to plot
+                    Select filter types
+                  </Card.Body>
+                </Accordion.Collapse>
+              </Card>
+              <Card>
+                <Card.Header>
+                  <Accordion.Toggle as={Button} variant="link" eventKey="3">
+                      file details
+                  </Accordion.Toggle>
+                </Card.Header>
+                <Accordion.Collapse eventKey="3">
+                  <Card.Body>
+                    Select the filename that plots will have after downloaded
+                    Select the image format
+                  </Card.Body>
+                </Accordion.Collapse>
+              </Card>
             </Accordion>
           </Card.Body>
         </Accordion.Collapse>
@@ -54,26 +85,11 @@ export function DetailedProperties() {
   );
 }
 
-export function GraphTypeSelector_DD() {
-  return (
-    <Dropdown>
-      <Dropdown.Toggle id="dropdown-basic">
-        Graph Type
-      </Dropdown.Toggle>
-
-      <Dropdown.Menu>
-        <Dropdown.Item >Line Plot</Dropdown.Item>
-        <Dropdown.Item >Pie Plot</Dropdown.Item>
-        <Dropdown.Item >Scatter Plot</Dropdown.Item>
-        <Dropdown.Item >Bar Plot</Dropdown.Item>
-        <Dropdown.Item >Fill Area</Dropdown.Item>
-        <Dropdown.Item >Error Bars</Dropdown.Item>
-        <Dropdown.Item >Scatter 3D</Dropdown.Item>
-      </Dropdown.Menu>
-    </Dropdown>
-  );
-}
-
+/**
+ * Generates the elements for selecting the graph type.
+ * @param {} - nothing
+ * @returns {JSX} GraphTypeSelector - JSX Element with drop down menu. TODO: Raplace with NRP3 interface.
+ */
 export function GraphTypeSelector() {
   return (
     <Form.Group controlId="exampleForm.ControlSelect1">
@@ -86,32 +102,5 @@ export function GraphTypeSelector() {
         <option>Scatter 3D 3</option>
       </Form.Control>
     </Form.Group>
-  );
-}
-
-export function DataVisualizerAccordion() {
-  return (
-    <Accordion>
-      <Card>
-        <Card.Header>
-          <Accordion.Toggle as={Button} variant="link" eventKey="0">
-              Click me!
-          </Accordion.Toggle>
-        </Card.Header>
-        <Accordion.Collapse eventKey="0">
-          <Card.Body>Hello! I'm the body</Card.Body>
-        </Accordion.Collapse>
-      </Card>
-      <Card>
-        <Card.Header>
-          <Accordion.Toggle as={Button} variant="link" eventKey="1">
-              Click me!
-          </Accordion.Toggle>
-        </Card.Header>
-        <Accordion.Collapse eventKey="1">
-          <Card.Body>Hello! I'm another body</Card.Body>
-        </Accordion.Collapse>
-      </Card>
-    </Accordion>
   );
 }

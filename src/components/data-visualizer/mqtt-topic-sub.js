@@ -3,6 +3,14 @@ import React from 'react';
 
 var mqtt = require('mqtt');
 
+
+/**
+ * This should connect to the experiment datastream via MQTT
+ * localhost:[port]/nrp_simulation/[experiment_id]_data0/data
+ * 
+ * The list of all the topic should be available at 
+ * localhost:[port]/nrp_simulation/[experiment_id]_data0/data/topic_list
+*/
 export default class TopicSub extends React.Component {
     constructor(){
         this.client = mqtt.connect('mqtt://test.mosquitto.org');
