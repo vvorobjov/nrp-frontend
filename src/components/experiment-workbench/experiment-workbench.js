@@ -1,5 +1,8 @@
 import React from 'react';
 import FlexLayout from 'flexlayout-react';
+
+const { version } = require('../../../package.json');
+
 import { withCookies } from 'react-cookie';
 
 import ExperimentTools from './experiment-tools';
@@ -183,7 +186,7 @@ class ExperimentWorkbench extends React.Component {
       drawerOpen: false,
       notificationCount: 0,
       // TODO: take from some config
-      nrpVersion: '4.0.0',
+      nrpVersion: version,
       experimentConfiguration: {},
       runningSimulationID: undefined,
       simulationState: EXPERIMENT_STATE.UNDEFINED,
