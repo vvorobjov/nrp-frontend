@@ -8,6 +8,7 @@ import { Modal, Button } from 'react-bootstrap';
 
 import ExperimentStorageService from '../../services/experiments/files/experiment-storage-service';
 import ExperimentWorkbenchService from '../experiment-workbench/experiment-workbench-service';
+import ExperimentWorkbenchService from '../experiment-workbench/experiment-workbench-service';
 
 import './tf-editor.css';
 

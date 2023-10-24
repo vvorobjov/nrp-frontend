@@ -1,7 +1,14 @@
 import { HttpProxyService, NRPProxyError } from '../../proxy/http-proxy-service';
+import { HttpProxyService, NRPProxyError } from '../../proxy/http-proxy-service';
 import { EXPERIMENT_RIGHTS } from '../experiment-constants';
 
 import endpoints from '../../proxy/data/endpoints.json';
+import DialogService from '../../dialog-service.js';
+
+// const PROXY_URL = config.api.proxy.url;
+const experimentsURL = `${endpoints.proxy.experiments.url}`;
+const experimentImageURL = `${endpoints.proxy.experimentImage.url}`;
+const cloneURL = `${endpoints.proxy.storage.clone.url}`;
 import DialogService from '../../dialog-service.js';
 
 // const PROXY_URL = config.api.proxy.url;
@@ -16,6 +23,7 @@ const SINGLETON_ENFORCER = Symbol();
  * Service that handles storage experiment files and configurations given
  * that the user has authenticated successfully.
  */
+class PublicExperimentsService extends HttpProxyService {
 class PublicExperimentsService extends HttpProxyService {
   constructor(enforcer) {
     super();
@@ -137,6 +145,13 @@ class PublicExperimentsService extends HttpProxyService {
       //   }
       // }));
       experiment.thumbnailURL = '/thumbnails/Two-sided_Brain_BW.jpg';
+      // TODO: [NRRPLT-8681] Make the proxy request working
+      // experimentUpdates.push(this.getThumbnailURL(experiment.configuration.id).then(thumbnailURL => {
+      //   if (thumbnailURL) {
+      //     experiment.thumbnailURL = thumbnailURL; //URL.createObjectURL(thumbnail);
+      //   }
+      // }));
+      experiment.thumbnailURL = '/thumbnails/Two-sided_Brain_BW.jpg';
 
       experiment.rights = EXPERIMENT_RIGHTS.PUBLICLY_SHARED;
     });
@@ -151,9 +166,12 @@ class PublicExperimentsService extends HttpProxyService {
    *
    * TODO: [NRRPLT-8681] Fix endpoint
    *
+   * TODO: [NRRPLT-8681] Fix endpoint
+   *
    * @returns {Blob} image object
    */
   //TODO: between storage experiments and shared experiments, can this be unified?
+  // TODO: The proxy expects to receive the experimentId, which was set to `dir/config.json`
   // TODO: The proxy expects to receive the experimentId, which was set to `dir/config.json`
   // move to experiment-configuration-service?
   async getThumbnailURL(experimentName) {
@@ -163,9 +181,11 @@ class PublicExperimentsService extends HttpProxyService {
 
   /**
    * Clone a public experiment setup to storage
+   * Clone a public experiment setup to storage
    * @param {Object} experiment The Experiment configuration
    */
   async cloneExperiment(experiment) {
+    let experimentConfigFilepath = experiment.configuration.experimentId;
     let experimentConfigFilepath = experiment.configuration.experimentId;
     this.httpRequestPOST(cloneURL, JSON.stringify({ expPath: experimentConfigFilepath }));
   }

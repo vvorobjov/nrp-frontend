@@ -5,7 +5,10 @@ build
 Jenkinsfile
 
 .git
+<<<<<<< HEAD
 
 src/config.json*
 !src/config.json.sample.docker 
 !src/config.json.sample.oidc
+=======
+>>>>>>> 1a67a9d98eeae4fca7b377fc44bf3a2c36d36b2b

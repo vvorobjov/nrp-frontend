@@ -11,9 +11,12 @@ const SINGLETON_ENFORCER = Symbol();
 
 /**
  * Service handling the state of the experiment workbench and the current running simulation
+ * Service handling the state of the experiment workbench and the current running simulation
  */
 class ExperimentWorkbenchService extends EventEmitter {
+class ExperimentWorkbenchService extends EventEmitter {
   constructor(enforcer) {
+    super();
     super();
     if (enforcer !== SINGLETON_ENFORCER) {
       throw new Error('Use ' + this.constructor.name + '.instance');
@@ -43,6 +46,7 @@ class ExperimentWorkbenchService extends EventEmitter {
   }
 
   get experimentInfo() {
+    return this._expInfo;
     return this._expInfo;
   }
   set experimentInfo(info) {
@@ -245,6 +249,11 @@ class ExperimentWorkbenchService extends EventEmitter {
 }
 
 export default ExperimentWorkbenchService;
+
+ExperimentWorkbenchService.EVENTS = Object.freeze({
+  SIMULATION_SET: 'SIMULATION_SET',
+  SIMULATION_STATUS_UPDATED: 'SIMULATION_STATUS_UPDATED'
+});
 
 ExperimentWorkbenchService.EVENTS = Object.freeze({
   SIMULATION_SET: 'SIMULATION_SET',

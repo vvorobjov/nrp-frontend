@@ -23,6 +23,7 @@ class AuthenticationService {
      * Clear currently stored access token.
      */
   clearStoredLocalToken() {
+  clearStoredLocalToken() {
 
   }
 
@@ -39,6 +40,7 @@ class AuthenticationService {
     return 'test-auth-token';
   }
   /**
+     * Makes the local authentication.
      * Makes the local authentication.
      *
      * @param {*} config Authentication config

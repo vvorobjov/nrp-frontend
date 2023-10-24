@@ -7,6 +7,8 @@ import jspb from '../../node_modules/google-protobuf/google-protobuf';
 
 import frontendConfig from '../config.json';
 
+import frontendConfig from '../config.json';
+
 let _instance = null;
 const SINGLETON_ENFORCER = Symbol();
 
@@ -19,6 +21,13 @@ export default class MqttClientService extends EventEmitter {
     if (enforcer !== SINGLETON_ENFORCER) {
       throw new Error('Use ' + this.constructor.name + '.instance');
     }
+
+    this.config = frontendConfig;
+    this.connect = this.connect.bind(this);
+
+    this.state = {
+      isConnected: false
+    };
 
     this.config = frontendConfig;
     this.connect = this.connect.bind(this);
@@ -60,6 +69,7 @@ export default class MqttClientService extends EventEmitter {
     console.info('MQTT connecting to ' + this.mqttBrokerUrl + ' ...');
     this.client = mqtt.connect(this.mqttBrokerUrl, { clientId: 'nrp-frontend_' + uuidv4() });
     this.client.on('connect', () => {
+      this.onConnect();
       this.onConnect();
     });
     this.client.on('error', this.onError);
@@ -158,6 +168,8 @@ export default class MqttClientService extends EventEmitter {
 }
 
 MqttClientService.EVENTS = Object.freeze({
+  CONNECTED: 'CONNECTED',
+  DISCONNECTED: 'DISCONNECTED'
   CONNECTED: 'CONNECTED',
   DISCONNECTED: 'DISCONNECTED'
 });

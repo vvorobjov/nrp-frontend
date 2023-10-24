@@ -20,7 +20,23 @@ const experiments = MockExperiments;
 
 const PROXY_URL = config.api.proxy.url;
 
+const PROXY_URL = config.api.proxy.url;
+
 export const handlers = [
+  // proxy/(storage) mocks
+  rest.get(`${PROXY_URL}${endpoints.proxy.storage.allCustomModels.url}/:modelType`,
+    (req, res, ctx) => {
+      return res(ctx.json(MockCustomModels[0]));
+    }),
+  rest.get(`${PROXY_URL}${endpoints.proxy.storage.userModels.url}/:modelType`,
+    (req, res, ctx) => {
+      return res(ctx.json(MockCustomModels[0]));
+    }),
+  rest.delete(`${PROXY_URL}${endpoints.proxy.storage.userModels.url}/:modelType/:modelName`,
+    (req, res, ctx) => {
+      return res(ctx.json(MockCustomModels[1]));
+    }),
+  rest.get(`${PROXY_URL}${endpoints.proxy.storage.experiments.url}`, (req, res, ctx) => {
   // proxy/(storage) mocks
   rest.get(`${PROXY_URL}${endpoints.proxy.storage.allCustomModels.url}/:modelType`,
     (req, res, ctx) => {
@@ -39,7 +55,15 @@ export const handlers = [
   }),
   rest.get(`${PROXY_URL}${endpoints.proxy.experiments.url}`, (req, res, ctx) => {
     return res(ctx.json(experiments));
+  rest.get(`${PROXY_URL}${endpoints.proxy.experiments.url}`, (req, res, ctx) => {
+    return res(ctx.json(experiments));
   }),
+  rest.post(`${PROXY_URL}${endpoints.proxy.storage.clone.url}/:experimentName`,
+    (req, res, ctx) => {
+      return res(ctx.json({ 'status': 'success' }));
+    }),
+  // proxy/storage/:experimentName mocks
+  rest.get(`${PROXY_URL}${endpoints.proxy.storage.url}/:experimentName/:thumbnailFilename`,
   rest.post(`${PROXY_URL}${endpoints.proxy.storage.clone.url}/:experimentName`,
     (req, res, ctx) => {
       return res(ctx.json({ 'status': 'success' }));
@@ -82,29 +106,37 @@ export const handlers = [
     return res(ctx.json(MockSimulations[0]));
   }),
   rest.get(`${PROXY_URL}${endpoints.proxy.server.url}/:serverID`, (req, res, ctx) => {
+  rest.get(`${PROXY_URL}${endpoints.proxy.server.url}/:serverID`, (req, res, ctx) => {
     return res(ctx.json(MockServerConfig));
   }),
+  rest.get(`${PROXY_URL}${endpoints.proxy.identity.me.url}`, (req, res, ctx) => {
   rest.get(`${PROXY_URL}${endpoints.proxy.identity.me.url}`, (req, res, ctx) => {
     return res(ctx.json(MockUsers[0]));
   }),
   rest.get(`${PROXY_URL}${endpoints.proxy.identity.me.groups.url}`, (req, res, ctx) => {
+  rest.get(`${PROXY_URL}${endpoints.proxy.identity.me.groups.url}`, (req, res, ctx) => {
     return res(ctx.json(MockUserGroups));
   }),
+  rest.get(`${PROXY_URL}${endpoints.proxy.identity.url}${endpoints.proxy.identity.gdpr.url}`,
   rest.get(`${PROXY_URL}${endpoints.proxy.identity.url}${endpoints.proxy.identity.gdpr.url}`,
     (req, res, ctx) => {
       return res(ctx.json(MockGDPR));
     }),
   rest.get(`${PROXY_URL}${endpoints.proxy.identity.url}/:userID`, (req, res, ctx) => {
+  rest.get(`${PROXY_URL}${endpoints.proxy.identity.url}/:userID`, (req, res, ctx) => {
     return res(ctx.json(MockUsers[1]));
   }),
+  rest.post(`${PROXY_URL}${endpoints.proxy.identity.url}${endpoints.proxy.identity.gdpr.url}`,
   rest.post(`${PROXY_URL}${endpoints.proxy.identity.url}${endpoints.proxy.identity.gdpr.url}`,
     (req, res, ctx) => {
       return res(ctx.json({ 'status': 'success' }));
     }),
   rest.get(`${PROXY_URL}${endpoints.proxy.models.url}/:modelType`,
+  rest.get(`${PROXY_URL}${endpoints.proxy.models.url}/:modelType`,
     (req, res, ctx) => {
       return res(ctx.json(MockModels[0]));
     }),
+  rest.post(`${PROXY_URL}${endpoints.proxy.models.url}/:modelType/:modelName`,
   rest.post(`${PROXY_URL}${endpoints.proxy.models.url}/:modelType/:modelName`,
     (req, res, ctx) => {
       return res(ctx.json(MockCustomModels[2]));

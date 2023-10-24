@@ -3,6 +3,7 @@ const EXPERIMENT_STATE = {
   STARTED: 'started',
   PAUSED: 'paused',
   COMPLETED: 'completed',
+  COMPLETED: 'completed',
   FAILED: 'failed',
   STOPPED: 'stopped',
   UNDEFINED: '---/---'
@@ -29,4 +30,5 @@ const EXPERIMENT_RIGHTS = {
   }
 };
 
+module.exports = { EXPERIMENT_STATE, EXPERIMENT_RIGHTS, EXPERIMENT_FINAL_STATE };
 module.exports = { EXPERIMENT_STATE, EXPERIMENT_RIGHTS, EXPERIMENT_FINAL_STATE };

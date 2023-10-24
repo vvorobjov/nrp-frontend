@@ -3,6 +3,8 @@ import React from 'react';
 import MqttClientService from '../../services/mqtt-client-service';
 import NrpUserService from '../../services/proxy/nrp-user-service.js';
 import EventProxyService from '../../services/proxy/event-proxy-service';
+import NrpUserService from '../../services/proxy/nrp-user-service.js';
+import EventProxyService from '../../services/proxy/event-proxy-service';
 import ExperimentStorageService from '../../services/experiments/files/experiment-storage-service';
 
 import frontendConfig from '../../config.json';
@@ -50,8 +52,55 @@ export default class NrpCoreDashboard extends React.Component {
     EventProxyService.instance.prependListener(EventProxyService.EVENTS.CONNECTED, this.onProxyConnected);
     // add listener to the beginning, because EventProxyService listener throws and prevents other listeners to execute
     EventProxyService.instance.prependListener(EventProxyService.EVENTS.DISCONNECTED, this.onProxyDisconnected);
+    MqttClientService.instance.on(MqttClientService.EVENTS.DISCONNECTED, this.onMqttClientDisconnected);
+    EventProxyService.instance.prependListener(EventProxyService.EVENTS.CONNECTED, this.onProxyConnected);
+    // add listener to the beginning, because EventProxyService listener throws and prevents other listeners to execute
+    EventProxyService.instance.prependListener(EventProxyService.EVENTS.DISCONNECTED, this.onProxyDisconnected);
   }
 
+  /**
+   * is invoked immediately before a component is unmounted and destroyed.
+   * Perform any necessary cleanup in this method,
+   * such as invalidating timers, canceling network requests,
+   * or cleaning up any subscriptions that were created in componentDidMount().
+   */
+  componentWillUnmount() {
+    MqttClientService.instance.off(MqttClientService.EVENTS.CONNECTED, this.onMqttClientConnected);
+    MqttClientService.instance.off(MqttClientService.EVENTS.DISCONNECTED, this.onMqttClientDisconnected);
+    EventProxyService.instance.off(EventProxyService.EVENTS.CONNECTED, this.onProxyConnected);
+    EventProxyService.instance.off(EventProxyService.EVENTS.DISCONNECTED, this.onProxyDisconnected);
+  }
+
+  /**
+   * Sets the component state when the MQTT connection trigger is emitted.
+   * @listens MqttClientService.EVENTS.CONNECTED
+   */
+  onMqttClientConnected = () => {
+    this.setState({ mqttConnected: true});
+  }
+
+  /**
+   * Sets the component state when the MQTT connection problem trigger is emitted
+   * @listens MqttClientService.EVENTS.DISCONNECTED
+   */
+  onMqttClientDisconnected = () => {
+    this.setState({ mqttConnected: false});
+  }
+
+  /**
+   * Sets the component state when the Proxy connection trigger is emitted
+   * @listens EventProxyService.EVENTS.CONNECTED
+   */
+  onProxyConnected = () => {
+    this.setState({ proxyConnected: true, reconnectDisabled: true});
+  }
+
+  /**
+   * Sets the component state when the Proxy connection problem trigger is emitted
+   * @listens EventProxyService.EVENTS.DISCONNECTED
+   */
+  onProxyDisconnected = () => {
+    this.setState({ proxyConnected: false, reconnectDisabled: false});
   /**
    * is invoked immediately before a component is unmounted and destroyed.
    * Perform any necessary cleanup in this method,
@@ -164,6 +213,7 @@ NrpCoreDashboard.CONSTANTS = Object.freeze({
       return <NrpCoreDashboard />;
     },
     getIcon: () => {
+      return <DashboardIcon/>;
       return <DashboardIcon/>;
     }
   }

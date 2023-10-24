@@ -8,6 +8,8 @@ import { EXPERIMENT_STATE } from '../../services/experiments/experiment-constant
 import ExperimentExecutionService from '../../services/experiments/execution/experiment-execution-service.js';
 import ExperimentWorkbenchService from '../experiment-workbench/experiment-workbench-service';
 import ServerResourcesService from '../../services/experiments/execution/server-resources-service.js';
+import ExperimentWorkbenchService from '../experiment-workbench/experiment-workbench-service';
+import ServerResourcesService from '../../services/experiments/execution/server-resources-service.js';
 
 import './simulation-details.css';
 
@@ -46,6 +48,12 @@ class SimulationDetails extends React.Component {
     });
   }
 
+  /**
+   * Join the running simulation.
+   * @param {object} simulationInfo the description of the running simulation
+   *
+   * Opens experiment workbench and sets the running simulation ID in ExperimentWorkbenchService
+   */
   /**
    * Join the running simulation.
    * @param {object} simulationInfo the description of the running simulation

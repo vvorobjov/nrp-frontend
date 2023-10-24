@@ -118,6 +118,8 @@ class AuthenticationService {
   checkForNewLocalTokenToStore() {
     // const path = window.location.pathname;
     const path = window.location.href;
+    // const path = window.location.pathname;
+    const path = window.location.href;
 
     const accessTokenMatch = /&access_token=([^&]*)/.exec(path);
     if (!accessTokenMatch || !accessTokenMatch[1]) {

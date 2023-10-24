@@ -118,6 +118,7 @@ class ExperimentExecutionService extends HttpService {
    * @param {object} serverConfiguration - configuration of server
    * @param {function} progressCallback - a callback for progress updates
    * @returns {object} simulation endpoint response and server url
+   * @returns {object} simulation endpoint response and server url
    */
   launchExperimentOnServer(
     experimentID,
@@ -156,6 +157,19 @@ class ExperimentExecutionService extends HttpService {
           resolve({'simulation': response, 'serverURL': serverURL});
         })
         .catch(reject);
+      // <<Response: simulation
+      // HTTP 400: Experiment configuration is not valid
+      // HTTP 402: Another simulation is already running on the server
+      // HTTP 201: Simulation created successfully
+      // JSON:
+      // {
+      //     'experimentID': string
+      //     'environmentConfiguration': string
+      //     'state': string,
+      //     'simulationID': int
+      //     'owner': string
+      //     'creationDate': string
+      // }
       // <<Response: simulation
       // HTTP 400: Experiment configuration is not valid
       // HTTP 402: Another simulation is already running on the server
@@ -214,6 +228,7 @@ class ExperimentExecutionService extends HttpService {
               }
 
               // STARTED/PAUSED/HALTED --(stop)--> STOPPED
+              else if (data.state !== EXPERIMENT_STATE.FAILED) {
               else if (data.state !== EXPERIMENT_STATE.FAILED) {
                 return updateSimulationState(EXPERIMENT_STATE.STOPPED);
               }
