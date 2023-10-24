@@ -8,12 +8,10 @@ import { Description } from '@material-ui/icons';
 import NrpCoreDashboard from '../nrp-core-dashboard/nrp-core-dashboard';
 import TransceiverFunctionEditor from '../tf-editor/tf-editor';
 
-import DescriptionIcon from '@material-ui/icons/Description';
-import ListAltIcon from '@material-ui/icons/ListAlt';
 import TimelineIcon from '@material-ui/icons/Timeline';
 import DataVisualizer from '../data-visualizer/data-visualizer';
 import { Modal, Button, Accordion, Dropdown, DropdownButton, Card, Form } from 'react-bootstrap';
-import Plot from 'react-plotly.js';import TransceiverFunctionEditor from '../tf-editor/tf-editor';
+import Plot from 'react-plotly.js';
 import XpraView from '../xpra/xpra-view';
 import { SIM_TOOL } from '../constants';
 
@@ -237,11 +235,12 @@ ExperimentToolsService.TOOLS = Object.freeze({
       'component': 'DataVisualizer'
     },
     flexlayoutFactoryCb: () =>  {
-      return <DataVisualizer/>;//<TransceiverFunctionEditor/>;
+      return <DataVisualizer/>;
     },
     getIcon: () => {
       return <TimelineIcon/>;
     }
+  }
 });
 
 

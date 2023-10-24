@@ -1,14 +1,9 @@
 import { HttpProxyService, NRPProxyError } from '../../proxy/http-proxy-service';
-import { HttpProxyService, NRPProxyError } from '../../proxy/http-proxy-service';
 import { EXPERIMENT_RIGHTS } from '../experiment-constants';
 
 import endpoints from '../../proxy/data/endpoints.json';
 import DialogService from '../../dialog-service.js';
 
-const SCAN_STORAGE_URL = `${endpoints.proxy.storage.scanStorage.url}`;
-const storageURL = `${endpoints.proxy.storage.url}`;
-const storageExperimentsURL = `${endpoints.proxy.storage.experiments.url}`;
-const cloneURL = `${endpoints.proxy.storage.clone.url}`;
 const SCAN_STORAGE_URL = `${endpoints.proxy.storage.scanStorage.url}`;
 const storageURL = `${endpoints.proxy.storage.url}`;
 const storageExperimentsURL = `${endpoints.proxy.storage.experiments.url}`;
@@ -23,18 +18,11 @@ const SINGLETON_ENFORCER = Symbol();
  * that the user has authenticated successfully.
  */
 class ExperimentStorageService extends HttpProxyService {
-class ExperimentStorageService extends HttpProxyService {
   constructor(enforcer) {
     super();
     if (enforcer !== SINGLETON_ENFORCER) {
       throw new Error('Use ' + this.constructor.name + '.instance');
     }
-
-    this.default_DataPackProcessor = 'tf';
-    this.default_SimulationLoop = 'FTILoop';
-    this.default_SimulationTimestep = 0.01;
-    this.default_ProcessLauncherType = 'Basic';
-    this.default_SimulationTimeout = 0;
 
     this.default_DataPackProcessor = 'tf';
     this.default_SimulationLoop = 'FTILoop';
@@ -115,10 +103,7 @@ class ExperimentStorageService extends HttpProxyService {
   /**
    * Retrieves the thumbnail image for a given experiment.
    * @param {string} experimentName - name of the experiment (directory on the server)
-   * @param {string} experimentName - name of the experiment (directory on the server)
    * @param {string} thumbnailFilename - name of the thumbnail file
-   *
-   * TODO: [NRRPLT-8681] Fix endpoint
    *
    * TODO: [NRRPLT-8681] Fix endpoint
    *
@@ -138,8 +123,6 @@ class ExperimentStorageService extends HttpProxyService {
   sortExperiments(experimentList) {
     experimentList = experimentList.sort(
       (a, b) => {
-        let nameA = a.configuration.SimulationName.toLowerCase();
-        let nameB = b.configuration.SimulationName.toLowerCase();
         let nameA = a.configuration.SimulationName.toLowerCase();
         let nameB = b.configuration.SimulationName.toLowerCase();
         if (nameA < nameB) {
@@ -178,25 +161,7 @@ class ExperimentStorageService extends HttpProxyService {
       if (!experiment.configuration.SimulationTimeout) {
         experiment.configuration.SimulationTimeout = this.default_SimulationTimeout;
       }
-      if (!experiment.configuration.DataPackProcessor) {
-        experiment.configuration.DataPackProcessor = this.default_DataPackProcessor;
-      }
-      if (!experiment.configuration.SimulationLoop) {
-        experiment.configuration.SimulationLoop = this.default_SimulationLoop;
-      }
-      if (!experiment.configuration.SimulationTimestep) {
-        experiment.configuration.SimulationTimestep = this.default_SimulationTimestep;
-      }
-
-      if (!experiment.configuration.ProcessLauncherType) {
-        experiment.configuration.ProcessLauncherType = this.default_ProcessLauncherType;
-      }
-
-      if (!experiment.configuration.SimulationTimeout) {
-        experiment.configuration.SimulationTimeout = this.default_SimulationTimeout;
-      }
       // retrieve the experiment thumbnail
-      // TODO: [NRRPLT-8681]
       // TODO: [NRRPLT-8681]
       /*experimentUpdates.push(this.getThumbnail(experiment.name, experiment.configuration.thumbnail)
         .then(thumbnail => {
@@ -258,7 +223,6 @@ class ExperimentStorageService extends HttpProxyService {
   /**
    * Gets the list of the experiment files from the storage.
    * @param {string} experimentName - the name of the experiment (experiment.name)
-   * @param {string} experimentName - the name of the experiment (experiment.name)
    *
    * @returns {Array} the list of experiment files
    */
@@ -273,7 +237,6 @@ class ExperimentStorageService extends HttpProxyService {
   /**
    * Gets a file from the storage as a blob.
    * @param {string} experimentName - name of the experiment (directory on the server)
-   * @param {string} experimentName - name of the experiment (directory on the server)
    * @param {string} filename - name of the file
    * @param {Boolean} byName - whether to check for the file by name or not
    *
@@ -286,7 +249,6 @@ class ExperimentStorageService extends HttpProxyService {
 
   /**
    * Gets a file from the storage as text.
-   * @param {string} experimentName - name of the experiment (directory on the server)
    * @param {string} experimentName - name of the experiment (directory on the server)
    * @param {string} filename - name of the file
    * @param {Boolean} byName - whether to check for the file by name or not (default TRUE)
@@ -303,7 +265,6 @@ class ExperimentStorageService extends HttpProxyService {
    * Called by other functions, not to be called independently.
    *
    * @param {string} experimentName - name of the experiment (directory on the server)
-   * @param {string} experimentName - name of the experiment (directory on the server)
    * @param {string} entityName - name of the entity
    * @param {Boolean} byname - whether to check for the entity by name or not
    * @param {string} type - folder or file
@@ -318,20 +279,12 @@ class ExperimentStorageService extends HttpProxyService {
         type: type
       }
     );
-    const url = this.createRequestURL(
-      `${endpoints.proxy.storage.url}/${experimentName}/${entityName}`,
-      {
-        byname: byname,
-        type: type
-      }
-    );
 
     return this.httpRequestDELETE(url);
   }
 
   /**
    * Deletes an experiment file from the storage.
-   * @param {string} experimentName - name of the experiment (directory on the server)
    * @param {string} experimentName - name of the experiment (directory on the server)
    * @param {string} filename - name of the file
    * @param {Boolean} byname - whether to check for the file by name or not
@@ -345,7 +298,6 @@ class ExperimentStorageService extends HttpProxyService {
   /**
    * Deletes an experiment folder from the storage.
    * @param {string} experimentName - name of the experiment (directory on the server)
-   * @param {string} experimentName - name of the experiment (directory on the server)
    * @param {string} folderName - name of the folder
    * @param {Boolean} byname - whether to check for the folder by name or not
    *
@@ -358,10 +310,7 @@ class ExperimentStorageService extends HttpProxyService {
   /**
    * Deletes an experiment from storage.
    * @param {string} experimentName name of the experiment
-   * @param {string} experimentName name of the experiment
    */
-  async deleteExperiment(experimentName) {
-    let url = storageURL + '/' + experimentName;
   async deleteExperiment(experimentName) {
     let url = storageURL + '/' + experimentName;
     return this.httpRequestDELETE(url);
@@ -369,7 +318,6 @@ class ExperimentStorageService extends HttpProxyService {
 
   /**
    * Creates a file in an experiment folder from the storage.
-   * @param {string} experimentName - name of the experiment (directory on the server)
    * @param {string} experimentName - name of the experiment (directory on the server)
    * @param {string} filename - name of the file
    * @param data - the file contents in the corresponding

@@ -8,20 +8,15 @@ import { FaTrash, FaFileExport, FaShareAlt, FaClone } from 'react-icons/fa';
 import { VscTriangleUp, VscTriangleDown, VscCheck, VscEdit, VscDiscard} from 'react-icons/vsc';
 import { AiFillExperiment } from 'react-icons/ai';
 // import { GoFileSubmodule } from 'react-icons/go';
-// import { GoFileSubmodule } from 'react-icons/go';
 
-// import timeDDHHMMSS from '../../utility/time-filter.js';
-// import ExperimentExecutionService from '../../services/experiments/execution/experiment-execution-service.js';
 // import timeDDHHMMSS from '../../utility/time-filter.js';
 // import ExperimentExecutionService from '../../services/experiments/execution/experiment-execution-service.js';
 import PublicExperimentsService from '../../services/experiments/files/public-experiments-service.js';
 import ExperimentStorageService from '../../services/experiments/files/experiment-storage-service.js';
 import RemoveExperimentDialog from './remove-experiment-dialog';
-import RemoveExperimentDialog from './remove-experiment-dialog';
 
 import SimulationDetails from './simulation-details';
 import ExperimentOverview from '../experiments-overview/experiments-overview.js';
-import timeDDHHMMSS from '../../utility/time-filter';
 import timeDDHHMMSS from '../../utility/time-filter';
 
 import './experiment-list-element.css';
@@ -38,7 +33,6 @@ const CLUSTER_THRESHOLDS = {
 };
 const SHORT_DESCRIPTION_LENGTH = 200;
 
-class ExperimentListElement extends React.Component {
 class ExperimentListElement extends React.Component {
   constructor(props) {
     super(props);
@@ -71,12 +65,6 @@ class ExperimentListElement extends React.Component {
     if (this.wrapperRef && !this.wrapperRef.current.contains(event.target)) {
       this.setState({ selected: false });
     }
-  }
-
-  openExperimentWorkbench = (expID) => {
-    this.props.history.push({
-      pathname: '/experiment/' + expID
-    });
   }
 
   openExperimentWorkbench = (expID) => {
@@ -121,10 +109,6 @@ class ExperimentListElement extends React.Component {
     this.setState({showRemoveDialog: show});
   }
 
-  showRemoveDialog(show) {
-    this.setState({showRemoveDialog: show});
-  }
-
   isLaunchDisabled() {
     let isDisabled = !this.props.experiment.rights.launch ||
       this.props.availableServers.length === 0 ||
@@ -145,7 +129,6 @@ class ExperimentListElement extends React.Component {
 
     return isDisabled;
     /*|| pageState.deletingExperiment*/
-  };
   };
 
   render() {
@@ -168,72 +151,13 @@ class ExperimentListElement extends React.Component {
         />
 
         {/* TODO: the thumbnailURL is empty for experiments (not templates) view */}
-        {/* This is the remove dialog */}
-        <RemoveExperimentDialog visible={this.state.showRemoveDialog}
-          setVisibility={(visible) => this.showRemoveDialog(visible)}
-          removeExperiment={async () => {
-            await ExperimentStorageService.instance.deleteExperiment(exp.id);
-            ExperimentStorageService.instance.getExperiments(true);
-          }}
-        />
-
-        {/* TODO: the thumbnailURL is empty for experiments (not templates) view */}
         <div className='list-entry-left' style={{ position: 'relative' }}>
-          <img className='entity-thumbnail'
-            src={exp.thumbnailURL ? exp.thumbnailURL : '/thumbnails/Two-sided_Brain.jpg'} alt='' />
           <img className='entity-thumbnail'
             src={exp.thumbnailURL ? exp.thumbnailURL : '/thumbnails/Two-sided_Brain.jpg'} alt='' />
         </div>
 
         <div className='list-entry-middle flex-container up-down'>
           <div className='flex-container left-right title-line'>
-            {this.state.templateTab || !this.state.nameEditingVisible ?
-              <div className='h4'>
-                {this.state.visibleName}
-              </div>
-              :
-              null
-            }
-            {!this.state.templateTab && this.state.nameEditingVisible ?
-              <input type='text'
-                value={this.state.edibleName}
-                disabled={!this.state.nameEditingVisible}
-                onChange={(e) => {
-                  this.setState({edibleName: e.target.value});
-                }}/>
-              :
-              null
-            }
-            { this.state.nameEditingVisible && !this.state.templateTab ?
-              <button className='list-entry-edit-buttons' onClick={() => {
-                this.setState({ nameEditingVisible: false });
-                this.setState({ visibleName: this.state.edibleName});
-                ExperimentStorageService.instance.renameExperiment(exp.id, this.state.edibleName);
-              }}>
-                <VscCheck/>
-              </button>
-              :
-              null
-            }
-            { this.state.nameEditingVisible && !this.state.templateTab ?
-              <button className='list-entry-edit-buttons' onClick={() => {
-                this.setState({ nameEditingVisible: false });
-                this.setState({ edibleName: this.state.visibleName});
-              }}>
-                <VscDiscard/>
-              </button>
-              :
-              null
-            }
-            { !this.state.nameEditingVisible && !this.state.templateTab ?
-              <button className='list-entry-edit-buttons' onClick={() => this.setState(
-                { nameEditingVisible: true })}>
-                <VscEdit/>
-              </button>
-              :
-              null
-            }
-
             {this.state.templateTab || !this.state.nameEditingVisible ?
               <div className='h4'>
                 {this.state.visibleName}
@@ -292,17 +216,12 @@ class ExperimentListElement extends React.Component {
               && config.SimulationDescription.length > SHORT_DESCRIPTION_LENGTH ?
               config.SimulationDescription.substr(0, SHORT_DESCRIPTION_LENGTH) + ' ...' :
               config.SimulationDescription}
-            {!this.state.selected && config.SimulationDescription
-              && config.SimulationDescription.length > SHORT_DESCRIPTION_LENGTH ?
-              config.SimulationDescription.substr(0, SHORT_DESCRIPTION_LENGTH) + ' ...' :
-              config.SimulationDescription}
             <br />
           </div>
 
           {this.state.selected &&
             <div className='experiment-details' >
               <i>
-                Timeout: {timeDDHHMMSS(parseFloat(config.SimulationTimeout))}
                 Timeout: {timeDDHHMMSS(parseFloat(config.SimulationTimeout))}
               </i>
               <br />
@@ -311,17 +230,14 @@ class ExperimentListElement extends React.Component {
               </i>
               <br />*/}
               {/* <div style={{ display: 'flex' }}>
-              {/* <div style={{ display: 'flex' }}>
                 <i style={{ marginTop: '4px' }}>Server status: </i>
                 <i className={'server-icon ' + this.getServerStatusClass()}
                   title={this.getAvailabilityInfo()}></i>
-              </div> */}
               </div> */}
             </div>
           }
 
           {this.state.selected &&
-            <div className='list-entry-buttons flex-container' >
             <div className='list-entry-buttons flex-container' >
               <div className='btn-group' role='group' >
                 {exp.rights.launch ?
@@ -330,24 +246,9 @@ class ExperimentListElement extends React.Component {
                       this.openExperimentWorkbench(exp.id);
                     }}
                   >
-                  <Button className="nrp-btn btn-default"
-                    onClick={() => {
-                      this.openExperimentWorkbench(exp.id);
-                    }}
-                  >
                     <AiFillExperiment className='icon' />Open
                   </Button>
-                  </Button>
                   : null}
-
-                {/* Files button
-                TODO: [NRRPLT-8682]
-                Change Files icon and make the file aditor to be the opened tab in the experiment-workbench
-                {<Link to={'/experiment/' + exp.id}
-                  className="nrp-btn btn-default" disabled={this.isLaunchDisabled()}>
-                  <AiFillExperiment className='icon' />Files
-                </Link>
-                } */}
 
                 {/* Files button
                 TODO: [NRRPLT-8682]
@@ -378,22 +279,11 @@ class ExperimentListElement extends React.Component {
                       this.showRemoveDialog(true);
                     }}
                   >
-                  <Button className='nrp-btn btn-default'
-                    variant='warning'
-                    onClick={() => {
-                      this.showRemoveDialog(true);
-                    }}
-                  >
                     <FaTrash className='icon' />Delete
-                  </Button>
                   </Button>
                   : null}
 
                 {/* Records button */}
-                {/* {exp.rights.launch ?
-                  <Button className='nrp-btn btn-default'
-                    variant='secondary'
-                    disabled={true}>
                 {/* {exp.rights.launch ?
                   <Button className='nrp-btn btn-default'
                     variant='secondary'
@@ -403,8 +293,6 @@ class ExperimentListElement extends React.Component {
                       <VscTriangleDown className='icon' />
                     }
                     Recordings
-                  </Button>
-                  : null} */}
                   </Button>
                   : null} */}
 
@@ -431,8 +319,6 @@ class ExperimentListElement extends React.Component {
                 {exp.rights.launch && exp.joinableServers.length > 0 ?
                   <Button className='nrp-btn btn-default'
                     variant='primary'
-                  <Button className='nrp-btn btn-default'
-                    variant='primary'
                     onClick={() => {
                       this.setState({ showSimDetails: !this.state.showSimDetails });
                     }}>
@@ -442,27 +328,9 @@ class ExperimentListElement extends React.Component {
                     }
                     Simulations
                   </Button>
-                  </Button>
                   : null}
 
                 {/* Clone button */}
-                <Button className='nrp-btn btn-default' disabled={!exp.rights.clone}
-                  variant='secondary'
-                  onClick={async () => {
-                    this.setState({ cloneInProgress: true });
-                    // exp.name property belongs to the storage experiments
-                    if (exp.name){
-                      // Clone storage experiment
-                      await ExperimentStorageService.instance.cloneExperiment(exp);
-                    }
-                    else {
-                      // Clone template experiment
-                      await PublicExperimentsService.instance.cloneExperiment(exp);
-                    }
-                    // Wait the cloning to finish
-                    await ExperimentStorageService.instance.getExperiments(true).then(() => {
-                      this.setState({cloneInProgress: false});
-                    });
                 <Button className='nrp-btn btn-default' disabled={!exp.rights.clone}
                   variant='secondary'
                   onClick={async () => {
@@ -488,24 +356,13 @@ class ExperimentListElement extends React.Component {
                     : <FaClone className='icon' />
                   } Clone
                 </Button>
-                  }}
-                >
-                  {this.state.cloneInProgress
-                    ? <Spinner animation="border" variant="secondary" size="sm" />
-                    : <FaClone className='icon' />
-                  } Clone
-                </Button>
 
                 {/* Shared button */}
                 {exp.rights.launch ?
                   <Button className='nrp-btn btn-default'
                     variant='secondary'
                     disabled={true}>
-                  <Button className='nrp-btn btn-default'
-                    variant='secondary'
-                    disabled={true}>
                     <FaShareAlt className='icon' />Share
-                  </Button>
                   </Button>
                   : null}
               </div>
@@ -523,17 +380,9 @@ class ExperimentListElement extends React.Component {
             :
             null
           }
-          {exp.rights.launch ?
-            <div className='experiment-clone-date'>
-              Cloning date: {config.cloneDate}
-            </div>
-            :
-            null
-          }
         </div>
       </div>
     );
   }
 }
-export default withRouter(ExperimentListElement);
 export default withRouter(ExperimentListElement);

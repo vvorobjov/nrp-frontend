@@ -1,8 +1,6 @@
 import React from 'react';
 import FlexLayout from 'flexlayout-react';
 
-const { version } = require('../../../package.json');
-
 import { withCookies } from 'react-cookie';
 
 import ExperimentTools from './experiment-tools';
@@ -43,10 +41,7 @@ import FlightTakeoffIcon from '@material-ui/icons/FlightTakeoff';
 
 import CircularProgress from '@material-ui/core/CircularProgress';
 
-import ListItem from '@material-ui/core/ListItem';
-import ListItemIcon from '@material-ui/core/ListItemIcon';
-import ListItemText from '@material-ui/core/ListItemText';
-
+const { version } = require('../../../package.json');
 
 const jsonBaseLayout = {
   global: {},
@@ -65,8 +60,11 @@ const jsonBaseLayout = {
             'type': 'tab',
             'name': 'Edit experiment files',
             'component': 'TransceiverFunctionEditor'
-            'name': 'Edit experiment files',
-            'component': 'TransceiverFunctionEditor'
+          },
+          {
+            'type': 'tab',
+            'name': 'Data Visualizer',
+            'component': 'DataVisualizer'
           }
         ]
       }
@@ -74,111 +72,6 @@ const jsonBaseLayout = {
   }
 };
 
-// TODO: Unify styles with css or mui styles
-const drawerWidth = 240;
-const useStyles = theme => ({
-  root: {
-    display: 'flex'
-  },
-  toolbar: {
-    paddingRight: 24 // keep right padding when drawer closed
-  },
-  toolbarIcon: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'flex-end',
-    padding: '0 8px',
-    ...theme.mixins.toolbar
-  },
-  appBar: {
-    position: 'absolute',
-    zIndex: theme.zIndex.drawer + 1,
-    transition: theme.transitions.create(['width', 'margin'], {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.leavingScreen
-    })
-  },
-  appBarShift: {
-    marginLeft: drawerWidth,
-    width: `calc(100% - ${drawerWidth}px)`,
-    transition: theme.transitions.create(['width', 'margin'], {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.enteringScreen
-    })
-  },
-  menuButton: {
-    marginRight: 36
-  },
-  menuButtonHidden: {
-    display: 'none'
-  },
-  controlButton: {
-    borderWidth: '0',
-    shape: {
-      borderRadius: 0
-    }
-  },
-  title: {
-    flexGrow: 1
-  },
-  drawerPaper: {
-    position: 'relative',
-    whiteSpace: 'nowrap',
-    width: drawerWidth,
-    transition: theme.transitions.create('width', {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.enteringScreen
-    })
-  },
-  drawerPaperClose: {
-    overflowX: 'hidden',
-    transition: theme.transitions.create('width', {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.leavingScreen
-    }),
-    width: theme.spacing(7),
-    [theme.breakpoints.up('sm')]: {
-      width: theme.spacing(9)
-    }
-  },
-  appBarSpacer: theme.mixins.toolbar,
-  content: {
-    position: 'relative',
-    flexGrow: 1,
-    height: '100vh',
-    overflow: 'hidden'
-  },
-  container: {
-    position: 'relative',
-    paddingTop: theme.spacing(1),
-    paddingBottom: theme.spacing(0),
-    direction: 'column',
-    display: 'flex'
-  },
-  controlContainer: {
-    height: 50,
-    marginLeft: theme.spacing(1),
-    marginRight: theme.spacing(1),
-    padding: theme.spacing(1),
-    display: 'flex',
-    overflow: 'auto',
-    flexDirection: 'row',
-    flexBasis: 0,
-    flexGrow: 1,
-    alignItems: 'center'
-  },
-  // TODO: Fix vertical filling
-  contentContainer: {
-    height: '80vh',
-    padding: theme.spacing(1),
-    display: 'flex',
-    overflow: 'auto',
-    flexDirection: 'column'
-  }
-});
-
-
-class ExperimentWorkbench extends React.Component {
 // TODO: Unify styles with css or mui styles
 const drawerWidth = 240;
 const useStyles = theme => ({
@@ -557,21 +450,7 @@ class ExperimentWorkbench extends React.Component {
     }
   }
 
-  getStatusStyle() {
-    switch (this.state.simulationState) {
-    case EXPERIMENT_STATE.STARTED:
-      return 'simulation-status-started';
-    case EXPERIMENT_STATE.PAUSED:
-      return 'simulation-status-paused';
-    case EXPERIMENT_STATE.FAILED:
-      return 'simulation-status-error';
-    default:
-      return 'simulation-status-default';
-    }
-  }
-
   render() {
-    const { classes } = this.props;
     const { classes } = this.props;
     return (
       <div className={classes.root}>

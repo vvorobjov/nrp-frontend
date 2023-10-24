@@ -76,9 +76,6 @@ class NotificationDialog extends React.Component{
                     delay={notification.type === 'Warning' ? this.warnDelayMS : this.infoDelayMS}
                     animation={true} autohide={true}>
                     <Toast.Header className={notification.type === 'Warning' ? 'warning' : 'info'} >
-                    delay={notification.type === 'Warning' ? this.warnDelayMS : this.infoDelayMS}
-                    animation={true} autohide={true}>
-                    <Toast.Header className={notification.type === 'Warning' ? 'warning' : 'info'} >
                       <strong className='mr-auto'>{notification.type}</strong>
                     </Toast.Header>
                     <Toast.Body>

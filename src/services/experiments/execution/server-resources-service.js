@@ -1,11 +1,7 @@
 import DialogService from '../../dialog-service.js';
 import { HttpProxyService } from '../../proxy/http-proxy-service';
-import { HttpProxyService } from '../../proxy/http-proxy-service';
 
 import endpoints from '../../proxy/data/endpoints.json';
-
-const proxyServerURL = `${endpoints.proxy.server.url}`;
-const availableServersURL = `${endpoints.proxy.availableServers.url}`;
 
 const proxyServerURL = `${endpoints.proxy.server.url}`;
 const availableServersURL = `${endpoints.proxy.availableServers.url}`;
@@ -16,7 +12,6 @@ const SINGLETON_ENFORCER = Symbol();
 /**
  * Service handling server resources for simulating experiments.
  */
-class ServerResourcesService extends HttpProxyService {
 class ServerResourcesService extends HttpProxyService {
   constructor(enforcer) {
     super();

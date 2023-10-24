@@ -106,15 +106,11 @@ export default class ImportExperimentButtons extends React.Component {
         {this.state.importFolderResponse
           ? <div className='import-popup'>
             <div className='alert alert-success' role='alert'>
-          ? <div className='import-popup'>
-            <div className='alert alert-success' role='alert'>
               <p>The experiment folder
                 <b>{' ' + this.state.importFolderResponse.zipBaseFolderName}</b> has been succesfully imported as
                 <b>{' ' + this.state.importFolderResponse.newName}</b>.
               </p>
             </div>
-            <div className='text-right'>
-              <button className='btn btn-success' onClick={() => this.importFolderPopupClick()}>Got it!</button>
             <div className='text-right'>
               <button className='btn btn-success' onClick={() => this.importFolderPopupClick()}>Got it!</button>
             </div>
@@ -124,8 +120,6 @@ export default class ImportExperimentButtons extends React.Component {
 
         {/* Import zip pop-up */}
         {this.state.importZipResponses
-          ? <div className='import-popup'>
-            <div className='alert alert-success' role='alert'>
           ? <div className='import-popup'>
             <div className='alert alert-success' role='alert'>
               <p>{this.state.importZipResponses.numberOfZips} successfully imported zip files.</p>
@@ -145,8 +139,6 @@ export default class ImportExperimentButtons extends React.Component {
         {this.state.scanStorageResponse
           ? <div className='import-popup'>
             <div className='alert alert-success' role='alert'>
-          ? <div className='import-popup'>
-            <div className='alert alert-success' role='alert'>
               <p>{this.state.scanStorageResponse.addedFoldersNumber} added folders,
                 {' ' + this.state.scanStorageResponse.deletedFoldersNumber} deleted folders.</p>
             </div>
@@ -159,8 +151,6 @@ export default class ImportExperimentButtons extends React.Component {
             <p><b>{this.state.scanStorageResponse.deletedFolders !== ''
               ? this.state.scanStorageResponse.deletedFolders
               : 'none' }</b></p>
-            <div className='text-right'>
-              <button className='btn btn-success' onClick={() => this.scanStoragePopupClick()}>Got it!</button>
             <div className='text-right'>
               <button className='btn btn-success' onClick={() => this.scanStoragePopupClick()}>Got it!</button>
             </div>

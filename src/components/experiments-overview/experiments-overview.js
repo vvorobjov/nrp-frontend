@@ -5,7 +5,6 @@ import 'react-tabs/style/react-tabs.css';
 import ExperimentStorageService from '../../services/experiments/files/experiment-storage-service.js';
 import PublicExperimentsService from '../../services/experiments/files/public-experiments-service.js';
 import ServerResourcesService from '../../services/experiments/execution/server-resources-service.js';
-import ServerResourcesService from '../../services/experiments/execution/server-resources-service.js';
 import ExperimentExecutionService from '../../services/experiments/execution/experiment-execution-service.js';
 import RemoteExperimentFilesService from '../../services/experiments/files/remote-experiment-files-service.js';
 
@@ -42,8 +41,6 @@ export default class ExperimentsOverview extends React.Component {
 
   async componentDidMount() {
     this.onUpdateServerAvailability = this.onUpdateServerAvailability.bind(this);
-    ServerResourcesService.instance.addListener(
-      ServerResourcesService.EVENTS.UPDATE_SERVER_AVAILABILITY,
     ServerResourcesService.instance.addListener(
       ServerResourcesService.EVENTS.UPDATE_SERVER_AVAILABILITY,
       this.onUpdateServerAvailability
@@ -150,9 +147,6 @@ export default class ExperimentsOverview extends React.Component {
               startingExperiment={this.state.startingExperiment}
               selectExperimentOverviewTab={(index) => this.setState({ selectedTabIndex: index })}
               templateTab = {false} />
-              startingExperiment={this.state.startingExperiment}
-              selectExperimentOverviewTab={(index) => this.setState({ selectedTabIndex: index })}
-              templateTab = {false} />
           </TabPanel>
           {/* New Experiment */}
           <TabPanel>
@@ -171,9 +165,6 @@ export default class ExperimentsOverview extends React.Component {
             <ExperimentList experiments={this.state.publicExperiments}
               availableServers={this.state.availableServers}
               startingExperiment={this.state.startingExperiment}
-              turnOffEditingBox={() => this.experiments.setState({ nameEditingVisible: false })}
-              selectExperimentOverviewTab={(index) => this.setState({ selectedTabIndex: index })}
-              templateTab = {true} />
               turnOffEditingBox={() => this.experiments.setState({ nameEditingVisible: false })}
               selectExperimentOverviewTab={(index) => this.setState({ selectedTabIndex: index })}
               templateTab = {true} />

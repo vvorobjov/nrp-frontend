@@ -17,7 +17,7 @@ import ReactDOM from 'react-dom';
 import './data-visualizer.css';
 
 /**
- * Generates and renders th data visualizer component.
+ * Generates and renders the data visualizer component.
  *
  * It has 3 elements
  * - Graph Overview for defining the Plot general characteristics
