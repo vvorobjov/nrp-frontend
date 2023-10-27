@@ -6,6 +6,10 @@ import { EventEmitter } from 'events';
 import jspb from '../../node_modules/google-protobuf/google-protobuf';
 
 import frontendConfig from '../config.json';
+import ExperimentWorkbenchService from '../components/experiment-workbench/experiment-workbench-service';
+
+const REGEX_TOPIC_DATATYPES = /[./]?nrp_simulation\/[0-9]+\/data$/;
+const REGEX_SIMULATION_STATUS = /nrp_simulation\/[0-9]+\/status/;
 
 let _instance = null;
 const SINGLETON_ENFORCER = Symbol();
@@ -34,6 +38,7 @@ export default class MqttClientService extends EventEmitter {
     this.mqttBrokerUrl = websocket_s + '://' + frontendConfig.mqtt.url + ':' + frontendConfig.mqtt.port;
 
     this.connect();
+
   }
 
   static get instance() {
@@ -90,6 +95,7 @@ export default class MqttClientService extends EventEmitter {
   }
 
   onMessage(topic, payload, packet) {
+    /*console.info('MqttClientService.onMessage() - topic=' + topic);*/
     if (typeof payload === 'undefined') {
       return;
     }
@@ -97,9 +103,34 @@ export default class MqttClientService extends EventEmitter {
     //Now we see which callbacks have been assigned for a topic
     let subTokens = this.subTokensMap.get(topic);
     if (typeof subTokens !== 'undefined') {
+      let msg;
+      if (REGEX_TOPIC_DATATYPES.test(topic)) {
+        try {
+          msg = JSON.parse(payload.toString());
+        }
+        catch (error) {
+          console.error(error);
+          console.error(payload.toString());
+        }
+      }
+      else if (REGEX_SIMULATION_STATUS.test(topic)) {
+        msg = payload;
+      }
+      else {
+        let protoMessage = ExperimentWorkbenchService.instance.getProtoMsgFromTopic(topic);
+        if (typeof protoMessage === 'undefined') {
+          console.error('could not find protobuf message class for topic "'
+            + topic + '" (' + ExperimentWorkbenchService.instance.getTopicType(topic) + ')');
+          return;
+        }
+        let deserialized = protoMessage.deserializeBinary(payload);
+        let object = deserialized.toObject();
+        msg = object;
+      }
+
       for (var token of subTokens) {
         //Deserializatin of Data must happen here
-        token.callback(payload);
+        token.callback(msg);
       };
     };
 
@@ -124,6 +155,11 @@ export default class MqttClientService extends EventEmitter {
         token.topic,
         [token]
       );
+      this.client.subscribe(topic, (err) => {
+        if (err) {
+          console.error(err);
+        }
+      });
     }
     return token;
   }

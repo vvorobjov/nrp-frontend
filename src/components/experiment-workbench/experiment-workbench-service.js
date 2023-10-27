@@ -1,4 +1,6 @@
 import { EventEmitter } from 'events';
+import jspb from 'google-protobuf';
+import 'nrp-jsproto/dump_msgs_pb';  //missing compilation for wrappers etc.
 
 import MqttClientService from '../../services/mqtt-client-service';
 import DialogService from '../../services/dialog-service';
@@ -24,6 +26,7 @@ class ExperimentWorkbenchService extends EventEmitter {
     this._statusToken = undefined;
     this._xpraUrlsConfig = [];
     this._xpraUrlsConfirmed = [];
+    this._topicAndDataTypeMap = new Map();
 
     ExperimentStorageService.instance.addListener(
       ExperimentStorageService.EVENTS.UPDATE_EXPERIMENTS,
@@ -73,6 +76,34 @@ class ExperimentWorkbenchService extends EventEmitter {
     this._simulationState = state;
   }
 
+  get topicList() {
+    return Array.from(this._topicAndDataTypeMap.keys());
+  }
+  set topicList(topicList) {
+    this._topicAndDataTypeMap = new Map();
+    for (let entry of topicList) {
+      this._topicAndDataTypeMap.set(entry.topic, entry.type);
+    }
+    console.info('set topicList - this._topicAndDataTypeMap:');
+    console.info(this._topicAndDataTypeMap);
+
+    // testing
+    const TEST_CONSOLE_OUTPUT = false;
+    if (TEST_CONSOLE_OUTPUT) {
+      this.testSubscriptions = [];
+      for (let topic of this._topicAndDataTypeMap.keys()) {
+        let message = this.getProtoMsgFromTopic(topic);
+        if (typeof message !== 'undefined') {
+          let subToken = MqttClientService.instance.subscribeToTopic(topic, (msg) => {
+            console.info(topic);
+            console.info(msg);
+          });
+          this.testSubscriptions.push(subToken);
+        }
+      }
+    }
+  }
+
   /**
    * Returns the simulation MQTT description
    * @returns {object} the simulation info
@@ -84,7 +115,7 @@ class ExperimentWorkbenchService extends EventEmitter {
   }
   set simulationInfo(simulationInfo) {
     this._simulationInfo = simulationInfo;
-    //console.info(['ExperimentWorkbenchService - simulationInfo', this._simulationInfo]);
+    console.info(['ExperimentWorkbenchService - set simulationInfo', this._simulationInfo]);
     ExperimentWorkbenchService.instance.emit(
       ExperimentWorkbenchService.EVENTS.SIMULATION_SET,
       this._simulationInfo
@@ -160,6 +191,9 @@ class ExperimentWorkbenchService extends EventEmitter {
   }
 
   setTopics = (simulationInfo) => {
+    console.info('ExpWorkbenchService.setTopics()');
+    console.info('ExpWorkbenchService');
+    console.info(simulationInfo);
     if (this._errorToken) {
       MqttClientService.instance.unsubscribe(this._errorToken);
       this._errorToken = undefined;
@@ -167,6 +201,10 @@ class ExperimentWorkbenchService extends EventEmitter {
     if (this._statusToken) {
       MqttClientService.instance.unsubscribe(this._statusToken);
       this._statusToken = undefined;
+    }
+    if (this._topicsToken) {
+      MqttClientService.instance.unsubscribe(this._topicsToken);
+      this._topicsToken = undefined;
     }
     if (simulationInfo !== undefined) {
       const mqttTopics = MqttClientService.instance.getConfig().mqtt.topics;
@@ -182,7 +220,42 @@ class ExperimentWorkbenchService extends EventEmitter {
       const statusTopic = topicBase + MqttClientService.instance.getConfig().mqtt.topics.status;
       const statusToken = MqttClientService.instance.subscribeToTopic(statusTopic, this.statusMsgHandler);
       this._statusToken = statusToken;
+
+      console.info(['simulationInfo', simulationInfo]);
+      console.info(['this', this]);
+
+      const topicsTopic = topicBase + 'data';
+      console.info('ExpWorkbenchService.setTopics() - subscribing to ' + topicsTopic);
+      this._topicsToken = MqttClientService.instance.subscribeToTopic(topicsTopic, (topicInfo) => {
+        /*console.info('subCallback ' + topicsTopic + ' received topicInfo:');
+        console.info(topicInfo);*/
+        this.topicList = topicInfo;
+      });
     }
+  }
+
+  getTopicType(topic) {
+    return this._topicAndDataTypeMap.get(topic);
+  }
+
+  getProtoMsgFromTopic(topic) {
+    return this.getProtoMsgFromPackageString(this.getTopicType(topic));
+  }
+
+  getProtoMsgFromPackageString(packageString) {
+    if (packageString === undefined) {
+      return;
+    }
+
+    let packageNamespaceArray = packageString.split('.');
+    let protobufMsg = window.proto;
+    packageNamespaceArray.forEach((subpackage) => {
+      if (typeof protobufMsg !== 'undefined') {
+        protobufMsg = protobufMsg[subpackage] || undefined;
+      }
+    });
+
+    return protobufMsg;
   }
 
   /**
@@ -243,6 +316,7 @@ class ExperimentWorkbenchService extends EventEmitter {
     }
   }
 }
+
 
 export default ExperimentWorkbenchService;
 
