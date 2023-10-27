@@ -185,6 +185,25 @@ class ExperimentStorageService extends HttpProxyService {
   }
 
   /**
+   * Export a storage experiment
+   * @param {Object} experiment The Experiment configuration
+   */
+  async exportExperiment(experiment) {
+    let experimentName = experiment.name;
+    const url = storageExperimentsURL + '/' + experimentName + '/zip';
+
+    try {
+      const response = await this.httpRequestGET(url);
+      const blob = await response.blob();
+      const objectUrl = URL.createObjectURL(blob);
+      return objectUrl;
+    }
+    catch (err) {
+      DialogService.instance.unexpectedError({ error: 'Failed to export the experiment.', data: err });
+    }
+  }
+
+  /**
    * Gets an experiment file from the storage.
    * @param {string} experimentDirectoryPath - path of experiment folder + possibly subfolders
    * @param {string} filename - name of the file
@@ -193,7 +212,9 @@ class ExperimentStorageService extends HttpProxyService {
    * @returns the file contents (as a request object)
    */
   async getFile(experimentDirectoryPath, filename, byName = false) {
+    // eslint-disable-next-line no-useless-escape
     let directory = experimentDirectoryPath.replace(/[\/]/g, '%2F');
+    // eslint-disable-next-line no-useless-escape
     let file = filename.replace(/[\/]/g, '%2F');
     const url = `${endpoints.proxy.storage.url}/${directory}/${file}?byname=${byName}`;
     return this.httpRequestGET(url);
@@ -206,6 +227,7 @@ class ExperimentStorageService extends HttpProxyService {
    * @returns {Array} the list of experiment files
    */
   async getExperimentFiles(experimentName) {
+    // eslint-disable-next-line no-useless-escape
     let experiment = experimentName.replace(/[\/]/g, '%2F');
     let url = `${endpoints.proxy.storage.url}/${experiment}`;
     const files = await (await this.httpRequestGET(url)).json();
@@ -306,6 +328,7 @@ class ExperimentStorageService extends HttpProxyService {
    * @returns the request object containing the status code
    */
   async setFile(experimentName, filename, data, byname = true, contentType = 'text/plain') {
+    // eslint-disable-next-line no-useless-escape
     let directory = experimentName.replace(/[\/]/g, '%2F');
     const url = this.createRequestURL(
       `${endpoints.proxy.storage.url}/${directory}/${filename}`,
@@ -318,21 +341,33 @@ class ExperimentStorageService extends HttpProxyService {
       ...this.POSTOptions, ...{ headers: { 'Content-Type': contentType } }
     };
 
+    let transferData;
     if (contentType === 'text/plain') {
-      return this.httpRequestPOST(url, data, requestOptions);
+      transferData = data;
+      //this.httpRequestPOST(url, data, requestOptions);
     }
     else if (contentType === 'application/json') {
-      return this.httpRequestPOST(url, JSON.stringify(data), requestOptions);
+      transferData = JSON.stringify(data);
+      //return this.httpRequestPOST(url, JSON.stringify(data), requestOptions);
     }
     else if (contentType === 'application/octet-stream') {
       // placeholder for blob files where the data has to be transormed,
       // possibly to Uint8Array
-      return this.httpRequestPOST(url,/* new Uint8Array(data) */data, requestOptions);
+      transferData = data;
+      //return this.httpRequestPOST(url,/* new Uint8Array(data) */data, requestOptions);
     }
     else {
       return new Error('Content-Type for setFile request not specified,' +
         'please make sure that the contentType and the body type match.');
     }
+
+    let result = await this.httpRequestPOST(url, transferData, requestOptions);
+    if (result.ok) {
+      this.emit(ExperimentStorageService.EVENTS.FILES_CHANGED, {
+        experimentName, filename
+      });
+    }
+    return result;
   }
 
   /**
@@ -345,12 +380,13 @@ class ExperimentStorageService extends HttpProxyService {
 
   async renameExperiment(experimentID, newName) {
     const url = storageExperimentsURL + '/' + experimentID + '/rename';
-    return await this.httpRequestPOST(url, JSON.stringify({newSimulationName: newName}));
+    return await this.httpRequestPUT(url, JSON.stringify({newSimulationName: newName}));
   }
 }
 
 ExperimentStorageService.EVENTS = Object.freeze({
-  UPDATE_EXPERIMENTS: 'UPDATE_EXPERIMENTS'
+  UPDATE_EXPERIMENTS: 'UPDATE_EXPERIMENTS',
+  FILES_CHANGED: 'FILES_CHANGED'
 });
 
 ExperimentStorageService.CONSTANTS = Object.freeze({

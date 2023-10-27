@@ -1,6 +1,11 @@
 import React from 'react';
 import FlexLayout from 'flexlayout-react';
 
+const { version } = require('../../../package.json');
+
+import { withCookies } from 'react-cookie';
+
+import ExperimentTools from './experiment-tools';
 import ExperimentToolsService from './experiment-tools-service';
 import ExperimentWorkbenchService from './experiment-workbench-service';
 import ExperimentTimeBox from './experiment-time-box';
@@ -10,7 +15,6 @@ import ServerResourcesService from '../../services/experiments/execution/server-
 import DialogService from '../../services/dialog-service';
 import { EXPERIMENT_STATE, EXPERIMENT_FINAL_STATE } from '../../services/experiments/experiment-constants';
 import LeaveWorkbenchDialog from './leave-workbench-dialog';
-import { SIM_TOOL } from '../constants';
 
 import '../../../node_modules/flexlayout-react/style/light.css';
 import './experiment-workbench.css';
@@ -28,14 +32,8 @@ import MenuIcon from '@material-ui/icons/Menu';
 import Typography from '@material-ui/core/Typography';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import Divider from '@material-ui/core/Divider';
-import List from '@material-ui/core/List';
 import Grid from '@material-ui/core/Grid';
 import Paper from '@material-ui/core/Paper';
-import Tooltip from '@material-ui/core/Tooltip';
-
-import ListItem from '@material-ui/core/ListItem';
-import ListItemIcon from '@material-ui/core/ListItemIcon';
-import ListItemText from '@material-ui/core/ListItemText';
 
 import PlayCircleFilledWhiteIcon from '@material-ui/icons/PlayCircleFilledWhite';
 import ExitToAppIcon from '@material-ui/icons/ExitToApp';
@@ -188,7 +186,7 @@ class ExperimentWorkbench extends React.Component {
       drawerOpen: false,
       notificationCount: 0,
       // TODO: take from some config
-      nrpVersion: '4.0.0',
+      nrpVersion: version,
       experimentConfiguration: {},
       runningSimulationID: undefined,
       simulationState: EXPERIMENT_STATE.UNDEFINED,
@@ -196,13 +194,14 @@ class ExperimentWorkbench extends React.Component {
       availableServers: []
     };
 
-    this.refLayout = React.createRef();
+    this.flexlayoutReference = React.createRef();
     this.state.modelFlexLayout.doAction(FlexLayout.Actions.setActiveTabset('defaultTabset'));
     ExperimentToolsService.instance.setFlexLayoutModel(this.state.modelFlexLayout);
   }
 
   async componentDidMount() {
     await ExperimentWorkbenchService.instance.initExperimentInformation(this.experimentID);
+    this.updateLastExperiments();
 
     if (ExperimentWorkbenchService.instance.experimentInfo) {
       this.setState({experimentConfiguration: ExperimentWorkbenchService.instance.experimentInfo.configuration});
@@ -237,16 +236,43 @@ class ExperimentWorkbench extends React.Component {
     );
   }
 
+  updateLastExperiments(){
+    const {cookies} = this.props;
+    var experimentIDs = undefined;
+    experimentIDs = cookies.get('experimentIDs');
+    if (experimentIDs) {
+      var isIn = false;
+      var index = 0;
+      experimentIDs.forEach((expID) =>{
+        if (this.experimentID===expID) {
+          index = experimentIDs.indexOf(expID);
+          isIn = true;
+        }
+      });
+      // ensure no duplicates
+      if (isIn) {
+        experimentIDs.splice(index, 1);
+      }
+      experimentIDs = [this.experimentID, ...experimentIDs];
+      // limit to max 3 experimentIDs
+      if (experimentIDs.length > 3) {
+        experimentIDs = experimentIDs.slice(0, 3);
+      }
+    }
+    else {
+      experimentIDs = [this.experimentID];
+    }
+    cookies.set('experimentIDs', experimentIDs, { path: '/' });
+  }
+
   async componentDidUpdate() {
   }
 
   async componentWillUnmount() {
-    // Subscribe to SIMULATION_STATUS_UPDATED events
     ExperimentWorkbenchService.instance.removeListener(
       ExperimentWorkbenchService.EVENTS.SIMULATION_STATUS_UPDATED,
       this.updateSimulationStatus
     );
-    // Subscribe to UPDATE_SERVER_AVAILABILITY events
     ServerResourcesService.instance.removeListener(
       ServerResourcesService.EVENTS.UPDATE_SERVER_AVAILABILITY,
       this.onUpdateServerAvailability
@@ -540,39 +566,7 @@ class ExperimentWorkbench extends React.Component {
             </IconButton>
           </div>
           <Divider />
-          <List>
-            {Array.from(ExperimentToolsService.instance.tools.values()).map((tool, index) => {
-              if (typeof tool.isShown !== 'undefined' && tool.isShown()) {
-                return (
-                  tool.type === SIM_TOOL.TOOL_TYPE.EXTERNAL_TAB ?
-                    <ListItem button key={index}
-                      disabled={typeof tool.isDisabled !== 'undefined' && tool.isDisabled()}>
-                      <ListItemIcon >{tool.getIcon()}</ListItemIcon>
-                      <ListItemText primary={tool.flexlayoutNode.name} />
-                    </ListItem>
-                    :
-                    <ListItem button key={index}
-                      disabled={typeof tool.isDisabled !== 'undefined' && tool.isDisabled()}
-                      onMouseDown={() => {
-                        ExperimentToolsService.instance.startToolDrag(
-                          tool,
-                          this.refLayout);
-                      }}
-                      onClick={() => {
-                        ExperimentToolsService.instance.addTool(
-                          tool,
-                          this.refLayout);
-                      }}
-                    >
-                      <Tooltip title={tool.flexlayoutNode.name} placement="right">
-                        <ListItemIcon >{tool.getIcon()}</ListItemIcon>
-                      </Tooltip>
-                      <ListItemText primary={tool.flexlayoutNode.name} />
-                    </ListItem>
-                );
-              }
-            })}
-          </List>
+          <ExperimentTools flexlayoutReference={this.flexlayoutReference} />
         </Drawer>
         {/* This is the leaving dialog */}
         <LeaveWorkbenchDialog visible={this.state.showLeaveDialog}
@@ -611,7 +605,7 @@ class ExperimentWorkbench extends React.Component {
             </Grid>
             <Grid item xs={12}>
               <Paper className={classes.contentContainer}>
-                <FlexLayout.Layout ref={this.refLayout} model={this.state.modelFlexLayout}
+                <FlexLayout.Layout ref={this.flexlayoutReference} model={this.state.modelFlexLayout}
                   factory={(node) => {
                     return ExperimentToolsService.instance.flexlayoutNodeFactory(node);
                   }} />
@@ -629,7 +623,7 @@ ExperimentWorkbench.propTypes = {
   classes: PropTypes.object.isRequired
 };
 
-export default withStyles(useStyles)(ExperimentWorkbench);
+export default withCookies(withStyles(useStyles)(ExperimentWorkbench));
 
 ExperimentWorkbench.CONSTANTS = Object.freeze({
   INTERVAL_INTERNAL_UPDATE_MS: 1000

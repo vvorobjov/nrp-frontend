@@ -73,4 +73,28 @@ describe('AuthenticationService', () => {
     expect(window.location.href).toBe(AuthenticationService.instance.authURL +
       `&client_id=${AuthenticationService.instance.clientId}&redirect_uri=${encodeURIComponent(originalLocationURL)}`);
   });
+
+  test('calling authenticate() while authentication is already undergoing/done (no forced re-authenticate)',
+    () => {
+      let mockInitializedPromise = Promise.resolve();
+      AuthenticationService.instance.promiseInitialized = mockInitializedPromise;
+      let authResult = AuthenticationService.instance.authenticate({force: false});
+      expect(authResult).toBe(mockInitializedPromise);
+    });
+
+  test('authenticate() (Collab mode)', async () => {
+    AuthenticationService.instance.oidcEnabled = true;
+
+    // successful auth
+    let spyAuthCollab = jest.spyOn(AuthenticationService.instance, 'authCollab').mockReturnValue(Promise.resolve(true));
+    await expect(AuthenticationService.instance.authenticate()).resolves.toBe(undefined);
+
+    // unsuccessful auth
+    spyAuthCollab.mockReturnValue(Promise.resolve(false));
+    await expect(AuthenticationService.instance.authenticate({force: true})).rejects.toBe(undefined);
+
+    // rejected auth
+    spyAuthCollab.mockReturnValue(Promise.reject());
+    await expect(AuthenticationService.instance.authenticate({force: true})).rejects.toBe(undefined);
+  });
 });

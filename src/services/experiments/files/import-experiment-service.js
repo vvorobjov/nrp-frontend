@@ -55,13 +55,15 @@ export default class ImportExperimentService extends HttpProxyService {
   async getImportZipResponses(responses) {
     let importZipResponses = {
       zipBaseFolderName: [],
-      destFolderName: []
+      destFolderName: [],
+      newExpName: []
     };
     importZipResponses.numberOfZips = responses.length;
     await responses.forEach(async response =>{
       response = await response.json();
       importZipResponses['zipBaseFolderName'].push(response['zipBaseFolderName']);
       importZipResponses['destFolderName'].push(response['destFolderName']);
+      importZipResponses['newExpName'].push(response['newName']);
     });
     return importZipResponses;
   }

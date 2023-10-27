@@ -2,7 +2,6 @@ import React from 'react';
 import OndemandVideoIcon from '@material-ui/icons/OndemandVideo';
 
 import ExperimentWorkbenchService from '../experiment-workbench/experiment-workbench-service';
-import RunningSimulationService from '../../services/experiments/execution/running-simulation-service';
 import { SIM_TOOL } from '../constants';
 import { EXPERIMENT_STATE } from '../../services/experiments/experiment-constants';
 

@@ -2,18 +2,18 @@
   height: 100vh;
   display: grid;
   grid-template-rows: 200px auto;
-  grid-template-columns: auto auto auto auto;
+  grid-template-columns: 25% auto 25%;
   grid-template-areas:
-    "nrp-header nrp-header nrp-header nrp-header"
-    "sidebar-left experiments-left experiments-right sidebar-right";
+    "nrp-header nrp-header nrp-header"
+    "dashboard experiments news";
 }
 
 .entry-page-header {
   grid-area: nrp-header;
 }
 
-.experiments-left {
-  grid-area: experiments-left;
+.dashboard {
+  grid-area: dashboard;
   color: black;
   background-color: white;
   text-align: left;
@@ -22,8 +22,18 @@
   flex-direction: row;
 }
 
-.experiments-right {
-  grid-area: experiments-right;
+.experiments {
+  grid-area: experiments;
+  color: black;
+  background-color: white;
+  text-align: left;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+}
+
+.news {
+  grid-area: news;
   color: black;
   background-color: white;
   text-align: left;

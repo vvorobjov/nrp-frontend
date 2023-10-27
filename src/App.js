@@ -1,6 +1,7 @@
 import React from 'react';
 
 import { BrowserRouter, Switch, Route } from 'react-router-dom';
+import { withCookies } from 'react-cookie';
 
 import EntryPage from './components/entry-page/entry-page';
 import ErrorDialog from './components/dialog/error-dialog.js';
@@ -23,10 +24,10 @@ class App extends React.Component {
         <NotificationDialog/>
         <BrowserRouter>
           <Switch>
-            <Route path='/experiments-overview' component={ExperimentsOverview} />
-            <Route path='/experiment/:experimentID' component={ExperimentWorkbench} />
+            <Route path='/experiments-overview' render={() => (<ExperimentsOverview/>)} />
+            <Route path='/experiment/:experimentID' component={ExperimentWorkbench}/>
             {/* <Route path='/simulation-view/:serverIP/:simulationID' component={SimulationView} /> */}
-            <Route path='/' component={EntryPage} />
+            <Route path='/' render={() => (<EntryPage cookies={this.props.cookies}/>)} />
           </Switch>
         </BrowserRouter>
       </div>
@@ -34,4 +35,4 @@ class App extends React.Component {
   }
 }
 
-export default App;
+export default withCookies(App);

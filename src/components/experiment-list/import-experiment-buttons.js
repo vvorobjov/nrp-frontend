@@ -7,7 +7,6 @@ import ExperimentStorageService from '../../services/experiments/files/experimen
 import './experiment-list-element.css';
 import './import-experiment-buttons.css';
 
-
 import frontendConfig from '../../config.json';
 
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
@@ -15,7 +14,9 @@ import Tooltip from 'react-bootstrap/Tooltip';
 export default class ImportExperimentButtons extends React.Component {
   constructor(props) {
     super(props);
-    this.state = {};
+    this.state = {
+      importKey: 0
+    };
     // By default, we enable the scan storage button, even if it's not in the config.
     // For the online version, we explicitly disable it.
     this.scanStorage = frontendConfig.scanStorage !== undefined ? frontendConfig.scanStorage : true;
@@ -53,7 +54,8 @@ export default class ImportExperimentButtons extends React.Component {
       })
       .finally(() => {
         this.setState({
-          isImporting : false
+          isImporting : false,
+          importKey: this.state.importKey + 2
         });
       });
   };
@@ -72,7 +74,8 @@ export default class ImportExperimentButtons extends React.Component {
       })
       .finally(() => {
         this.setState({
-          isImporting : false
+          isImporting : false,
+          importKey: this.state.importKey + 2
         });
       });
   };
@@ -105,7 +108,7 @@ export default class ImportExperimentButtons extends React.Component {
             <div className='alert alert-success' role='alert'>
               <p>The experiment folder
                 <b>{' ' + this.state.importFolderResponse.zipBaseFolderName}</b> has been succesfully imported as
-                <b>{' ' + this.state.importFolderResponse.destFolderName}</b>.
+                <b>{' ' + this.state.importFolderResponse.newName}</b>.
               </p>
             </div>
             <div className='text-right'>
@@ -124,7 +127,7 @@ export default class ImportExperimentButtons extends React.Component {
             <p>The following experiments folders</p>
             <p><b>{this.state.importZipResponses.zipBaseFolderName.join(', ')}</b></p>
             <p>have been successfully imported as:</p>
-            <p><b>{this.state.importZipResponses.destFolderName.join(', ')}.</b></p>
+            <p><b>{this.state.importZipResponses.newExpName.join(', ')}.</b></p>
             <div className='text-right'>
               <button className='btn btn-success' onClick={() => this.importZipPopupClick()}>Got it!</button>
             </div>
@@ -156,20 +159,21 @@ export default class ImportExperimentButtons extends React.Component {
         }
 
         {/* Import buttons */}
-        {/* TODO: [NRRPLT-8721] restore experiment import funtionality */}
         <div className='list-entry-buttons flex-container center'>
-          <input disabled={true} id='folder' type='file' style={{ display: 'none' }}
+          <input disabled={false} id='folder' type='file' style={{ display: 'none' }}
             multiple directory='' webkitdirectory=''
-            onChange={(event) => this.importExperimentFolderChange(event)} />
-          <input disabled={true} id='zip' type='file' style={{ display: 'none' }}
+            onChange={(event) => this.importExperimentFolderChange(event)}
+            key={this.state.importKey + 1} />
+          <input disabled={false} id='zip' type='file' style={{ display: 'none' }}
             multiple accept='.zip'
-            onChange={(event) => this.importZippedExperimentChange(event)} />
+            onChange={(event) => this.importZippedExperimentChange(event)}
+            key={this.state.importKey} />
           <div className='btn-group' role='group'>
             <OverlayTrigger placement='bottom'
               key='folder-tooltip'
               overlay={
                 <Tooltip id='tooltip-folder'>
-                  The import of the experiments is coming soon!
+                  Import the folder containing the experiment files with simulation_config.json
                 </Tooltip>
               }
             >
@@ -183,12 +187,12 @@ export default class ImportExperimentButtons extends React.Component {
               key='zip-tooltip'
               overlay={
                 <Tooltip id='tooltip-zip'>
-                  The import of the zipped experiments is coming soon!
+                  Import the zipped folders containing the experiment files with simulation_config.json
                 </Tooltip>
               }
             >
               <button type='button' className='btn btn-outline-dark'
-                data-toggle='tooltip' data-placement='bottom' title='Tooltip on bottom'
+                data-toggle='tooltip' data-placement='bottom'
               >
                 <label htmlFor='zip' className='import-button'><FaFileArchive /> Import zip</label>
               </button >
