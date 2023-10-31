@@ -239,6 +239,9 @@ ExperimentToolsService.TOOLS = Object.freeze({
     },
     getIcon: () => {
       return <TimelineIcon/>;
+    },
+    isShown: () => {
+      return true;
     }
   }
 });
