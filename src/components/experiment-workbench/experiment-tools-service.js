@@ -4,8 +4,14 @@ import ListAltIcon from '@material-ui/icons/ListAlt';
 import OndemandVideoIcon from '@material-ui/icons/OndemandVideo';
 
 import ExperimentWorkbenchService from './experiment-workbench-service';
+import { Description } from '@material-ui/icons';
 import NrpCoreDashboard from '../nrp-core-dashboard/nrp-core-dashboard';
 import TransceiverFunctionEditor from '../tf-editor/tf-editor';
+
+import TimelineIcon from '@material-ui/icons/Timeline';
+import DataVisualizer from '../data-visualizer/data-visualizer';
+import { Modal, Button, Accordion, Dropdown, DropdownButton, Card, Form } from 'react-bootstrap';
+import Plot from 'react-plotly.js';
 import XpraView from '../xpra/xpra-view';
 import { SIM_TOOL } from '../constants';
 
@@ -219,6 +225,23 @@ ExperimentToolsService.TOOLS = Object.freeze({
     },
     isShown: () => {
       return appConfig && appConfig.nestDesktop && appConfig.nestDesktop.enabled;
+    }
+  },
+  DATA_VISUALIZER: {
+    singleton: true,
+    flexlayoutNode: {
+      'type': 'tab',
+      'name': 'Data Visualizer',
+      'component': 'DataVisualizer'
+    },
+    flexlayoutFactoryCb: () =>  {
+      return <DataVisualizer/>;
+    },
+    getIcon: () => {
+      return <TimelineIcon/>;
+    },
+    isShown: () => {
+      return true;
     }
   }
 });

@@ -42,7 +42,22 @@
                     "FileName": "brain_stimulation_tf.py"
                 }
             ]
+            "DataPackProcessingFunctions": [
+                {
+                    "Name": "cam_pf",
+                    "FileName": "cam_pf.py"
+                },
+                {
+                    "Name": "mot_tf",
+                    "FileName": "mot_tf.py"
+                },
+                {
+                    "Name": "brain_stimulation_tf",
+                    "FileName": "brain_stimulation_tf.py"
+                }
+            ]
         },
+        "id": "husky_braitenberg_unfilled_id",
         "id": "husky_braitenberg_unfilled_id",
         "private": true
     },
@@ -87,6 +102,8 @@
             ]
         },
         "id": "husky_braitenberg_cg_id",
+        "id": "husky_braitenberg_cg_id",
         "private": true
     }
+]  
 ]  

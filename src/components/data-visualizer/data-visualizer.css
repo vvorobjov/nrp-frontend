@@ -1,0 +1,123 @@
+.dropbtn {
+  background-color: white;
+  color: black;
+  padding: 16px;
+  font-size: 16px;
+  border: none;
+  cursor: pointer;
+}
+
+.dropdown-toggle {
+  display: flex;
+  flex-direction: row;
+  background-color: white;
+  border: none;
+  color: black;
+  padding: 10px;
+  cursor: pointer;
+}
+
+.dropdown-toggle:hover {
+  display: flex;
+  flex-direction: row;
+  background-color: white;
+  border: none;
+  color: black;
+  padding: 10px;
+  cursor: pointer;
+}
+
+.dropdown-menu {
+  display: flex;
+  flex-direction: column;
+  padding: 10px;
+  background-color: rgba(255, 255, 255);
+  width: 130px;
+}
+.dropdown-item {
+  color: black;
+  opacity: 0.5;
+  text-decoration: none;
+  text-align: left;
+}
+
+
+
+
+
+.dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+.dropdown-content {
+  display: none;
+  position: absolute;
+  background-color: #f9f9f9;
+  min-width: 160px;
+  box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+  z-index: 1;
+}
+
+.dropdown-content a {
+  color: black;
+  padding: 12px 16px;
+  text-decoration: none;
+  display: block;
+}
+
+.dropdown-content a:hover {background-color: #f1f1f1}
+
+.dropdown:hover .dropdown-content {
+  display: block;
+}
+
+.dropdown:hover .dropbtn {
+  background-color: white;
+}
+
+.dv-editor-header {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+.dv-editor-icon {
+  width: 40px;
+  height: 40px;
+  background-color: lightblue;
+  text-align: center;
+  border: 1px solid black;
+  margin: 5px;
+  font-size: 1.5em;
+}
+
+.dv-editor-file-ui {
+  padding: 10px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+.dv-editor-file-ui-item {
+  margin: 5px;
+}
+
+.dv-editor-ui-save {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+.dv-editor-text-saved {
+  color: white;
+}
+
+.dv-editor-text-unsaved {
+  color: white;
+}
+
+.dv-editor-codemirror-container {
+  overflow: scroll;
+}
+

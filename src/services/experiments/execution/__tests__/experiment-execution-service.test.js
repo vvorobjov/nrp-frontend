@@ -11,6 +11,7 @@ import MockSimulations from '../../../../mocks/mock_simulations.json';
 
 import ExperimentExecutionService from '../../../../services/experiments/execution/experiment-execution-service';
 import SimulationService from '../../../../services/experiments/execution/running-simulation-service';
+import SimulationService from '../../../../services/experiments/execution/running-simulation-service';
 import ServerResourcesService from '../../../../services/experiments/execution/server-resources-service';
 import { EXPERIMENT_STATE } from '../../../../services/experiments/experiment-constants.js';
 
@@ -22,6 +23,16 @@ afterEach(() => {
 
 describe('ExperimentExecutionService', () => {
 
+describe('ExperimentExecutionService', () => {
+
+  test('makes sure that invoking the constructor fails with the right message', () => {
+    expect(() => {
+      new ExperimentExecutionService();
+    }).toThrow(Error);
+    expect(() => {
+      new ExperimentExecutionService();
+    }).toThrowError(Error('Use ExperimentExecutionService.instance'));
+  });
   test('makes sure that invoking the constructor fails with the right message', () => {
     expect(() => {
       new ExperimentExecutionService();
@@ -36,13 +47,36 @@ describe('ExperimentExecutionService', () => {
     const instance2 = ExperimentExecutionService.instance;
     expect(instance1).toBe(instance2);
   });
+  test('the service instance always refers to the same object', () => {
+    const instance1 = ExperimentExecutionService.instance;
+    const instance2 = ExperimentExecutionService.instance;
+    expect(instance1).toBe(instance2);
+  });
 
   test('should emit an event on starting an experiment', async () => {
     jest.spyOn(ExperimentExecutionService.instance, 'launchExperimentOnServer').mockImplementation(() => {
       return Promise.resolve();
     });
     let experiment = MockExperiments[0];
+  test('should emit an event on starting an experiment', async () => {
+    jest.spyOn(ExperimentExecutionService.instance, 'launchExperimentOnServer').mockImplementation(() => {
+      return Promise.resolve();
+    });
+    let experiment = MockExperiments[0];
 
+    let confirmStartingExperiment = (startingExperiment) => {
+      expect(startingExperiment).toEqual(experiment);
+    };
+    ExperimentExecutionService.instance.addListener(
+      ExperimentExecutionService.EVENTS.START_EXPERIMENT,
+      confirmStartingExperiment
+    );
+    await ExperimentExecutionService.instance.startNewExperiment(experiment);
+    ExperimentExecutionService.instance.removeListener(
+      ExperimentExecutionService.EVENTS.START_EXPERIMENT,
+      confirmStartingExperiment
+    );
+  });
     let confirmStartingExperiment = (startingExperiment) => {
       expect(startingExperiment).toEqual(experiment);
     };
@@ -150,7 +184,20 @@ describe('ExperimentExecutionService', () => {
     jest.spyOn(ExperimentExecutionService.instance, 'httpRequestPOST').mockImplementation(() => {
       return simulationReadyResult;
     });
+  test('can launch an experiment given a specific server + configuration', async () => {
+    let simulationReadyResult = Promise.resolve(MockSimulations[0]);
+    jest.spyOn(ExperimentExecutionService.instance, 'httpRequestPOST').mockImplementation(() => {
+      return simulationReadyResult;
+    });
 
+    let experimentID = 'test-experiment-id';
+    let privateExperiment = true;
+    let configFile = 'simulation_config.json';
+    let serverID = 'test-server-id';
+    let serverConfiguration = MockServerConfig;
+    let progressCallback = jest.fn();
+    let callParams = [experimentID, privateExperiment, configFile, serverID, serverConfiguration,
+      progressCallback];
     let experimentID = 'test-experiment-id';
     let privateExperiment = true;
     let configFile = 'simulation_config.json';
@@ -164,6 +211,12 @@ describe('ExperimentExecutionService', () => {
     expect(ExperimentExecutionService.instance.httpRequestPOST)
       .toHaveBeenLastCalledWith(serverConfiguration['nrp-services'] + '/simulation', expect.any(String));
 
+    // simulation not being ready should result in a rejection
+    let simulationReadyError = 'simulation not ready';
+    simulationReadyResult = Promise.reject(simulationReadyError);
+    await expect(ExperimentExecutionService.instance.launchExperimentOnServer(...callParams))
+      .rejects.toEqual(simulationReadyError);
+  });
     // simulation not being ready should result in a rejection
     let simulationReadyError = 'simulation not ready';
     simulationReadyResult = Promise.reject(simulationReadyError);

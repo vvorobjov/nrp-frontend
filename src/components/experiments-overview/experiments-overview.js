@@ -132,6 +132,8 @@ export default class ExperimentsOverview extends React.Component {
             <Tab>My Experiments</Tab>
             <Tab disabled={true}>New Experiment</Tab>
             <Tab disabled={true}>Model Libraries</Tab>
+            <Tab disabled={true}>New Experiment</Tab>
+            <Tab disabled={true}>Model Libraries</Tab>
             <Tab>Experiment Files</Tab>
             <Tab>Templates</Tab>
             <Tab>Running Simulations</Tab>

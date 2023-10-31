@@ -27,6 +27,16 @@ afterEach(() => {
 
 describe('ModelsStorageService', () => {
 
+describe('ModelsStorageService', () => {
+
+  test('makes sure that invoking the constructor fails with the right message', () => {
+    expect(() => {
+      new ServerResourcesService();
+    }).toThrow(Error);
+    expect(() => {
+      new ServerResourcesService();
+    }).toThrowError(Error('Use ServerResourcesService.instance'));
+  });
   test('makes sure that invoking the constructor fails with the right message', () => {
     expect(() => {
       new ServerResourcesService();
@@ -41,7 +51,14 @@ describe('ModelsStorageService', () => {
     const instance2 = ServerResourcesService.instance;
     expect(instance1).toBe(instance2);
   });
+  test('the service instance always refers to the same object', () => {
+    const instance1 = ServerResourcesService.instance;
+    const instance2 = ServerResourcesService.instance;
+    expect(instance1).toBe(instance2);
+  });
 
+  test('does automatic poll updates for server availability', (done) => {
+    jest.spyOn(ServerResourcesService.instance, 'getServerAvailability');
   test('does automatic poll updates for server availability', (done) => {
     jest.spyOn(ServerResourcesService.instance, 'getServerAvailability');
 
@@ -50,7 +67,21 @@ describe('ModelsStorageService', () => {
     setTimeout(() => {
       let numCallsServerAvailabilityT1 = ServerResourcesService.instance.getServerAvailability.mock.calls.length;
       expect(numCallsServerAvailabilityT1 > numCallsServerAvailabilityT0).toBe(true);
+    // check that getExperiments is periodically called after poll interval
+    let numCallsServerAvailabilityT0 = ServerResourcesService.instance.getServerAvailability.mock.calls.length;
+    setTimeout(() => {
+      let numCallsServerAvailabilityT1 = ServerResourcesService.instance.getServerAvailability.mock.calls.length;
+      expect(numCallsServerAvailabilityT1 > numCallsServerAvailabilityT0).toBe(true);
 
+      // stop updates and check that no more calls occur after poll interval
+      ServerResourcesService.instance.stopUpdates();
+      setTimeout(() => {
+        let numCallsServerAvailabilityT2 = ServerResourcesService.instance.getServerAvailability.mock.calls.length;
+        expect(numCallsServerAvailabilityT2 === numCallsServerAvailabilityT1).toBe(true);
+        done();
+      }, ServerResourcesService.CONSTANTS.INTERVAL_POLL_SERVER_AVAILABILITY);
+    }, ServerResourcesService.CONSTANTS.INTERVAL_POLL_SERVER_AVAILABILITY);
+  });
       // stop updates and check that no more calls occur after poll interval
       ServerResourcesService.instance.stopUpdates();
       setTimeout(() => {
@@ -79,7 +110,14 @@ describe('ModelsStorageService', () => {
   test('should stop polling updates when window is unloaded', async () => {
     let service = ServerResourcesService.instance;
     expect(onWindowBeforeUnloadCb).toBeDefined();
+  test('should stop polling updates when window is unloaded', async () => {
+    let service = ServerResourcesService.instance;
+    expect(onWindowBeforeUnloadCb).toBeDefined();
 
+    jest.spyOn(service, 'stopUpdates');
+    onWindowBeforeUnloadCb({});
+    expect(service.stopUpdates).toHaveBeenCalled();
+  });
     jest.spyOn(service, 'stopUpdates');
     onWindowBeforeUnloadCb({});
     expect(service.stopUpdates).toHaveBeenCalled();

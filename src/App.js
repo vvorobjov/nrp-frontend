@@ -8,6 +8,7 @@ import ErrorDialog from './components/dialog/error-dialog.js';
 import ExperimentsOverview from './components/experiments-overview/experiments-overview';
 import ExperimentWorkbench from './components/experiment-workbench/experiment-workbench';
 // import SimulationView from './components/simulation-view/simulation-view';
+// import SimulationView from './components/simulation-view/simulation-view';
 import NotificationDialog from './components/dialog/notification-dialog.js';
 import MqttClientService from './services/mqtt-client-service';
 

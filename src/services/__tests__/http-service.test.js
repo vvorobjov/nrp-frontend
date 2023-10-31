@@ -14,6 +14,8 @@ const mockURL = 'http://test.url';
 
 describe('HttpService', () => {
 
+describe('HttpService', () => {
+
   test('has a generic request interface', async () => {
     let mockAuthToken = 'test-auth-token';
     jest.spyOn(AuthenticationService.instance, 'getStoredLocalToken').mockReturnValue(mockAuthToken);
@@ -55,7 +57,16 @@ describe('HttpService', () => {
     response = await httpService.performRequest(mockURL, options, data);
     expect(response.status).toBe(478);
   });
+    // response with status 478
+    mockFetchReturnValue.status = 478;
+    response = await httpService.performRequest(mockURL, options, data);
+    expect(response.status).toBe(478);
+  });
 
+  test('has a GET request interface', async () => {
+    let httpService = new HttpService();
+    let mockResponse = {};
+    jest.spyOn(httpService, 'performRequest').mockReturnValue(mockResponse);
   test('has a GET request interface', async () => {
     let httpService = new HttpService();
     let mockResponse = {};
@@ -65,7 +76,17 @@ describe('HttpService', () => {
     let response = await httpService.httpRequestGET(mockURL);
     expect(response).toBe(mockResponse);
     expect(httpService.performRequest).toHaveBeenCalledWith(mockURL, httpService.GETOptions);
+    // no self-defined options passed
+    let response = await httpService.httpRequestGET(mockURL);
+    expect(response).toBe(mockResponse);
+    expect(httpService.performRequest).toHaveBeenCalledWith(mockURL, httpService.GETOptions);
 
+    // with self-defined options passed
+    let options = {};
+    response = await httpService.httpRequestGET(mockURL, options);
+    expect(response).toBe(mockResponse);
+    expect(httpService.performRequest).toHaveBeenCalledWith(mockURL, options);
+  });
     // with self-defined options passed
     let options = {};
     response = await httpService.httpRequestGET(mockURL, options);
@@ -78,12 +99,27 @@ describe('HttpService', () => {
     let mockResponse = {};
     let mockData = {};
     jest.spyOn(httpService, 'performRequest').mockReturnValue(mockResponse);
+  test('has a POST request interface', async () => {
+    let httpService = new HttpService();
+    let mockResponse = {};
+    let mockData = {};
+    jest.spyOn(httpService, 'performRequest').mockReturnValue(mockResponse);
 
     // no self-defined options passed
     let response = await httpService.httpRequestPOST(mockURL, mockData);
     expect(response).toBe(mockResponse);
     expect(httpService.performRequest).toHaveBeenCalledWith(mockURL, httpService.POSTOptions, mockData);
+    // no self-defined options passed
+    let response = await httpService.httpRequestPOST(mockURL, mockData);
+    expect(response).toBe(mockResponse);
+    expect(httpService.performRequest).toHaveBeenCalledWith(mockURL, httpService.POSTOptions, mockData);
 
+    // with self-defined options passed
+    let options = {};
+    response = await httpService.httpRequestPOST(mockURL, mockData, options);
+    expect(response).toBe(mockResponse);
+    expect(httpService.performRequest).toHaveBeenCalledWith(mockURL, options, mockData);
+  });
     // with self-defined options passed
     let options = {};
     response = await httpService.httpRequestPOST(mockURL, mockData, options);
@@ -96,7 +132,16 @@ describe('HttpService', () => {
     let mockResponse = {};
     let mockData = {};
     jest.spyOn(httpService, 'performRequest').mockReturnValue(mockResponse);
+  test('has a PUT request interface', async () => {
+    let httpService = new HttpService();
+    let mockResponse = {};
+    let mockData = {};
+    jest.spyOn(httpService, 'performRequest').mockReturnValue(mockResponse);
 
+    // no self-defined options passed
+    let response = await httpService.httpRequestPUT(mockURL, mockData);
+    expect(response).toBe(mockResponse);
+    expect(httpService.performRequest).toHaveBeenCalledWith(mockURL, httpService.PUTOptions, mockData);
     // no self-defined options passed
     let response = await httpService.httpRequestPUT(mockURL, mockData);
     expect(response).toBe(mockResponse);
@@ -108,12 +153,26 @@ describe('HttpService', () => {
     expect(response).toBe(mockResponse);
     expect(httpService.performRequest).toHaveBeenCalledWith(mockURL, options, mockData);
   });
+    // with self-defined options passed
+    let options = {};
+    response = await httpService.httpRequestPUT(mockURL, mockData, options);
+    expect(response).toBe(mockResponse);
+    expect(httpService.performRequest).toHaveBeenCalledWith(mockURL, options, mockData);
+  });
 
   test('has a DELETE request interface', async () => {
     let httpService = new HttpService();
     let mockResponse = {};
     jest.spyOn(httpService, 'performRequest').mockReturnValue(mockResponse);
+  test('has a DELETE request interface', async () => {
+    let httpService = new HttpService();
+    let mockResponse = {};
+    jest.spyOn(httpService, 'performRequest').mockReturnValue(mockResponse);
 
+    // no self-defined options passed
+    let response = await httpService.httpRequestDELETE(mockURL);
+    expect(response).toBe(mockResponse);
+    expect(httpService.performRequest).toHaveBeenCalledWith(mockURL, httpService.DELETEOptions);
     // no self-defined options passed
     let response = await httpService.httpRequestDELETE(mockURL);
     expect(response).toBe(mockResponse);
@@ -125,11 +184,24 @@ describe('HttpService', () => {
     expect(response).toBe(mockResponse);
     expect(httpService.performRequest).toHaveBeenCalledWith(mockURL, options);
   });
+    // with self-defined options passed
+    let options = {};
+    response = await httpService.httpRequestDELETE(mockURL, options);
+    expect(response).toBe(mockResponse);
+    expect(httpService.performRequest).toHaveBeenCalledWith(mockURL, options);
+  });
 
   test('options can be redefined', async () => {
     let httpService = new HttpService();
     let options = {};
+  test('options can be redefined', async () => {
+    let httpService = new HttpService();
+    let options = {};
 
+    httpService.setOptions(options);
+    expect(httpService.options).toBe(options);
+  });
+});
     httpService.setOptions(options);
     expect(httpService.options).toBe(options);
   });

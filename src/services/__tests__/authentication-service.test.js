@@ -23,7 +23,20 @@ describe('AuthenticationService', () => {
       new AuthenticationService();
     }).toThrowError(Error('Use AuthenticationService.instance'));
   });
+  test('makes sure that invoking the constructor fails with the right message', () => {
+    expect(() => {
+      new AuthenticationService();
+    }).toThrow(Error);
+    expect(() => {
+      new AuthenticationService();
+    }).toThrowError(Error('Use AuthenticationService.instance'));
+  });
 
+  test('the experiments service instance always refers to the same object', () => {
+    const instance1 = AuthenticationService.instance;
+    const instance2 = AuthenticationService.instance;
+    expect(instance1).toBe(instance2);
+  });
   test('the experiments service instance always refers to the same object', () => {
     const instance1 = AuthenticationService.instance;
     const instance2 = AuthenticationService.instance;
@@ -33,7 +46,14 @@ describe('AuthenticationService', () => {
   test('checks the URL for new tokens to store', () => {
     let baseURL = AuthenticationService.instance.STORAGE_KEY;
     let accessToken = 'test-access-token';
+  test('checks the URL for new tokens to store', () => {
+    let baseURL = AuthenticationService.instance.STORAGE_KEY;
+    let accessToken = 'test-access-token';
 
+    delete window.location;
+    window.location = {
+      href: baseURL + '&access_token=' + accessToken
+    };
     delete window.location;
     window.location = {
       href: baseURL + '&access_token=' + accessToken
@@ -45,7 +65,17 @@ describe('AuthenticationService', () => {
     );
     expect(window.location.href).toBe(baseURL);
   });
+    AuthenticationService.instance.checkForNewLocalTokenToStore();
+    expect(localStorage.setItem).toHaveBeenCalledWith(
+      AuthenticationService.instance.STORAGE_KEY, JSON.stringify([{ access_token: accessToken }])
+    );
+    expect(window.location.href).toBe(baseURL);
+  });
 
+  test('can clear stored authentication tokens', () => {
+    AuthenticationService.instance.clearStoredLocalToken();
+    expect(localStorage.removeItem).toHaveBeenCalledWith(AuthenticationService.instance.STORAGE_KEY);
+  });
   test('can clear stored authentication tokens', () => {
     AuthenticationService.instance.clearStoredLocalToken();
     expect(localStorage.removeItem).toHaveBeenCalledWith(AuthenticationService.instance.STORAGE_KEY);
@@ -58,7 +88,19 @@ describe('AuthenticationService', () => {
     }]));
     let token = AuthenticationService.instance.getStoredLocalToken();
     expect(token).toEqual(mockToken);
+  test('can retrieve stored authentication tokens', () => {
+    let mockToken = 'test-auth-token';
+    jest.spyOn(localStorage, 'getItem').mockReturnValue(JSON.stringify([{
+      access_token: mockToken
+    }]));
+    let token = AuthenticationService.instance.getStoredLocalToken();
+    expect(token).toEqual(mockToken);
 
+    // token parsing error
+    localStorage.getItem.mockReturnValue({});
+    token = AuthenticationService.instance.getStoredLocalToken();
+    expect(token).toEqual(AuthenticationService.CONSTANTS.MALFORMED_TOKEN);
+  });
     // token parsing error
     localStorage.getItem.mockReturnValue({});
     token = AuthenticationService.instance.getStoredLocalToken();
