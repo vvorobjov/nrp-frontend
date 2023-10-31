@@ -1,8 +1,6 @@
 import React from 'react';
 import FlexLayout from 'flexlayout-react';
-
 import { withCookies } from 'react-cookie';
-
 import ExperimentTools from './experiment-tools';
 import ExperimentToolsService from './experiment-tools-service';
 import ExperimentWorkbenchService from './experiment-workbench-service';

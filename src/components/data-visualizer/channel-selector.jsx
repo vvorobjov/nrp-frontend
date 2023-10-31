@@ -33,8 +33,6 @@ export default class ChannelSelector extends React.Component {
   singleChannelComponent(){
 
     const allTopics = ExperimentWorkbenchService.instance.topicList;
-    console.info('inside the channel component');
-    console.info(allTopics);
 
     return(
       <Card><Card.Body>
@@ -49,22 +47,19 @@ export default class ChannelSelector extends React.Component {
         </InputGroup></Card.Title>
         Variable for the X Axis:
         <Form.Control as="select">
-          <option>Time</option>
-          <option>Joint Angle 1</option>
-          <option>Joint Angle 2</option>
-          <option>Joint Angle 3</option>
-          <option>Joint Speed 1</option>
-          <option>Joint Speed 2</option>
-          <option>Joint Speed 3</option>
+          {allTopics.map((allTopics) => (
+            <option>
+              {allTopics}
+            </option>
+          ))}
         </Form.Control>
         Variable for the Y Axis:
         <Form.Control as="select">
-          <option>Joint Angle 1</option>
-          <option>Joint Angle 2</option>
-          <option>Joint Angle 3</option>
-          <option>Joint Speed 1</option>
-          <option>Joint Speed 2</option>
-          <option>Joint Speed 3</option>
+          {allTopics.map((allTopics) => (
+            <option>
+              {allTopics}
+            </option>
+          ))}
         </Form.Control>
       </Card.Body></Card>
     );
