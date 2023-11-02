@@ -33,6 +33,7 @@ export default class ChannelSelector extends React.Component {
   singleChannelComponent(){
 
     const allTopics = ExperimentWorkbenchService.instance.topicList;
+    console.info(allTopics);
 
     return(
       <Card><Card.Body>

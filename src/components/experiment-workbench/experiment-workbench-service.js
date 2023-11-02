@@ -226,11 +226,7 @@ class ExperimentWorkbenchService extends EventEmitter {
 
       const topicsTopic = topicBase + 'data';
       console.info('ExpWorkbenchService.setTopics() - subscribing to ' + topicsTopic);
-      this._topicsToken = MqttClientService.instance.subscribeToTopic(topicsTopic, (topicInfo) => {
-        /*console.info('subCallback ' + topicsTopic + ' received topicInfo:');
-        console.info(topicInfo);*/
-        this.topicList = topicInfo;
-      });
+      this._topicsToken = MqttClientService.instance.subscribeToTopic(topicsTopic, this.topicsMsgHandler);
     }
   }
 
@@ -311,6 +307,17 @@ class ExperimentWorkbenchService extends EventEmitter {
     catch (err) {
       DialogService.instance.unexpectedError({
         message: 'Could not parse the status MQTT message:\n' + msg.toString(),
+        data: err.toString()
+      });
+    }
+  }
+  topicsMsgHandler = (msg) => {
+    try {
+      this.topicList = msg;
+    }
+    catch (err) {
+      DialogService.instance.unexpectedError({
+        message: 'Could not parse the topics MQTT message:\n' + msg.toString(),
         data: err.toString()
       });
     }
