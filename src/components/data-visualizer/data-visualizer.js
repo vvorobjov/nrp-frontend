@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import { Modal, Button, Accordion, Dropdown, DropdownButton, Card, Form } from 'react-bootstrap';
 import Plot from 'react-plotly.js';
+import DataVisualizerService from './data-visualizer-service';
 
 import ChannelSelector from './channel-selector';
 import ChannelsSelector from './channels-selector';
@@ -39,11 +40,12 @@ export default class DataVisualizer extends React.Component {
       automaticAxesRages: false,
       graphType: 'LinePlot'
     };
-    console.log('Debug Flag at the constructor');
     //this.topic_sub = new TopicSub();
+
   }
 
   dataVisualizerInterface() {
+
     return (
       <div>
 
@@ -98,7 +100,12 @@ export default class DataVisualizer extends React.Component {
         <Accordion>
           <Card>
             <Card.Header>
-              <Accordion.Toggle as={Button} variant="text" eventKey="2">
+              <Accordion.Toggle as={Button} variant="text" eventKey="2"onClick={() => {
+                console.info('DATA!');
+                console.info(DataVisualizerService.instance.getCurrentData);
+                DataVisualizerService.instance.emit(
+                  DataVisualizerService.EVENTS.PLOT_OPENED, DataVisualizerService.instance.currentData);
+              }}>
                   Plots Visualization
               </Accordion.Toggle>
             </Card.Header>

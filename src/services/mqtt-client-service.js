@@ -95,8 +95,13 @@ export default class MqttClientService extends EventEmitter {
   }
 
   onMessage(topic, payload, packet) {
+    //console.info('TOPIC');
+    //console.info(topic);
+    //console.info('PAYLOAD:');
+    //console.info(payload);
     /*console.info('MqttClientService.onMessage() - topic=' + topic);*/
     if (typeof payload === 'undefined') {
+      console.info('UNDEFINED PAYLOAD');
       return;
     }
 
@@ -123,21 +128,33 @@ export default class MqttClientService extends EventEmitter {
             + topic + '" (' + ExperimentWorkbenchService.instance.getTopicType(topic) + ')');
           return;
         }
-        let deserialized = protoMessage.deserializeBinary(payload);
+        let deserialized = protoMessage.deserializeBinary(payload.buffer);
         let object = deserialized.toObject();
         msg = object;
+        console.info('DESERIALIZED');
+        console.info(deserialized);
+        console.info('PAYLOAD');
+        console.info(payload);
+        console.info('PROTO MESSAGE');
+        console.info(protoMessage);
+        console.info('TOPIC');
+        console.info(topic);
       }
 
       for (var token of subTokens) {
         //Deserializatin of Data must happen here
         token.callback(msg);
       };
+    }
+    else {
+      console.info('ELSE STATEMENT');
     };
 
   }
 
   //callback should have args topic, payload
   subscribeToTopic(topic, callback) {
+    console.info('SUBSCRIBING TO TOPIC: ' + topic);
     if (typeof callback !== 'function') {
       console.error('trying to subscribe to topic "' + topic + '", but no callback function given!');
       return;

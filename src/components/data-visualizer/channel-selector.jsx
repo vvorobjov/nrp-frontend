@@ -3,6 +3,7 @@ import Accordion from 'react-bootstrap/Accordion';
 import { Card, InputGroup, FormControl, Modal, Button, Form, Col, Row } from 'react-bootstrap';
 import Plot from 'react-plotly.js';
 import MqttClientService from '../../services/mqtt-client-service';
+import DataVisualizerService from './data-visualizer-service';
 import ExperimentWorkbenchService from '../experiment-workbench/experiment-workbench-service';
 
 import { useState } from 'react';
@@ -33,7 +34,6 @@ export default class ChannelSelector extends React.Component {
   singleChannelComponent(){
 
     const allTopics = ExperimentWorkbenchService.instance.topicList;
-    console.info(allTopics);
 
     return(
       <Card><Card.Body>
@@ -47,17 +47,18 @@ export default class ChannelSelector extends React.Component {
             aria-describedby="basic-addon1"/>
         </InputGroup></Card.Title>
         Variable for the X Axis:
-        <Form.Control as="select">
-          {allTopics.map((allTopics) => (
-            <option>
+        <Form.Control as="select" onChange={
+          e => DataVisualizerService.instance.plotComponentX = e.target.value}>
+          {allTopics.map((allTopics, i) => (
+            <option key={i}>
               {allTopics}
             </option>
           ))}
         </Form.Control>
         Variable for the Y Axis:
         <Form.Control as="select">
-          {allTopics.map((allTopics) => (
-            <option>
+          {allTopics.map((allTopics, i) => (
+            <option key={i}>
               {allTopics}
             </option>
           ))}

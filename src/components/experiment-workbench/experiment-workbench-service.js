@@ -27,6 +27,7 @@ class ExperimentWorkbenchService extends EventEmitter {
     this._xpraUrlsConfig = [];
     this._xpraUrlsConfirmed = [];
     this._topicAndDataTypeMap = new Map();
+    this._plotComponentX = 0;
 
     ExperimentStorageService.instance.addListener(
       ExperimentStorageService.EVENTS.UPDATE_EXPERIMENTS,
@@ -84,8 +85,6 @@ class ExperimentWorkbenchService extends EventEmitter {
     for (let entry of topicList) {
       this._topicAndDataTypeMap.set(entry.topic, entry.type);
     }
-    console.info('set topicList - this._topicAndDataTypeMap:');
-    console.info(this._topicAndDataTypeMap);
 
     // testing
     const TEST_CONSOLE_OUTPUT = false;
@@ -250,7 +249,6 @@ class ExperimentWorkbenchService extends EventEmitter {
         protobufMsg = protobufMsg[subpackage] || undefined;
       }
     });
-
     return protobufMsg;
   }
 
