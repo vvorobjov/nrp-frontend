@@ -102,9 +102,12 @@ export default class DataVisualizer extends React.Component {
             <Card.Header>
               <Accordion.Toggle as={Button} variant="text" eventKey="2"onClick={() => {
                 console.info('DATA!');
-                console.info(DataVisualizerService.instance.getCurrentData);
+                console.info(DataVisualizerService.instance.currentDataX);
+                console.info(DataVisualizerService.instance.currentDataY);
                 DataVisualizerService.instance.emit(
-                  DataVisualizerService.EVENTS.PLOT_OPENED, DataVisualizerService.instance.currentData);
+                  DataVisualizerService.EVENTS.PLOT_OPENED, DataVisualizerService.instance.currentDataX);
+                DataVisualizerService.instance.emit(
+                  DataVisualizerService.EVENTS.PLOT_OPENED, DataVisualizerService.instance.currentDataY);
               }}>
                   Plots Visualization
               </Accordion.Toggle>

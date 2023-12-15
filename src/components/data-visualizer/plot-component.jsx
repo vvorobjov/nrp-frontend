@@ -13,15 +13,18 @@ import './data-visualizer.css';
 class PlotElement extends React.Component {
   constructor() {
     super();
-    this._currentData = [0,0,0,0,0,0];
-    DataVisualizerService.instance.on(DataVisualizerService.EVENTS.PLOT_OPENED, (data) => this._currentData = data);
+    this._currentDataX = [0,0,0,0,0,0];
+    this._currentDataY = [0,0,0,0,0,0];
+    DataVisualizerService.instance.on(DataVisualizerService.EVENTS.PLOT_OPENED, (data) => this._currentDataX = data);
+    DataVisualizerService.instance.on(DataVisualizerService.EVENTS.PLOT_OPENED, (data) => this._currentDataY = data);
   }
-  //todo: fire event to datavizualizer when accordian thing is opened (in data-visuzliers)
-  //todo: In constructor "onEvent" triggers data coming in here. (Object.freeze style - emit)
+  //Todo: Currently there appears to be an issue with the protobuf data, meaning the data received is not readable.
+  // When this is fixed, then the received data (stored in the currentData) can be fed into the plots below
   state = {  }
   render() {
     console.info('Currently the received data is:');
-    console.info(this._currentdata);
+    console.info(this._currentdataX);
+    console.info(this._currentdataY);
     return (
       <Plot
         data={[

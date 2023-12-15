@@ -19,7 +19,10 @@ class DataVisualizerService extends EventEmitter {
     }
     this._plotComponentX = 0;
     this._subTokenX = undefined;
-    this._currentData = [0,0,0,0,0,0];
+    this._plotComponentY = 0;
+    this._subTokenY = undefined;
+    this._currentDataX = [0,0,0,0,0,0];
+    this._currentDataY = [0,0,0,0,0,0];
   }
 
   static get instance() {
@@ -30,6 +33,7 @@ class DataVisualizerService extends EventEmitter {
     return _instance;
   }
 
+  //Todo: It's awkward treating X and Y data seperately. These should be merged
   get plotComponentX() {
     return this._plotComponentX;
   }
@@ -41,13 +45,33 @@ class DataVisualizerService extends EventEmitter {
     this._subTokenX = MqttClientService.instance.subscribeToTopic(DataVisualizerService.instance.plotComponentX,
       (data) => {
         console.info('PLOT COMPONENT');
-        this._currentData = data;
-        console.info(this._currentData);
+        this._currentDataX = data;
+        console.info(this._currentDataX);
       });
   }
 
-  get currentData() {
-    return this._currentData;
+  get plotComponentY() {
+    return this._plotComponentY;
+  }
+  set plotComponentY(topic) {
+    console.info('PlotComponentY:');
+    console.info(topic);
+    this._subTokenY && MqttClientService.instance.unsubscribe(this._subTokenY);
+    this._plotComponentY = topic;
+    this._subTokenY = MqttClientService.instance.subscribeToTopic(DataVisualizerService.instance.plotComponentY,
+      (data) => {
+        console.info('PLOT COMPONENT');
+        this._currentDataY = data;
+        console.info(this._currentDataY);
+      });
+  }
+
+  get currentDataX() {
+    return this._currentDataX;
+  }
+
+  get currentDataY() {
+    return this._currentDataY;
   }
 }
 

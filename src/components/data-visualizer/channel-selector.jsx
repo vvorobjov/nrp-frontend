@@ -14,7 +14,8 @@ import './data-visualizer.css';
 * Generates the elements for selecting the graph type.
 * @param {} - nothing
 * @returns {JSX} ChannelSelector - JSX Element for naming and choosing XY chanels to plot
-. TODO: Replace List with List of topics from the MQTT Topic List
+. TODO: There is a bug where the default option is not saved to the plotComponent variable.
+*        It works if you switch to another one, and then switch back. But this is awkward.
 */
 
 export default class ChannelSelector extends React.Component {
@@ -56,7 +57,8 @@ export default class ChannelSelector extends React.Component {
           ))}
         </Form.Control>
         Variable for the Y Axis:
-        <Form.Control as="select">
+        <Form.Control as="select" onChange={
+          e => DataVisualizerService.instance.plotComponentY = e.target.value}>
           {allTopics.map((allTopics, i) => (
             <option key={i}>
               {allTopics}
