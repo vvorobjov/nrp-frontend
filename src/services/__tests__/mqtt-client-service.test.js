@@ -7,7 +7,11 @@ import MqttClientService from '../mqtt-client-service';
 import mqtt from 'mqtt';
 import { EventEmitter } from 'events';
 
+jest.mock('mqtt');
+
+
 describe('MqttClientService', () => {
+  
   let subscribeTopicAndValidate = (topic, callback) => {
     let token = MqttClientService.instance.subscribeToTopic(topic, callback);
     expect(token).toBeDefined();
@@ -24,12 +28,23 @@ describe('MqttClientService', () => {
   };
 
   test('sub/unsub', () => {
-    jest.spyOn(mqtt, 'connect').mockImplementation(() => {
-      return new EventEmitter();
+
+    // Mock the 'connect' function of the 'mqtt' module
+    mqtt.connect.mockImplementation(() => {
+      const mqttClient = new EventEmitter();
+
+      // Mock the 'subscribe' function of the created MQTT client
+      mqttClient.subscribe = jest.fn().mockImplementation((topic, callback) => {
+        // Your custom mock logic for the 'subscribe' function
+        console.log(`Mocked subscribe function called with topic: ${topic}`);
+        // You can customize the behavior or return value of the 'subscribe' function here
+      });
+
+      return mqttClient;
     });
 
-    let topicA = 'topic/A';
-    let topicB = 'topic/B';
+    let topicA = '/nrp_simulation/0/status';
+    let topicB = '/nrp_simulation/1/status';
 
     let sub1Callback = jest.fn();
     let sub1Token = subscribeTopicAndValidate(topicA, sub1Callback);
