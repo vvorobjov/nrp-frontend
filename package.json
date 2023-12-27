@@ -18,6 +18,10 @@
   },
   "version": "4.1.1",
   "private": true,
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/vvorobjov/nrp-frontend"
+  },
   "dependencies": {
     "@babel/runtime": "^7.20.13",
     "@codemirror/language": "6.2.1",
@@ -56,9 +60,11 @@
     "@testing-library/user-event": "^12.1.10",
     "@typescript-eslint/parser": "4.14.2",
     "eslint": "7.19.0",
+    "husky": "^8.0.3",
     "jest-fetch-mock": "^3.0.3",
     "jest-junit": "^15.0.0",
     "jest-localstorage-mock": "2.4.6",
+    "lint-staged": "^15.2.0",
     "msw": "^0.23.0",
     "node": "16.1.0",
     "ts-node": "^9.1.1",
@@ -71,7 +77,19 @@
     "test": "react-scripts test",
     "test-ci": "jest --coverage --coverageDirectory=output/coverage/jest",
     "eject": "react-scripts eject",
-    "coverage": "npm run test -- --coverage --ci --watchAll=false --testResultsProcessor=\"jest-junit\""
+    "coverage": "npm run test -- --coverage --ci --watchAll=false --testResultsProcessor=\"jest-junit\"",
+    "lint": "eslint src"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
+    }
+  },
+  "lint-staged": {
+    "*.js": [
+      "eslint --fix",
+      "git add"
+    ]
   },
   "browserslist": {
     "production": [

@@ -1,8 +1,6 @@
 import React from 'react';
 import FlexLayout from 'flexlayout-react';
 
-const { version } = require('../../../package.json');
-
 import { withCookies } from 'react-cookie';
 
 import ExperimentTools from './experiment-tools';
@@ -42,6 +40,8 @@ import PauseIcon from '@material-ui/icons/Pause';
 import FlightTakeoffIcon from '@material-ui/icons/FlightTakeoff';
 
 import CircularProgress from '@material-ui/core/CircularProgress';
+
+const { version } = require('../../../package.json');
 
 const jsonBaseLayout = {
   global: {},

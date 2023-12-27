@@ -136,8 +136,26 @@ export default class MqttClientService extends EventEmitter {
 
   }
 
-  //callback should have args topic, payload
+  /**
+   * Subscribes to an MQTT topic and associates a callback function with it.
+   *
+   * @param {string} topic - The MQTT topic to subscribe to.
+   * @param {function} callback - The callback function to be invoked when a message is received
+   * on the subscribed topic. Should have parameters `topic` and `payload`.
+   * @returns {Object} token - A token object representing the subscription,
+   *                           containing the subscribed `topic` and `callback`.
+   */
   subscribeToTopic(topic, callback) {
+    // this.client is mocked with EventEmitter in tests
+    if (!(this.client instanceof mqtt.MqttClient)) {
+      if (typeof this.client.subscribe === 'function' && this.client instanceof EventEmitter) {
+        console.info('the MQTT client is under test as this.client is of type EventEmitter.');
+      }
+      else {
+        console.error('the MQTT client is not initialized while subscribing to topic!');
+        return;
+      }
+    }
     if (typeof callback !== 'function') {
       console.error('trying to subscribe to topic "' + topic + '", but no callback function given!');
       return;
@@ -147,9 +165,12 @@ export default class MqttClientService extends EventEmitter {
       topic: topic,
       callback: callback
     };
+
+    // Check if the topic is already subscribed
     if (this.subTokensMap.has(token.topic)){
       this.subTokensMap.get(token.topic).push(token);
     }
+    // If not subscribed, create a new entry in the map and subscribe to the topic
     else{
       this.subTokensMap.set(
         token.topic,
