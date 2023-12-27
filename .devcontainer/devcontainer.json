@@ -1,0 +1,17 @@
+{
+  "image": "node:14",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "mhutchie.git-graph"
+      ]
+    }
+  },
+  "containerEnv": {
+    "NODE_ENV": "development"
+  },
+  "postCreateCommand": "npm install",
+  "forwardPorts": [
+    3000
+  ]
+}
