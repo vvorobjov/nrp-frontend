@@ -1,0 +1,66 @@
+# Bitbucket Pipelines for nrp-frontend (EBR2-35).
+#
+# Builds the image from the in-repo Dockerfile and pushes it to
+# Docker Hub at hbpneurorobotics/nrp-frontend.
+#
+# Repository variables required (set under Pipelines → Repository
+# variables, mark as Secured):
+#   DOCKERHUB_USER  — must be `hbpneurorobotics` (the org account).
+#   DOCKERHUB_TOKEN — Docker Hub PAT with Read+Write+Delete scope on
+#                     hbpneurorobotics/nrp-frontend.
+#
+# Tags pushed:
+#   - on push to `development`     → :development AND :revival-baseline
+#                                     AND :sha-<short-sha>
+#   - on a manual run              → :revival-baseline-manual AND :sha-<short-sha>
+#   - on a tag push (e.g. v4.2.0)  → :<tag> AND :sha-<short-sha>
+#
+# Image is the official `atlassian/default-image:4` which ships with
+# Docker. The `docker` service exposes the daemon to the build step.
+
+image: atlassian/default-image:4
+
+definitions:
+  services:
+    docker:
+      memory: 3072
+  steps:
+    - step: &build-and-push
+        name: Build and push nrp-frontend image
+        services:
+          - docker
+        caches:
+          - docker
+        script:
+          - export IMAGE=hbpneurorobotics/nrp-frontend
+          - export SHORT_SHA="${BITBUCKET_COMMIT:0:12}"
+          - echo "$DOCKERHUB_TOKEN" | docker login -u "$DOCKERHUB_USER" --password-stdin
+          # Build once, tag many.
+          - docker build -t "$IMAGE:sha-$SHORT_SHA" .
+          # Branch / tag aware aliases.
+          - |
+            if [ -n "$BITBUCKET_TAG" ]; then
+              docker tag "$IMAGE:sha-$SHORT_SHA" "$IMAGE:$BITBUCKET_TAG"
+              EXTRA_TAGS="$IMAGE:$BITBUCKET_TAG"
+            elif [ "$BITBUCKET_BRANCH" = "development" ]; then
+              docker tag "$IMAGE:sha-$SHORT_SHA" "$IMAGE:development"
+              docker tag "$IMAGE:sha-$SHORT_SHA" "$IMAGE:revival-baseline"
+              EXTRA_TAGS="$IMAGE:development $IMAGE:revival-baseline"
+            else
+              docker tag "$IMAGE:sha-$SHORT_SHA" "$IMAGE:revival-baseline-manual"
+              EXTRA_TAGS="$IMAGE:revival-baseline-manual"
+            fi
+          - docker push "$IMAGE:sha-$SHORT_SHA"
+          - for t in $EXTRA_TAGS; do docker push "$t"; done
+          - docker logout
+
+pipelines:
+  branches:
+    development:
+      - step: *build-and-push
+  tags:
+    "*":
+      - step: *build-and-push
+  custom:
+    build-baseline:
+      - step: *build-and-push
