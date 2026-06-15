@@ -10,6 +10,7 @@ import ExperimentWorkbenchService from '../components/experiment-workbench/exper
 
 const REGEX_TOPIC_DATATYPES = /[./]?nrp_simulation\/[0-9]+\/data$/;
 const REGEX_SIMULATION_STATUS = /nrp_simulation\/[0-9]+\/status/;
+const REGEX_SIMULATION_ERROR = /nrp_simulation\/[0-9]+\/runtime_error/;
 
 let _instance = null;
 const SINGLETON_ENFORCER = Symbol();
@@ -114,6 +115,13 @@ export default class MqttClientService extends EventEmitter {
         }
       }
       else if (REGEX_SIMULATION_STATUS.test(topic)) {
+        msg = payload;
+      }
+      else if (REGEX_SIMULATION_ERROR.test(topic)) {
+        // runtime_error is a JSON payload, not protobuf. Without this branch it
+        // fell through to the protobuf path below, found no message class, and
+        // returned without ever invoking the callback — so simulation errors
+        // were silently swallowed and never shown to the user (EBR2-89).
         msg = payload;
       }
       else {

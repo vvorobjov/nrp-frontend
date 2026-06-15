@@ -272,13 +272,34 @@ class ExperimentWorkbenchService extends EventEmitter {
    * @param {float}  msg.line_text is the text with the error
    */
   errorMsgHandler = (msg) => {
-    const msgObj = JSON.parse(msg);
-    const err = {
-      message: msgObj.msg,
-      code: msgObj.error_type,
-      stack: `${msgObj.fileName}:${msgObj.line_number}:${msgObj.line_text}\n`
-    };
-    DialogService.instance.simulationError(err);
+    try {
+      const msgObj = JSON.parse(msg);
+      const err = {
+        message: msgObj.msg,
+        code: msgObj.error_type,
+        stack: `${msgObj.fileName}:${msgObj.line_number}:${msgObj.line_text}\n`
+      };
+      DialogService.instance.simulationError(err);
+
+      // A `Loading` error is non-recoverable (the backend's only remaining
+      // action is shutdown()), so move the experiment card into a failed
+      // state instead of leaving it in its last-known state (EBR2-89).
+      if (msgObj.error_type === 'Loading') {
+        this.simulationState = EXPERIMENT_STATE.FAILED;
+        ExperimentWorkbenchService.instance.emit(
+          ExperimentWorkbenchService.EVENTS.SIMULATION_STATUS_UPDATED,
+          { state: EXPERIMENT_STATE.FAILED }
+        );
+      }
+    }
+    catch (err) {
+      // Never swallow the failure: if the payload can't be parsed, still tell
+      // the user the simulation errored and show the raw message (EBR2-89).
+      DialogService.instance.unexpectedError({
+        message: 'Could not parse the error MQTT message:\n' + msg.toString(),
+        data: err.toString()
+      });
+    }
   }
 
   /**
