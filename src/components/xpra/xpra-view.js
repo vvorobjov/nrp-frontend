@@ -18,21 +18,34 @@ export default class XpraView extends React.Component {
     if (this.state.xpraUrls.length > 0) {
       this.state.currentUrl = this.state.xpraUrls[0];
     }
+  }
 
-    ExperimentWorkbenchService.instance.on(
+  componentDidMount() {
+    ExperimentWorkbenchService.instance.addListener(
       ExperimentWorkbenchService.EVENTS.SIMULATION_STATUS_UPDATED,
-      (status) => {
-        this.simulationState = status.state;
-        if (status.state === EXPERIMENT_STATE.PAUSED || status.state === EXPERIMENT_STATE.STARTED) {
-          if (ExperimentWorkbenchService.instance.xpraUrls.length > 0) {
-            this.setState({
-              xpraUrls: ExperimentWorkbenchService.instance.xpraUrls,
-              currentUrl: ExperimentWorkbenchService.instance.xpraUrls[0]
-            });
-          }
-        }
-      }
+      this.onSimulationStatusUpdated
     );
+  }
+
+  componentWillUnmount() {
+    // Remove the status listener so the service does not call setState on an
+    // unmounted component (memory leak + React warning).
+    ExperimentWorkbenchService.instance.removeListener(
+      ExperimentWorkbenchService.EVENTS.SIMULATION_STATUS_UPDATED,
+      this.onSimulationStatusUpdated
+    );
+  }
+
+  onSimulationStatusUpdated = (status) => {
+    this.simulationState = status.state;
+    if (status.state === EXPERIMENT_STATE.PAUSED || status.state === EXPERIMENT_STATE.STARTED) {
+      if (ExperimentWorkbenchService.instance.xpraUrls.length > 0) {
+        this.setState({
+          xpraUrls: ExperimentWorkbenchService.instance.xpraUrls,
+          currentUrl: ExperimentWorkbenchService.instance.xpraUrls[0]
+        });
+      }
+    }
   }
 
   onChangeSelectedXpraUrl(event) {
