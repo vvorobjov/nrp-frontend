@@ -34,6 +34,15 @@ export default class EntryPage extends React.Component {
     );
   }
 
+  componentWillUnmount() {
+    // Remove the storage listener so the service does not call setState on an
+    // unmounted component (memory leak + React warning).
+    ExperimentStorageService.instance.removeListener(
+      ExperimentStorageService.EVENTS.UPDATE_EXPERIMENTS,
+      this.onUpdateStorageExperiments
+    );
+  }
+
   onUpdateStorageExperiments(storageExperiments) {
     this.getLastExperiments(storageExperiments);
   }
