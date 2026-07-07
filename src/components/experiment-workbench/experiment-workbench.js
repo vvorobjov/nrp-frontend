@@ -400,21 +400,35 @@ class ExperimentWorkbench extends React.Component {
   async setSimulationState(newState) {
     if (this.state.runningSimulationID !== undefined) {
       this.setState({ simStateLoading: true });
-      await SimulationService.instance.updateState(
-        ExperimentWorkbenchService.instance.serverURL,
-        this.state.runningSimulationID,
-        newState
-      ).then((simInfo) => {
+      try {
+        const simInfo = await SimulationService.instance.updateState(
+          ExperimentWorkbenchService.instance.serverURL,
+          this.state.runningSimulationID,
+          newState
+        );
         console.debug('New simulation state is set: ' + simInfo.state);
         // Set STOPPED state by response (the other by MQTT)
         if (simInfo.state === EXPERIMENT_STATE.STOPPED) {
           this.setState({ simulationState: simInfo.state });
-          this.setState({ simStateLoading: false });
           // clear simulationInfo for the finilized experiments
           ExperimentWorkbenchService.instance.simulationInfo = undefined;
           this.setState({ runningSimulationID: undefined });
         }
-      });
+      }
+      catch (error) {
+        // A failed START/PAUSE/STOP must not leave the toolbar frozen with the
+        // spinner on and every control disabled forever: reflect a failed state
+        // and surface the error instead of a silent, permanent lockout.
+        this.setState({ simulationState: EXPERIMENT_STATE.FAILED });
+        DialogService.instance.simulationError({
+          message: 'Could not change the simulation state to "' + newState + '".',
+          data: error && error.toString()
+        });
+      }
+      finally {
+        // Always clear the loading flag so the toolbar becomes interactive again.
+        this.setState({ simStateLoading: false });
+      }
     }
   }
 
@@ -466,7 +480,7 @@ class ExperimentWorkbench extends React.Component {
               color={
                 this.state.availableServers.length && ExperimentWorkbenchService.instance.mqttConnected()
                   ? 'inherit'
-                  : 'dark'
+                  : 'default'
               }
               className={classes.controlButton}
               onClick={() => this.onButtonInitialize()}
