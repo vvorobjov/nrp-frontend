@@ -272,25 +272,9 @@ class ExperimentWorkbenchService extends EventEmitter {
    * @param {float}  msg.line_text is the text with the error
    */
   errorMsgHandler = (msg) => {
+    let msgObj;
     try {
-      const msgObj = JSON.parse(msg);
-      const err = {
-        message: msgObj.msg,
-        code: msgObj.error_type,
-        stack: `${msgObj.fileName}:${msgObj.line_number}:${msgObj.line_text}\n`
-      };
-      DialogService.instance.simulationError(err);
-
-      // A `Loading` error is non-recoverable (the backend's only remaining
-      // action is shutdown()), so move the experiment card into a failed
-      // state instead of leaving it in its last-known state (EBR2-89).
-      if (msgObj.error_type === 'Loading') {
-        this.simulationState = EXPERIMENT_STATE.FAILED;
-        ExperimentWorkbenchService.instance.emit(
-          ExperimentWorkbenchService.EVENTS.SIMULATION_STATUS_UPDATED,
-          { state: EXPERIMENT_STATE.FAILED }
-        );
-      }
+      msgObj = JSON.parse(msg);
     }
     catch (err) {
       // Never swallow the failure: if the payload can't be parsed, still tell
@@ -299,6 +283,45 @@ class ExperimentWorkbenchService extends EventEmitter {
         message: 'Could not parse the error MQTT message:\n' + msg.toString(),
         data: err.toString()
       });
+      return;
+    }
+
+    DialogService.instance.simulationError({
+      message: msgObj.msg,
+      code: msgObj.error_type,
+      stack: `${msgObj.fileName}:${msgObj.line_number}:${msgObj.line_text}\n`
+    });
+
+    // A `Loading` error is non-recoverable (the backend's only remaining
+    // action is shutdown()), so move the experiment card into a failed
+    // state instead of leaving it in its last-known state (EBR2-89).
+    //
+    // Guard this branch on its own: a partial status payload used to make
+    // ExperimentTimeBox throw while reading undefined time fields, which
+    // aborted the synchronous emit and defeated the FAILED handling (it even
+    // got misreported as a parse error above). Emit a complete status object
+    // with zeroed times so every SIMULATION_STATUS_UPDATED listener runs
+    // cleanly, and contain any remaining listener error (EBR2-100).
+    if (msgObj.error_type === 'Loading') {
+      this.simulationState = EXPERIMENT_STATE.FAILED;
+      try {
+        ExperimentWorkbenchService.instance.emit(
+          ExperimentWorkbenchService.EVENTS.SIMULATION_STATUS_UPDATED,
+          {
+            state: EXPERIMENT_STATE.FAILED,
+            realTime: 0,
+            simulationTime: 0,
+            simulationTimeLeft: 0
+          }
+        );
+      }
+      catch (emitErr) {
+        // A misbehaving status listener must not mask the simulation failure.
+        DialogService.instance.unexpectedError({
+          message: 'Failed to propagate the failed simulation state.',
+          data: emitErr.toString()
+        });
+      }
     }
   }
 
