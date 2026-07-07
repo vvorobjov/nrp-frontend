@@ -1,22 +1,37 @@
 # README #
 
 
-NRP web-frontend 4.0 using React
+NRP web-frontend using React, built with [Vite](https://vitejs.dev/).
 
 ### Prerequisites
 
-- "nvm install 14"
+- Node.js 20 (e.g. `nvm install 20 && nvm use 20`)
 
 ### Install
 
-- "nvm use 14"
-- "npm install"
+- `npm install` (or `npm ci` from the committed lockfile)
 
 ### Commands
 
-- "nvm use 14"
-- "npm start" (dev server)
-- "npm run build" (build for production)
+- `npm run dev` — start the Vite dev server (alias: `npm start`) on http://localhost:3000
+- `npm run startHTTPS` — dev server over HTTPS (self-signed cert)
+- `npm run build` — production build into `build/`
+- `npm run preview` — serve the production build locally
+- `npm test` — run the Jest test suite
+- `npm run test-ci` — Jest with coverage into `output/coverage/jest`
+- `npm run lint` — ESLint over `src`
+
+### Runtime configuration
+
+The app reads `src/config.json` (bundled at build time) and `public/app-config.js`
+(loaded at runtime, served at `/app-config.js`). Copy one of the
+`src/config.json.sample.*` files to `src/config.json` before building; the
+Docker image uses `src/config.json.sample.docker`.
+
+### Docker
+
+Multi-stage build: builder (`node:20-alpine`, `npm ci` + `npm run build`) →
+runtime (`nginx:alpine`, serves the SPA on :3000 with history fallback).
 
 
 ## Acknowledgments
