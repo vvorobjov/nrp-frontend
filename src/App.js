@@ -4,6 +4,7 @@ import { BrowserRouter, Switch, Route } from 'react-router-dom';
 import { withCookies } from 'react-cookie';
 
 import EntryPage from './components/entry-page/entry-page';
+import ErrorBoundary from './components/error-boundary/error-boundary';
 import ErrorDialog from './components/dialog/error-dialog.js';
 import ExperimentsOverview from './components/experiments-overview/experiments-overview';
 import ExperimentWorkbench from './components/experiment-workbench/experiment-workbench';
@@ -19,18 +20,20 @@ class App extends React.Component {
 
   render() {
     return (
-      <div>
-        <ErrorDialog />
-        <NotificationDialog/>
-        <BrowserRouter>
-          <Switch>
-            <Route path='/experiments-overview' render={() => (<ExperimentsOverview/>)} />
-            <Route path='/experiment/:experimentID' component={ExperimentWorkbench}/>
-            {/* <Route path='/simulation-view/:serverIP/:simulationID' component={SimulationView} /> */}
-            <Route path='/' render={() => (<EntryPage cookies={this.props.cookies}/>)} />
-          </Switch>
-        </BrowserRouter>
-      </div>
+      <ErrorBoundary>
+        <div>
+          <ErrorDialog />
+          <NotificationDialog/>
+          <BrowserRouter>
+            <Switch>
+              <Route path='/experiments-overview' render={() => (<ExperimentsOverview/>)} />
+              <Route path='/experiment/:experimentID' component={ExperimentWorkbench}/>
+              {/* <Route path='/simulation-view/:serverIP/:simulationID' component={SimulationView} /> */}
+              <Route path='/' render={() => (<EntryPage cookies={this.props.cookies}/>)} />
+            </Switch>
+          </BrowserRouter>
+        </div>
+      </ErrorBoundary>
     );
   }
 }
