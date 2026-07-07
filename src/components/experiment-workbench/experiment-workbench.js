@@ -480,7 +480,7 @@ class ExperimentWorkbench extends React.Component {
               color={
                 this.state.availableServers.length && ExperimentWorkbenchService.instance.mqttConnected()
                   ? 'inherit'
-                  : 'dark'
+                  : 'default'
               }
               className={classes.controlButton}
               onClick={() => this.onButtonInitialize()}
