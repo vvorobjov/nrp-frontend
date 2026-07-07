@@ -4,7 +4,7 @@ import 'react-tabs/style/react-tabs.css';
 import ExperimentWorkbenchService from './experiment-workbench-service';
 import timeDDHHMMSS from '../../utility/time-filter';
 
-import Typography from '@material-ui/core/Typography';
+import Typography from '@mui/material/Typography';
 
 import './experiment-time-box.css';
 

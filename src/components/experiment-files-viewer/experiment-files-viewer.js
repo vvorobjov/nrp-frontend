@@ -1,10 +1,10 @@
 import React from 'react';
 import { FaDownload, FaUpload, FaFolderOpen, FaTrash } from 'react-icons/fa';
 import { IoSyncCircleOutline, IoSyncCircleSharp } from 'react-icons/io5';
-import TreeView from '@material-ui/lab/TreeView';
-import TreeItem from '@material-ui/lab/TreeItem';
-import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
-import ChevronRightIcon from '@material-ui/icons/ChevronRight';
+import { TreeView } from '@mui/x-tree-view/TreeView';
+import { TreeItem } from '@mui/x-tree-view/TreeItem';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 
 import RemoteExperimentFilesService from '../../services/experiments/files/remote-experiment-files-service';
 //import ExperimentFilesTree from './experiment-files-tree';

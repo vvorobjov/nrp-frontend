@@ -19,28 +19,30 @@ import '../../../node_modules/flexlayout-react/style/light.css';
 import './experiment-workbench.css';
 
 
-import { withStyles } from '@material-ui/core/styles';
+import withStyles from '@mui/styles/withStyles';
+import { ThemeProvider } from '@mui/styles';
+import { createTheme } from '@mui/material/styles';
 import clsx from 'clsx';
-import Drawer from '@material-ui/core/Drawer';
-import IconButton from '@material-ui/core/IconButton';
-import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
+import Drawer from '@mui/material/Drawer';
+import IconButton from '@mui/material/IconButton';
+import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import PropTypes from 'prop-types';
-import AppBar from '@material-ui/core/AppBar';
-import Toolbar from '@material-ui/core/Toolbar';
-import MenuIcon from '@material-ui/icons/Menu';
-import Typography from '@material-ui/core/Typography';
-import CssBaseline from '@material-ui/core/CssBaseline';
-import Divider from '@material-ui/core/Divider';
-import Grid from '@material-ui/core/Grid';
-import Paper from '@material-ui/core/Paper';
+import AppBar from '@mui/material/AppBar';
+import Toolbar from '@mui/material/Toolbar';
+import MenuIcon from '@mui/icons-material/Menu';
+import Typography from '@mui/material/Typography';
+import CssBaseline from '@mui/material/CssBaseline';
+import Divider from '@mui/material/Divider';
+import Grid from '@mui/material/Grid';
+import Paper from '@mui/material/Paper';
 
-import PlayCircleFilledWhiteIcon from '@material-ui/icons/PlayCircleFilledWhite';
-import ExitToAppIcon from '@material-ui/icons/ExitToApp';
-import StopIcon from '@material-ui/icons/Stop';
-import PauseIcon from '@material-ui/icons/Pause';
-import FlightTakeoffIcon from '@material-ui/icons/FlightTakeoff';
+import PlayCircleFilledWhiteIcon from '@mui/icons-material/PlayCircleFilledWhite';
+import ExitToAppIcon from '@mui/icons-material/ExitToApp';
+import StopIcon from '@mui/icons-material/Stop';
+import PauseIcon from '@mui/icons-material/Pause';
+import FlightTakeoffIcon from '@mui/icons-material/FlightTakeoff';
 
-import CircularProgress from '@material-ui/core/CircularProgress';
+import CircularProgress from '@mui/material/CircularProgress';
 
 import packageInfo from '../../../package.json';
 const { version } = packageInfo;
@@ -472,7 +474,7 @@ class ExperimentWorkbench extends React.Component {
               aria-label='open drawer'
               onClick={() => this.setState({ drawerOpen: true })}
               className={clsx(classes.menuButton, this.state.drawerOpen && classes.menuButtonHidden)}
-            >
+              size="large">
               <MenuIcon />
             </IconButton>
             {/* Initialize button*/}
@@ -495,13 +497,14 @@ class ExperimentWorkbench extends React.Component {
                   'No servers available' :
                   'Initialize experiment'
               }
-            >
+              size="large">
               <FlightTakeoffIcon />
             </IconButton>
             {/* Play/pause button*/}
             {this.state.simulationState === EXPERIMENT_STATE.STARTED
               ?
-              <IconButton color='inherit'
+              <IconButton
+                color='inherit'
                 onClick={() => this.onButtonPause()}
                 disabled={
                   this.state.showLeaveDialog ||
@@ -509,11 +512,12 @@ class ExperimentWorkbench extends React.Component {
                   this.state.simStateLoading
                 }
                 title='Pause'
-              >
+                size="large">
                 <PauseIcon />
               </IconButton>
               :
-              <IconButton color='inherit'
+              <IconButton
+                color='inherit'
                 onClick={() => this.onButtonStart()}
                 disabled={
                   this.state.showLeaveDialog ||
@@ -522,12 +526,14 @@ class ExperimentWorkbench extends React.Component {
                   this.state.simStateLoading
                 }
                 title='Start'
-              >
+                size="large">
                 <PlayCircleFilledWhiteIcon />
               </IconButton>
             }
             {/* Shutdown button*/}
-            <IconButton color='inherit' className={classes.controlButton}
+            <IconButton
+              color='inherit'
+              className={classes.controlButton}
               onClick={() => this.onButtonShutdown()}
               disabled={
                 this.state.showLeaveDialog ||
@@ -536,14 +542,15 @@ class ExperimentWorkbench extends React.Component {
                 this.state.simStateLoading
               }
               title='Shutdown experiment'
-            >
+              size="large">
               <StopIcon />
             </IconButton>
             {/* Exit button */}
-            <IconButton color='inherit'
+            <IconButton
+              color='inherit'
               onClick={() => this.setState({ showLeaveDialog: true })}
               title='Leave experiment'
-            >
+              size="large">
               <ExitToAppIcon />
             </IconButton>
             {/* Title */}
@@ -575,7 +582,7 @@ class ExperimentWorkbench extends React.Component {
             <Typography align='left' component='h1' variant='h6' color='inherit' noWrap className={classes.title}>
               NRP {this.state.nrpVersion}
             </Typography>
-            <IconButton onClick={() => this.setState({ drawerOpen: false })}>
+            <IconButton onClick={() => this.setState({ drawerOpen: false })} size="large">
               <ChevronLeftIcon />
             </IconButton>
           </div>
@@ -637,7 +644,18 @@ ExperimentWorkbench.propTypes = {
   classes: PropTypes.object.isRequired
 };
 
-export default withRouter(withCookies(withStyles(useStyles)(ExperimentWorkbench)));
+// MUI v5's @mui/styles bridge ships an empty default theme, so the JSS
+// styles above (theme.mixins/zIndex/transitions/spacing/breakpoints) need a
+// full theme supplied via the @mui/styles ThemeProvider.
+const muiTheme = createTheme();
+const StyledExperimentWorkbench = withStyles(useStyles)(ExperimentWorkbench);
+const ThemedExperimentWorkbench = props => (
+  <ThemeProvider theme={muiTheme}>
+    <StyledExperimentWorkbench {...props} />
+  </ThemeProvider>
+);
+
+export default withRouter(withCookies(ThemedExperimentWorkbench));
 
 ExperimentWorkbench.CONSTANTS = Object.freeze({
   INTERVAL_INTERNAL_UPDATE_MS: 1000
