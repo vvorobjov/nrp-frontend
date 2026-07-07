@@ -3,6 +3,7 @@ import FlexLayout from 'flexlayout-react';
 
 import { withCookies } from 'react-cookie';
 
+import withRouter from '../../utility/with-router';
 import ExperimentTools from './experiment-tools';
 import ExperimentToolsService from './experiment-tools-service';
 import ExperimentWorkbenchService from './experiment-workbench-service';
@@ -176,7 +177,7 @@ class ExperimentWorkbench extends React.Component {
   constructor(props) {
     super(props);
 
-    const {experimentID} = props.match.params;
+    const {experimentID} = props.params;
     this.experimentID = experimentID;
     ExperimentWorkbenchService.instance.experimentID = this.experimentID;
     this.serverURL = ExperimentWorkbenchService.instance.serverURL;
@@ -442,9 +443,7 @@ class ExperimentWorkbench extends React.Component {
   }
 
   leaveWorkbench() {
-    this.props.history.push({
-      pathname: '/experiments-overview'
-    });
+    this.props.navigate('/experiments-overview');
   }
 
   getStatusStyle() {
@@ -638,7 +637,7 @@ ExperimentWorkbench.propTypes = {
   classes: PropTypes.object.isRequired
 };
 
-export default withCookies(withStyles(useStyles)(ExperimentWorkbench));
+export default withRouter(withCookies(withStyles(useStyles)(ExperimentWorkbench)));
 
 ExperimentWorkbench.CONSTANTS = Object.freeze({
   INTERVAL_INTERNAL_UPDATE_MS: 1000

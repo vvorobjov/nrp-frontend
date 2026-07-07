@@ -1,6 +1,5 @@
 import React from 'react';
-// import { Link, useHistory } from 'react-router-dom';
-import { withRouter } from 'react-router-dom';
+import withRouter from '../../utility/with-router';
 import { FaTrash, FaFileExport, FaShareAlt, FaClone } from 'react-icons/fa';
 // import { MdOutlineDownloadDone } from 'react-icons/md';
 // import { RiPlayFill, RiPlayLine, RiPlayList2Fill } from 'react-icons/ri';
@@ -68,9 +67,7 @@ class ExperimentListElement extends React.Component {
   }
 
   openExperimentWorkbench = (expID) => {
-    this.props.history.push({
-      pathname: '/experiment/' + expID
-    });
+    this.props.navigate('/experiment/' + expID);
   }
 
   getAvailabilityInfo() {

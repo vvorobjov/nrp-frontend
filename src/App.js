@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { BrowserRouter, Switch, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { withCookies } from 'react-cookie';
 
 import EntryPage from './components/entry-page/entry-page';
@@ -25,12 +25,14 @@ class App extends React.Component {
           <ErrorDialog />
           <NotificationDialog/>
           <BrowserRouter>
-            <Switch>
-              <Route path='/experiments-overview' render={() => (<ExperimentsOverview/>)} />
-              <Route path='/experiment/:experimentID' component={ExperimentWorkbench}/>
-              {/* <Route path='/simulation-view/:serverIP/:simulationID' component={SimulationView} /> */}
-              <Route path='/' render={() => (<EntryPage cookies={this.props.cookies}/>)} />
-            </Switch>
+            <Routes>
+              <Route path='/experiments-overview' element={<ExperimentsOverview/>} />
+              <Route path='/experiment/:experimentID' element={<ExperimentWorkbench/>} />
+              {/* <Route path='/simulation-view/:serverIP/:simulationID' element={<SimulationView/>} /> */}
+              {/* Catch-all keeps the v5 behaviour where the non-exact '/' route
+                  rendered the entry page for the root and any unmatched path. */}
+              <Route path='*' element={<EntryPage cookies={this.props.cookies}/>} />
+            </Routes>
           </BrowserRouter>
         </div>
       </ErrorBoundary>
