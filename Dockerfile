@@ -1,35 +1,34 @@
-# nrp-frontend (EBR2-45 — first slice).
+# nrp-frontend (EBR2-59 — CRA -> Vite migration).
 #
 # Multi-stage build:
-#   1. node:18-alpine builder — runs the existing Create React App 4
-#      pipeline against the in-tree source. Node 18+ disabled the
-#      legacy OpenSSL hash that Webpack 4 (which CRA 4 ships) still
-#      uses, so NODE_OPTIONS=--openssl-legacy-provider is required
-#      until EBR2-45a migrates the build off CRA 4 to Vite.
+#   1. node:20-alpine builder — installs deps from the committed lockfile
+#      and runs the Vite production build. Vite/esbuild replace Create
+#      React App 4 / Webpack 4, so the NODE_OPTIONS=--openssl-legacy-provider
+#      crutch (needed only because Webpack 4 used a legacy OpenSSL hash) is
+#      gone.
 #   2. nginx:alpine runtime — serves the static SPA on :3000 with
 #      SPA history-fallback to index.html.
 #
-# The bigger upgrades (CRA -> Vite, React 17 -> 18, react-router v5 ->
-# v6, Material-UI v4 -> v5, Bootstrap 4 -> 5) are each tracked as
-# separate sub-stories under EBR2-45 so review stays tractable.
+# The remaining upgrades (React 17 -> 18, react-router v5 -> v6, Material-UI
+# v4 -> v5, Bootstrap 4 -> 5) are tracked separately as EBR2-60..63 so review
+# stays tractable.
 
 # ---- builder ----------------------------------------------------------------
-FROM node:18-alpine AS builder
+FROM node:20-alpine AS builder
 WORKDIR /nrp-frontend-app
 
-# CRA + npm both want git available for some optional inspection
+# Some transitive deps still fall back to node-gyp; keep the toolchain.
 RUN apk add --no-cache git python3 build-base
 
-COPY package*.json ./
+COPY package*.json .npmrc ./
+COPY index.html vite.config.js ./
 COPY public/ ./public/
 COPY src/ ./src/
 COPY README.md ./
 
 RUN cp src/config.json.sample.docker src/config.json
-# Use `npm ci` once a package-lock.json lands (tracked under EBR2-45a);
-# until then `install` is required because the lockfile isn't shipped.
-RUN npm install --no-audit --no-fund
-ENV NODE_OPTIONS=--openssl-legacy-provider
+# The lockfile is committed, so a reproducible `npm ci` is used.
+RUN npm ci --no-audit --no-fund
 RUN npm run build
 
 # ---- runtime ----------------------------------------------------------------
@@ -51,6 +50,7 @@ RUN { \
         echo '}'; \
     } > /etc/nginx/conf.d/default.conf
 
+# Vite emits to build/ (build.outDir in vite.config.js), matching CRA.
 COPY --from=builder /nrp-frontend-app/build /usr/share/nginx/html
 
 # `localhost` resolves to both 127.0.0.1 and ::1 via /etc/hosts so

@@ -41,7 +41,8 @@ import FlightTakeoffIcon from '@material-ui/icons/FlightTakeoff';
 
 import CircularProgress from '@material-ui/core/CircularProgress';
 
-const { version } = require('../../../package.json');
+import packageInfo from '../../../package.json';
+const { version } = packageInfo;
 
 const jsonBaseLayout = {
   global: {},

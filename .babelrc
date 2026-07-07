@@ -1,6 +1,9 @@
 {
+    // Used only by babel-jest. The Vite build ignores this file
+    // (plugin-react is configured with babelrc:false), so targeting the
+    // current Node keeps the Jest transform fast and avoids regenerator shims.
     "presets": [
-        "@babel/preset-env",
-       ["@babel/preset-react", {"runtime": "automatic"}]
+        ["@babel/preset-env", { "targets": { "node": "current" } }],
+        ["@babel/preset-react", { "runtime": "automatic" }]
     ]
 }

@@ -11,4 +11,5 @@ const CONSTANTS = Object.freeze({
 });
 
 
-module.exports = CONSTANTS;
+export const { SIM_TOOL } = CONSTANTS;
+export default CONSTANTS;
