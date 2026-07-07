@@ -1,5 +1,5 @@
 import React from 'react';
-import ReactDOM from 'react-dom';
+import { createRoot } from 'react-dom/client';
 import { CookiesProvider } from 'react-cookie';
 // Bundle Bootstrap's stylesheet locally: it used to load only from the defunct
 // StackPath CDN, which left the app unstyled. Imported before the local CSS so
@@ -9,11 +9,11 @@ import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
 
-ReactDOM.render(
+const root = createRoot(document.getElementById('root'));
+root.render(
   <CookiesProvider>
     <App />
-  </CookiesProvider> ,
-  document.getElementById('root')
+  </CookiesProvider>
 );
 
 // If you want to start measuring performance in your app, pass a function
