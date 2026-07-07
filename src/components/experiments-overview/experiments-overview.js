@@ -7,6 +7,7 @@ import PublicExperimentsService from '../../services/experiments/files/public-ex
 import ServerResourcesService from '../../services/experiments/execution/server-resources-service.js';
 import ExperimentExecutionService from '../../services/experiments/execution/experiment-execution-service.js';
 import RemoteExperimentFilesService from '../../services/experiments/files/remote-experiment-files-service.js';
+import DialogService from '../../services/dialog-service.js';
 
 import ImportExperimentButtons from '../experiment-list/import-experiment-buttons.js';
 import ExperimentList from '../experiment-list/experiment-list.js';
@@ -35,7 +36,11 @@ export default class ExperimentsOverview extends React.Component {
       joinableExperiments: [],
       availableServers: [],
       startingExperiment: undefined,
-      selectedTabIndex: ExperimentsOverview.CONSTANTS.TAB_INDEX.MY_EXPERIMENTS
+      selectedTabIndex: ExperimentsOverview.CONSTANTS.TAB_INDEX.MY_EXPERIMENTS,
+      // Starts loading; cleared on the first UPDATE_EXPERIMENTS event or on
+      // error, so the list shows a spinner instead of "empty" during the
+      // initial fetch.
+      isLoadingExperiments: true
     };
   }
 
@@ -63,6 +68,14 @@ export default class ExperimentsOverview extends React.Component {
       PublicExperimentsService.EVENTS.UPDATE_EXPERIMENTS,
       this.onUpdatePublicExperiments
     );
+
+    // Stop the loading spinner on errors too: the failed fetch is already
+    // surfaced by the dialog service, so we just clear the loading flag.
+    this.onDialogError = this.onDialogError.bind(this);
+    DialogService.instance.addListener(
+      DialogService.EVENTS.ERROR,
+      this.onDialogError
+    );
   }
 
   componentWillUnmount() {
@@ -85,6 +98,11 @@ export default class ExperimentsOverview extends React.Component {
       PublicExperimentsService.EVENTS.UPDATE_EXPERIMENTS,
       this.onUpdatePublicExperiments
     );
+
+    DialogService.instance.removeListener(
+      DialogService.EVENTS.ERROR,
+      this.onDialogError
+    );
   }
 
   onUpdateServerAvailability(availableServers) {
@@ -101,8 +119,14 @@ export default class ExperimentsOverview extends React.Component {
 
     this.setState({
       storageExperiments: storageExperiments,
-      joinableExperiments: joinableExperiments
+      joinableExperiments: joinableExperiments,
+      isLoadingExperiments: false
     });
+  }
+
+  onDialogError() {
+    // The error itself is shown by the dialog service; just stop the spinner.
+    this.setState({ isLoadingExperiments: false });
   }
 
   onUpdatePublicExperiments(publicExperiments) {
@@ -143,6 +167,7 @@ export default class ExperimentsOverview extends React.Component {
             <ExperimentList experiments={this.state.storageExperiments}
               availableServers={this.state.availableServers}
               startingExperiment={this.state.startingExperiment}
+              isLoading={this.state.isLoadingExperiments}
               selectExperimentOverviewTab={(index) => this.setState({ selectedTabIndex: index })}
               templateTab = {false} />
           </TabPanel>
@@ -172,7 +197,8 @@ export default class ExperimentsOverview extends React.Component {
             <ExperimentList
               experiments={this.state.joinableExperiments}
               availableServers={this.state.availableServers}
-              startingExperiment={this.state.startingExperiment} />
+              startingExperiment={this.state.startingExperiment}
+              isLoading={this.state.isLoadingExperiments} />
           </TabPanel>
         </Tabs>
       </div>
