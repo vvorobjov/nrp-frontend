@@ -1,7 +1,7 @@
 # README #
 
 
-NRP web-frontend using React, built with [Vite](https://vitejs.dev/).
+NRP web-frontend using React 18, built with [Vite](https://vitejs.dev/).
 
 ### Prerequisites
 
