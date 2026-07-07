@@ -1,7 +1,7 @@
 import React from 'react';
 import { FaStop } from 'react-icons/fa';
 import { ImEnter } from 'react-icons/im';
-import { withRouter } from 'react-router-dom';
+import withRouter from '../../utility/with-router';
 
 import timeDDHHMMSS from '../../utility/time-filter.js';
 import { EXPERIMENT_STATE } from '../../services/experiments/experiment-constants.js';
@@ -59,9 +59,7 @@ class SimulationDetails extends React.Component {
     };
     ServerResourcesService.instance.getServerConfig(simulationInfo.server).then((serverConfig) => {
       ExperimentWorkbenchService.instance.serverURL = serverConfig['nrp-services'];
-      this.props.history.push({
-        pathname: '/experiment/' + simulationInfo.runningSimulation.experimentID
-      });
+      this.props.navigate('/experiment/' + simulationInfo.runningSimulation.experimentID);
     });
   }
 
