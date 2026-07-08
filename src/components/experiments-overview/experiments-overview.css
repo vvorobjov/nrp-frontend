@@ -15,3 +15,9 @@
 .tabs-view {
     grid-area: tabs-view;
 }
+
+.tab-coming-soon {
+    font-size: 0.75em;
+    font-style: italic;
+    opacity: 0.7;
+}

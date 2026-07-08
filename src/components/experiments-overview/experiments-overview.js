@@ -154,8 +154,14 @@ export default class ExperimentsOverview extends React.Component {
           onSelect={(index, lastIndex) => this.onSelectTab(index, lastIndex)} >
           <TabList>
             <Tab>My Experiments</Tab>
-            <Tab disabled={true}>New Experiment</Tab>
-            <Tab disabled={true}>Model Libraries</Tab>
+            {/* Not yet available: mark clearly as "coming soon" so the greyed
+                tabs do not read as broken. */}
+            <Tab disabled={true} title='Coming soon'>
+              New Experiment <span className='tab-coming-soon'>(coming soon)</span>
+            </Tab>
+            <Tab disabled={true} title='Coming soon'>
+              Model Libraries <span className='tab-coming-soon'>(coming soon)</span>
+            </Tab>
             <Tab>Experiment Files</Tab>
             <Tab>Templates</Tab>
             <Tab>Running Simulations</Tab>
