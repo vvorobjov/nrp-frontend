@@ -5,8 +5,8 @@ import EventProxyService from '../../services/proxy/event-proxy-service';
 import AuthenticationService from '../../services/authentication-service.js';
 
 import Dropdown from 'react-bootstrap/Dropdown';
-import AccountCircleIcon from '@material-ui/icons/AccountCircle';
-import ExitToAppIcon from '@material-ui/icons/ExitToApp';
+import AccountCircleIcon from '@mui/icons-material/AccountCircle';
+import ExitToAppIcon from '@mui/icons-material/ExitToApp';
 
 import './user-menu.css';
 

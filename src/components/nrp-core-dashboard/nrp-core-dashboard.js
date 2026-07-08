@@ -7,10 +7,10 @@ import ExperimentStorageService from '../../services/experiments/files/experimen
 
 import frontendConfig from '../../config.json';
 
-import Grid from '@material-ui/core/Grid';
-import { Alert, AlertTitle } from '@material-ui/lab';
-import Button from '@material-ui/core/Button';
-import DashboardIcon from '@material-ui/icons/Dashboard';
+import Grid from '@mui/material/Grid';
+import { Alert, AlertTitle } from '@mui/material';
+import Button from '@mui/material/Button';
+import DashboardIcon from '@mui/icons-material/Dashboard';
 
 /**
  * The component drawing the NRP dashboard,

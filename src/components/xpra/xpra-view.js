@@ -1,5 +1,5 @@
 import React from 'react';
-import OndemandVideoIcon from '@material-ui/icons/OndemandVideo';
+import OndemandVideoIcon from '@mui/icons-material/OndemandVideo';
 
 import ExperimentWorkbenchService from '../experiment-workbench/experiment-workbench-service';
 import { SIM_TOOL } from '../constants';

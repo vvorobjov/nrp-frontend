@@ -1,7 +1,7 @@
 import FlexLayout from 'flexlayout-react';
-import DescriptionIcon from '@material-ui/icons/Description';
-import ListAltIcon from '@material-ui/icons/ListAlt';
-import OndemandVideoIcon from '@material-ui/icons/OndemandVideo';
+import DescriptionIcon from '@mui/icons-material/Description';
+import ListAltIcon from '@mui/icons-material/ListAlt';
+import OndemandVideoIcon from '@mui/icons-material/OndemandVideo';
 
 import ExperimentWorkbenchService from './experiment-workbench-service';
 import NrpCoreDashboard from '../nrp-core-dashboard/nrp-core-dashboard';
