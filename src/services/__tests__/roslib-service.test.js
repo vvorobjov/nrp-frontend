@@ -49,6 +49,18 @@ describe('RoslibService (EBR2-108)', () => {
     // still a single cache entry for the clean URL
     expect(RoslibService.instance.connections.size).toBe(1);
   });
+
+  test('createService uses the provided ROS service type, not the service name', () => {
+    const connection = {};
+    RoslibService.instance.createService(connection, '/my_service', 'my_pkg/MySrv', { extra: 1 });
+
+    expect(ROSLIB.Service).toHaveBeenCalledWith({
+      ros: connection,
+      name: '/my_service',
+      serviceType: 'my_pkg/MySrv',
+      extra: 1
+    });
+  });
 });
 
 describe.skip('RoslibService', () => {

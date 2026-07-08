@@ -74,13 +74,22 @@ class RoslibService {
     return this.createTopic(connection, topicName, 'std_msgs/String');
   };
 
-  createService(connection, serviceName, additionalOptions) {
+  /**
+   * Create a new ROSLIB.Service.
+   * @param {object} connection - the ROSLIB.Ros connection
+   * @param {string} serviceName - name of the service (the ROS service path)
+   * @param {string} serviceType - the ROS service type (e.g. 'std_srvs/Empty')
+   * @param {object} additionalOptions - additional options to extend the service with
+   */
+  createService(connection, serviceName, serviceType, additionalOptions) {
     return new ROSLIB.Service(
       _.extend(
         {
           ros: connection,
           name: serviceName,
-          serviceType: serviceName
+          // Use the real ROS service type. Previously this was set to the
+          // service name, which is not a valid service type and broke calls.
+          serviceType: serviceType
         },
         additionalOptions
       )
