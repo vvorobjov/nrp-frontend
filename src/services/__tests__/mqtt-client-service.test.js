@@ -24,7 +24,10 @@ describe('MqttClientService', () => {
 
   let unsubscribeAndValidate = (token) => {
     MqttClientService.instance.unsubscribe(token);
-    expect(MqttClientService.instance.subTokensMap.get(token.topic).includes(token)).toBeFalsy();
+    // After unsubscribe the token must no longer be present. The map entry is
+    // deleted entirely once a topic has no subscribers left.
+    let remaining = MqttClientService.instance.subTokensMap.get(token.topic);
+    expect(remaining === undefined || !remaining.includes(token)).toBeTruthy();
   };
 
   test('sub/unsub', () => {
@@ -38,6 +41,11 @@ describe('MqttClientService', () => {
         // Your custom mock logic for the 'subscribe' function
         console.log(`Mocked subscribe function called with topic: ${topic}`);
         // You can customize the behavior or return value of the 'subscribe' function here
+      });
+      // Mock the 'unsubscribe' function so we can assert the broker subscription
+      // is actually cancelled when the last subscriber leaves.
+      mqttClient.unsubscribe = jest.fn().mockImplementation((topic, callback) => {
+        console.log(`Mocked unsubscribe function called with topic: ${topic}`);
       });
 
       return mqttClient;
@@ -53,6 +61,8 @@ describe('MqttClientService', () => {
     let sub3Callback = jest.fn();
     let sub3Token = subscribeTopicAndValidate(topicB, sub3Callback);
 
+    let client = MqttClientService.instance.client;
+
     expect(MqttClientService.instance.subTokensMap.get(topicA).length).toBe(2);
     expect(MqttClientService.instance.subTokensMap.get(topicB).length).toBe(1);
 
@@ -65,6 +75,8 @@ describe('MqttClientService', () => {
     unsubscribeAndValidate(sub1Token);
     expect(MqttClientService.instance.subTokensMap.get(topicA).length).toBe(1);
     expect(MqttClientService.instance.subTokensMap.get(topicB).length).toBe(1);
+    // topicA still has a subscriber, so the broker subscription must remain.
+    expect(client.unsubscribe).not.toHaveBeenCalled();
 
     MqttClientService.instance.onMessage(topicA, {});
     MqttClientService.instance.onMessage(topicB, {});
@@ -73,8 +85,10 @@ describe('MqttClientService', () => {
     expect(sub3Token.callback).toHaveBeenCalledTimes(2);
 
     unsubscribeAndValidate(sub2Token);
-    expect(MqttClientService.instance.subTokensMap.get(topicA).length).toBe(0);
+    // Last subscriber for topicA gone: map entry deleted and broker unsubscribed.
+    expect(MqttClientService.instance.subTokensMap.has(topicA)).toBe(false);
     expect(MqttClientService.instance.subTokensMap.get(topicB).length).toBe(1);
+    expect(client.unsubscribe).toHaveBeenCalledWith(topicA, expect.any(Function));
 
     MqttClientService.instance.onMessage(topicA, {});
     MqttClientService.instance.onMessage(topicB, {});
@@ -83,8 +97,9 @@ describe('MqttClientService', () => {
     expect(sub3Token.callback).toHaveBeenCalledTimes(3);
 
     unsubscribeAndValidate(sub3Token);
-    expect(MqttClientService.instance.subTokensMap.get(topicA).length).toBe(0);
-    expect(MqttClientService.instance.subTokensMap.get(topicB).length).toBe(0);
+    expect(MqttClientService.instance.subTokensMap.has(topicA)).toBe(false);
+    expect(MqttClientService.instance.subTokensMap.has(topicB)).toBe(false);
+    expect(client.unsubscribe).toHaveBeenCalledWith(topicB, expect.any(Function));
 
     MqttClientService.instance.onMessage(topicA, {});
     MqttClientService.instance.onMessage(topicB, {});

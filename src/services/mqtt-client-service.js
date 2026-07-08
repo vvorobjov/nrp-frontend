@@ -255,6 +255,19 @@ export default class MqttClientService extends EventEmitter {
       else {
         console.warn('Your provided token could not be found in the subscription list');
       }
+      // When the last subscriber for a topic is removed, actually cancel the
+      // broker subscription and drop the map entry, instead of leaving an
+      // empty array behind (which leaked entries and kept the broker sending).
+      if (tokens.length === 0) {
+        if (this.client && typeof this.client.unsubscribe === 'function') {
+          this.client.unsubscribe(unsubToken.topic, (err) => {
+            if (err) {
+              console.error(err);
+            }
+          });
+        }
+        this.subTokensMap.delete(unsubToken.topic);
+      }
     }
     else{
       console.warn('The topic ' + unsubToken.topic + ' was not found');
