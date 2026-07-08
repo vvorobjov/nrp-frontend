@@ -157,18 +157,18 @@ export default class ExperimentFilesViewer extends React.Component {
                 {this.props.experiments.map(experiment => {
                   let experimentServerFiles = RemoteExperimentFilesService.instance
                     .mapServerFiles.get(experiment.uuid);
-                  let experimentLocalFiles = RemoteExperimentFilesService.instance.mapLocalFiles.get(experiment.uuid);
 
                   return (
                     <li key={experiment.id || experiment.configuration.id}
                       className={this.getExperimentsListItemClass(experiment)}
                       onClick={() => {
-                        if (experimentLocalFiles) {
-                          this.setState({
-                            selectedExperiment: experiment,
-                            selectedFilepaths: undefined
-                          });
-                        }
+                        // Always select the experiment: if it has no local
+                        // files the file panel now shows an explicit empty
+                        // state instead of the click being a silent no-op.
+                        this.setState({
+                          selectedExperiment: experiment,
+                          selectedFilepaths: undefined
+                        });
                       }}>
                       {experiment.configuration.SimulationName}
                       <div className='experiment-li-buttons'>
@@ -243,7 +243,12 @@ export default class ExperimentFilesViewer extends React.Component {
                   >
                     {this.renderFileTree(selectedExperimentFiles)}
                   </TreeView>
-                  : <span style={{margin: '20px'}}>Please select an experiment on the left first.</span>
+                  : this.state.selectedExperiment
+                    ? <span style={{margin: '20px'}}>
+                      No local files found for this experiment yet. Pick a local working directory
+                      and download the experiment to see its files here.
+                    </span>
+                    : <span style={{margin: '20px'}}>Please select an experiment on the left first.</span>
                 }
               </div>
             </div>
