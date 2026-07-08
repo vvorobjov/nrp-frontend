@@ -11,6 +11,7 @@ import ExperimentTimeBox from './experiment-time-box';
 import SimulationService from '../../services/experiments/execution/running-simulation-service';
 import ExperimentExecutionService from '../../services/experiments/execution/experiment-execution-service';
 import ServerResourcesService from '../../services/experiments/execution/server-resources-service.js';
+import MqttClientService from '../../services/mqtt-client-service';
 import DialogService from '../../services/dialog-service';
 import { EXPERIMENT_STATE, EXPERIMENT_FINAL_STATE } from '../../services/experiments/experiment-constants';
 import LeaveWorkbenchDialog from './leave-workbench-dialog';
@@ -207,7 +208,8 @@ class ExperimentWorkbench extends React.Component {
       runningSimulationID: undefined,
       simulationState: EXPERIMENT_STATE.UNDEFINED,
       simStateLoading: false,
-      availableServers: []
+      availableServers: [],
+      mqttConnectionState: MqttClientService.instance.getConnectionState()
     };
 
     this.flexlayoutReference = React.createRef();
@@ -249,6 +251,14 @@ class ExperimentWorkbench extends React.Component {
     ServerResourcesService.instance.addListener(
       ServerResourcesService.EVENTS.UPDATE_SERVER_AVAILABILITY,
       this.onUpdateServerAvailability
+    );
+
+    // Track the MQTT connection so the dashboard visibly stops looking "live"
+    // when the broker drops (EBR2-108 connection-state API).
+    this.setState({ mqttConnectionState: MqttClientService.instance.getConnectionState() });
+    MqttClientService.instance.addListener(
+      MqttClientService.EVENTS.CONNECTION_STATE_CHANGED,
+      this.onMqttConnectionStateChanged
     );
   }
 
@@ -293,6 +303,10 @@ class ExperimentWorkbench extends React.Component {
       ServerResourcesService.EVENTS.UPDATE_SERVER_AVAILABILITY,
       this.onUpdateServerAvailability
     );
+    MqttClientService.instance.removeListener(
+      MqttClientService.EVENTS.CONNECTION_STATE_CHANGED,
+      this.onMqttConnectionStateChanged
+    );
     // Remove the simulation when we leave the workbench
     ExperimentWorkbenchService.instance.simulationInfo = undefined;
   }
@@ -305,6 +319,35 @@ class ExperimentWorkbench extends React.Component {
   onUpdateServerAvailability = (availableServers) => {
     this.setState({ availableServers: availableServers });
   };
+
+  /**
+   * Reflects the current MQTT broker connection state in the UI.
+   * @listens MqttClientService.EVENTS.CONNECTION_STATE_CHANGED
+   * @param {string} state one of MqttClientService.CONNECTION_STATES
+   */
+  onMqttConnectionStateChanged = (state) => {
+    this.setState({ mqttConnectionState: state });
+  };
+
+  /**
+   * @returns {string|undefined} a user-facing message when the broker is not
+   * connected (and the dashboard is therefore not live), undefined otherwise.
+   */
+  getMqttConnectionBanner() {
+    const STATES = MqttClientService.CONNECTION_STATES;
+    switch (this.state.mqttConnectionState) {
+    case STATES.CONNECTED:
+      return undefined;
+    case STATES.RECONNECTING:
+      return 'Connection to the simulation broker lost — reconnecting…';
+    case STATES.OFFLINE:
+      return 'The simulation broker is offline — the dashboard is not live.';
+    case STATES.ERROR:
+      return 'Connection error with the simulation broker — the dashboard is not live.';
+    default:
+      return 'Disconnected from the simulation broker — the dashboard is not live.';
+    }
+  }
 
   /**
    * Sets the new simulation status to the component state
@@ -647,6 +690,18 @@ class ExperimentWorkbench extends React.Component {
         {/* This is the content of the main window */}
         <main className={classes.content}>
           <div className={classes.appBarSpacer} />
+          {this.getMqttConnectionBanner() &&
+            <div className={clsx('mqtt-connection-banner',
+              this.state.mqttConnectionState === MqttClientService.CONNECTION_STATES.RECONNECTING
+                ? 'mqtt-connection-banner-reconnecting'
+                : 'mqtt-connection-banner-offline')}
+            role='alert'>
+              {this.state.mqttConnectionState === MqttClientService.CONNECTION_STATES.RECONNECTING &&
+                <CircularProgress size='1rem' color='inherit' style={{ marginRight: 8, verticalAlign: 'middle' }} />
+              }
+              {this.getMqttConnectionBanner()}
+            </div>
+          }
           <Grid container spacing={1} className={classes.container}>
             {/* Chart */}
             <Grid item xs={12}>
