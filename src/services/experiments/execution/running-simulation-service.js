@@ -6,6 +6,10 @@ let _instance = null;
 const SINGLETON_ENFORCER = Symbol();
 
 const INTERVAL_CHECK_SIMULATION_READY = 1000;
+// Upper bound on the number of polls before giving up, so simulationReady can
+// never spin forever (e.g. a server stuck in a pending state or a mismatching
+// creationUniqueID). ~60 polls * 1s ≈ 1 minute.
+const MAX_CHECK_SIMULATION_READY_ATTEMPTS = 60;
 
 /**
  * Service handling state and info of running simulations.
@@ -30,12 +34,18 @@ class SimulationService extends HttpService {
    * Check whether a simulation on a server is ready to be started.
    * @param {string} serverURL - URL of the server where simulation should be run
    * @param {string} creationUniqueID - Unique ID generated while trying to launch experiment
+   * @param {object} [options] - optional overrides ({ interval, maxAttempts }), mainly for testing
    * @returns {Promise} Whether simulation is ready to start
    */
-  simulationReady(serverURL, creationUniqueID) {
+  simulationReady(serverURL, creationUniqueID, options = {}) {
+    const interval = options.interval || INTERVAL_CHECK_SIMULATION_READY;
+    const maxAttempts = options.maxAttempts || MAX_CHECK_SIMULATION_READY_ATTEMPTS;
+
     return new Promise((resolve, reject) => {
+      let attempts = 0;
       let verifySimulation = () => {
         setTimeout(() => {
+          attempts++;
           this.httpRequestGET(serverURL + '/simulation')
             .then(async (reponse) => {
               let continueVerify = true;
@@ -51,7 +61,11 @@ class SimulationService extends HttpService {
                     resolve(simulations[last]);
                   }
                   else {
-                    reject();
+                    // A mismatching creationUniqueID means this is not our
+                    // simulation and it never will be. Stop polling and reject
+                    // instead of spinning forever.
+                    continueVerify = false;
+                    reject(new Error('Simulation creationUniqueID mismatch'));
                   }
                 }
                 else if (state === EXPERIMENT_STATE.HALTED || state === EXPERIMENT_STATE.FAILED) {
@@ -61,11 +75,16 @@ class SimulationService extends HttpService {
               }
 
               if (continueVerify) {
-                verifySimulation();
+                if (attempts >= maxAttempts) {
+                  reject(new Error('Timed out waiting for the simulation to become ready'));
+                }
+                else {
+                  verifySimulation();
+                }
               }
             })
             .catch(reject);
-        }, INTERVAL_CHECK_SIMULATION_READY);
+        }, interval);
       };
 
       verifySimulation();
