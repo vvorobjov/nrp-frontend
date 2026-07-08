@@ -3,7 +3,7 @@
 */
 import '@testing-library/jest-dom';
 
-import { HttpProxyService } from '../http-proxy-service';
+import { HttpProxyService, NRPProxyError } from '../http-proxy-service';
 import EventProxyService from '../event-proxy-service';
 jest.mock('../../authentication-service.js');
 
@@ -127,8 +127,12 @@ describe('HttpProxyService', () => {
     const emitDisconnectedSpy = jest.spyOn(EventProxyService.instance, 'emitDisconnected');
     const emitConnectedSpy = jest.spyOn(EventProxyService.instance, 'emitConnected');
 
-    // The first 2 requests should be 404 but not emit DISCONNECTED
-    expect((await httpService.httpRequestGET(mockEndpoint)).ok).toBe(false);
+    // Sub-threshold failures resolve to a real Response object (503), never a
+    // synthesized 404 or a non-Response value, and do not emit DISCONNECTED.
+    let firstFailure = await httpService.httpRequestGET(mockEndpoint);
+    expect(firstFailure).toBeInstanceOf(Response);
+    expect(firstFailure.ok).toBe(false);
+    expect(firstFailure.status).toBe(503);
     expect((await httpService.httpRequestGET(mockEndpoint)).ok).toBe(false);
     // The OK request should reset the counter
     expect((await httpService.httpRequestGET(mockEndpoint)).ok).toBe(true);
@@ -137,11 +141,9 @@ describe('HttpProxyService', () => {
     expect((await httpService.httpRequestGET(mockEndpoint)).ok).toBe(false);
     expect((await httpService.httpRequestGET(mockEndpoint)).ok).toBe(false);
     expect(emitDisconnectedSpy).not.toHaveBeenCalled();
-    try {
-      await httpService.httpRequestGET(mockEndpoint);
-    }
-    catch (error) {
-      expect(emitDisconnectedSpy).toHaveBeenCalledTimes(1);
-    }
+    // On the 3rd consecutive failure the request rejects with an NRPProxyError
+    // (explicit signalling) and DISCONNECTED is emitted exactly once.
+    await expect(httpService.httpRequestGET(mockEndpoint)).rejects.toBeInstanceOf(NRPProxyError);
+    expect(emitDisconnectedSpy).toHaveBeenCalledTimes(1);
   });
 });

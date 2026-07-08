@@ -63,7 +63,13 @@ export class HttpProxyService extends HttpService {
     }
     catch (error) {
       console.error(error);
-      return false;
+      // Never return a non-Response value (used to return `false`): callers
+      // expect either a Response or a thrown NRPProxyError.
+      throw new NRPProxyError(
+        'Failed to obtain an authentication token for the proxy request.',
+        requestURL.href,
+        error && error.message
+      );
     }
 
     // add data to the request
@@ -80,15 +86,29 @@ export class HttpProxyService extends HttpService {
     }
     catch (error) {
       this.failedRequestsCount++;
+      const disconnectInfo = {
+        code: requestURL.href,
+        data:
+          'Error occured: \n' + (error && error.message) +
+          '\nwith options:\n' + JSON.stringify(options, null, 4)
+      };
       if (this.failedRequestsCount >= MAX_FAILED_REQUESTS) {
-        EventProxyService.instance.emitDisconnected({
-          code: requestURL.href,
-          data:
-            'Error occured: \n' + error.message + '\nwith options:\n' + JSON.stringify(options, null, 4)
-        });
+        EventProxyService.instance.emitDisconnected(disconnectInfo);
+        // Signal the persistent failure explicitly rather than relying on the
+        // disconnect event listener to throw.
+        throw new NRPProxyError(
+          'Failed to communicate with proxy.',
+          disconnectInfo.code,
+          disconnectInfo.data
+        );
       }
-      // TODO: the Error is thrown (emitDisconnected) before the response is generated ??
-      return new Response(JSON.stringify([]), {status: 404});
+      // Below the failure threshold, return a real Response (Service
+      // Unavailable) so callers uniformly get a Response object with a false
+      // `ok` flag, instead of a synthesized 404 that masks a network error.
+      return new Response(
+        JSON.stringify({ error: 'Proxy request failed', code: requestURL.href }),
+        { status: 503, headers: { 'Content-Type': 'application/json' } }
+      );
     }
 
     // error handling
