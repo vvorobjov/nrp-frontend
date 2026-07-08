@@ -97,4 +97,16 @@ describe('AuthenticationService', () => {
     spyAuthCollab.mockReturnValue(Promise.reject());
     await expect(AuthenticationService.instance.authenticate({force: true})).rejects.toBe(undefined);
   });
+
+  test('logout() (Collab mode) calls keycloak.logout and clears the local token', () => {
+    AuthenticationService.instance.oidcEnabled = true;
+    const logoutFn = jest.fn();
+    AuthenticationService.instance.keycloakClient = { authenticated: true, logout: logoutFn };
+    const clearSpy = jest.spyOn(AuthenticationService.instance, 'clearStoredLocalToken');
+
+    // Must not throw (previously called a nonexistent Keycloak method).
+    expect(() => AuthenticationService.instance.logout()).not.toThrow();
+    expect(clearSpy).toHaveBeenCalled();
+    expect(logoutFn).toHaveBeenCalled();
+  });
 });

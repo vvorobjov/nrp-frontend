@@ -87,8 +87,11 @@ class AuthenticationService {
   logout() {
     if (this.oidcEnabled) {
       if (this.keycloakClient && this.keycloakClient.authenticated) {
-        this.keycloakClient.logout();
-        this.keycloakClient.clearStoredLocalToken();
+        // Clear our own stored token, then end the OIDC session. The previous
+        // code called this.keycloakClient.clearStoredLocalToken(), which is not
+        // a Keycloak method and threw, aborting the logout.
+        this.clearStoredLocalToken();
+        return this.keycloakClient.logout({ redirectUri: window.location.origin });
       }
       else {
         console.error('Client is not authenticated');
