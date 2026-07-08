@@ -88,12 +88,24 @@ class NrpUserService extends HttpProxyService {
   /**
    * Gives you the currently defined user groups.
    *
+   * @param {boolean} force - force a refresh instead of using the cached value
    * @return currentUserGroups - the user groups currently belonging to
    */
-  async getCurrentUserGroups() {
-    if (!this.currentUserGroups) {
-      let response = await this.httpRequestGET(IDENTITY_ME_GROUPS_URL);
-      this.currentUserGroups = response.json();
+  async getCurrentUserGroups(force = false) {
+    if (force || !this.currentUserGroups) {
+      try {
+        let response = await this.httpRequestGET(IDENTITY_ME_GROUPS_URL);
+        // Await the parsed body: the previous code cached the unresolved
+        // promise returned by response.json().
+        this.currentUserGroups = await response.json();
+      }
+      catch (error) {
+        // Do NOT cache a failure — clear it so the next call retries — and
+        // return an empty group list so callers degrade gracefully.
+        this.currentUserGroups = undefined;
+        this.emit(NrpUserService.EVENTS.DISCONNECTED);
+        return [];
+      }
     }
 
     return this.currentUserGroups;
