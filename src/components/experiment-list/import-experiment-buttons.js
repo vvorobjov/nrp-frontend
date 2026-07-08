@@ -111,7 +111,7 @@ export default class ImportExperimentButtons extends React.Component {
                 <b>{' ' + this.state.importFolderResponse.newName}</b>.
               </p>
             </div>
-            <div className='text-right'>
+            <div className='text-end'>
               <button className='btn btn-success' onClick={() => this.importFolderPopupClick()}>Got it!</button>
             </div>
           </div>
@@ -128,7 +128,7 @@ export default class ImportExperimentButtons extends React.Component {
             <p><b>{this.state.importZipResponses.zipBaseFolderName.join(', ')}</b></p>
             <p>have been successfully imported as:</p>
             <p><b>{this.state.importZipResponses.newExpName.join(', ')}.</b></p>
-            <div className='text-right'>
+            <div className='text-end'>
               <button className='btn btn-success' onClick={() => this.importZipPopupClick()}>Got it!</button>
             </div>
           </div>
@@ -151,7 +151,7 @@ export default class ImportExperimentButtons extends React.Component {
             <p><b>{this.state.scanStorageResponse.deletedFolders !== ''
               ? this.state.scanStorageResponse.deletedFolders
               : 'none' }</b></p>
-            <div className='text-right'>
+            <div className='text-end'>
               <button className='btn btn-success' onClick={() => this.scanStoragePopupClick()}>Got it!</button>
             </div>
           </div>
@@ -192,7 +192,7 @@ export default class ImportExperimentButtons extends React.Component {
               }
             >
               <button type='button' className='btn btn-outline-dark'
-                data-toggle='tooltip' data-placement='bottom'
+                data-bs-toggle='tooltip' data-bs-placement='bottom'
               >
                 <label htmlFor='zip' className='import-button'><FaFileArchive /> Import zip</label>
               </button >
