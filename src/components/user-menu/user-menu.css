@@ -39,3 +39,13 @@
 .user-icon {
   margin-right: 10px;
 }
+
+.user-retry {
+  background: transparent;
+  border: none;
+  color: white;
+  text-decoration: underline;
+  cursor: pointer;
+  padding: 0;
+  font-size: 1em;
+}
