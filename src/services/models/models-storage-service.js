@@ -20,6 +20,9 @@ class ModelsStorageService extends HttpProxyService {
     if (enforcer !== SINGLETON_ENFORCER) {
       throw new Error('Use ' + this.constructor.name + '.instance');
     }
+    // Cache keyed by "<template|custom>:<modelType>" so different model types
+    // (and templates vs custom models) never overwrite each other.
+    this.modelsCache = new Map();
   }
 
   static get instance() {
@@ -42,27 +45,32 @@ class ModelsStorageService extends HttpProxyService {
    * @return models - the list of template models
    */
   async getTemplateModels(forceUpdate = false, modelType, allCustomModels = false) {
-    if (!this.models || forceUpdate) {
-      try {
-        this.verifyModelType(modelType);
-      }
-      catch (error) {
-        DialogService.instance.dataError(error);
-      }
-
-      try {
-        const modelsWithTypeURL = allCustomModels ?
-          `${allCustomModelsURL}/${modelType}` :
-          `${storageModelsURL}/${modelType}`;
-        this.models = await (await this.httpRequestGET(modelsWithTypeURL)).json();
-      }
-      catch (error) {
-        DialogService.instance.networkError(error);
-      }
-
+    // Bail out on an invalid model type instead of firing a request with a bad
+    // path (which previously kept fetching with the invalid modelType).
+    try {
+      this.verifyModelType(modelType);
+    }
+    catch (error) {
+      DialogService.instance.dataError(error);
+      return;
     }
 
-    return this.models;
+    const cacheKey = (allCustomModels ? 'custom:' : 'template:') + modelType;
+    if (!forceUpdate && this.modelsCache.has(cacheKey)) {
+      return this.modelsCache.get(cacheKey);
+    }
+
+    try {
+      const modelsWithTypeURL = allCustomModels ?
+        `${allCustomModelsURL}/${modelType}` :
+        `${storageModelsURL}/${modelType}`;
+      const models = await (await this.httpRequestGET(modelsWithTypeURL)).json();
+      this.modelsCache.set(cacheKey, models);
+      return models;
+    }
+    catch (error) {
+      DialogService.instance.networkError(error);
+    }
   }
 
   /**
