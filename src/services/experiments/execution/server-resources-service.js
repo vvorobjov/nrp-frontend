@@ -89,7 +89,10 @@ class ServerResourcesService extends HttpProxyService {
       .catch((error) => {
         error = error || { message: 'getServerConfig request rejected' };
         DialogService.instance.networkError(error);
-        return error;
+        // Reject instead of resolving with the error object: callers (e.g. the
+        // experiment launch flow) treat a resolved value as a valid server
+        // config and would otherwise proceed to launch on garbage.
+        return Promise.reject(error);
       });
   }
 }
