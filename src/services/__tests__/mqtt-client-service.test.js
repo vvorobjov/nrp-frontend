@@ -92,4 +92,39 @@ describe('MqttClientService', () => {
     expect(sub2Token.callback).toHaveBeenCalledTimes(2);
     expect(sub3Token.callback).toHaveBeenCalledTimes(3);
   });
+
+  // EBR2-108: connection loss must be detected and surfaced so the UI can react.
+  test('tracks connection state and surfaces connection loss', () => {
+    const service = MqttClientService.instance;
+    const client = service.client; // mocked EventEmitter
+
+    const onDisconnected = jest.fn();
+    const onReconnecting = jest.fn();
+    const onStateChanged = jest.fn();
+    service.on(MqttClientService.EVENTS.DISCONNECTED, onDisconnected);
+    service.on(MqttClientService.EVENTS.RECONNECTING, onReconnecting);
+    service.on(MqttClientService.EVENTS.CONNECTION_STATE_CHANGED, onStateChanged);
+
+    client.emit('connect');
+    expect(service.isConnected()).toBe(true);
+    expect(service.getConnectionState()).toBe(MqttClientService.CONNECTION_STATES.CONNECTED);
+
+    // A close after being connected is a real connection loss.
+    client.emit('close');
+    expect(service.isConnected()).toBe(false);
+    expect(service.getConnectionState()).toBe(MqttClientService.CONNECTION_STATES.DISCONNECTED);
+    expect(onDisconnected).toHaveBeenCalledTimes(1);
+
+    // Reconnect attempts are tracked and surfaced.
+    client.emit('reconnect');
+    expect(service.getConnectionState()).toBe(MqttClientService.CONNECTION_STATES.RECONNECTING);
+    expect(onReconnecting).toHaveBeenCalledTimes(1);
+
+    // connect -> close -> reconnect = 3 state transitions
+    expect(onStateChanged).toHaveBeenCalledTimes(3);
+
+    service.removeListener(MqttClientService.EVENTS.DISCONNECTED, onDisconnected);
+    service.removeListener(MqttClientService.EVENTS.RECONNECTING, onReconnecting);
+    service.removeListener(MqttClientService.EVENTS.CONNECTION_STATE_CHANGED, onStateChanged);
+  });
 });
