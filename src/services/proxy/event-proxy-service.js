@@ -7,7 +7,6 @@
  */
 
 import { EventEmitter } from 'events';
-import { NRPProxyError } from './http-proxy-service';
 import DialogService from '../dialog-service';
 
 let _instance = null;
@@ -93,23 +92,23 @@ export default class EventProxyService extends EventEmitter {
 
 
   /**
-   * Throws NRPProxyError exception when connection is lost.
+   * Updates the connection state when the proxy connection is lost.
    *
    * @listens EventProxyService.EVENTS.DISCONNECTED
    *
-   * @param {object} obj is a objest with `code` and `data` fields
-   * which are displayed in the dialog together with the `stack`
+   * @param {object} obj is an object with `code` and `data` fields describing
+   * the failure; it is recorded for diagnostics and consumed by listeners.
    */
   onDisconnected(obj){
     this.connected = false;
     if (!this.initialized) {
       this.initialized = true;
     }
-    throw new NRPProxyError(
-      'Failed to communicate with proxy.',
-      obj.code,//requestURL.href,
-      obj.data//JSON.stringify(options, null, 4)
-    );
+    // Record the last disconnect reason instead of throwing from inside the
+    // listener. Throwing here made the failure surface as an exception
+    // propagating out of EventEmitter.emit(), which was fragile. The failure
+    // is now signalled explicitly by HttpProxyService.performRequest.
+    this.lastError = obj || null;
   }
 
 }
