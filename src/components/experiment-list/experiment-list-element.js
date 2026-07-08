@@ -70,6 +70,19 @@ class ExperimentListElement extends React.Component {
     this.props.navigate('/experiment/' + expID);
   }
 
+  handleRowKeyDown = (event) => {
+    // Keyboard equivalent of clicking the row. Only act when the row itself is
+    // focused (not a nested button/input), so inner controls keep their own
+    // Enter/Space behaviour. Space is prevented to avoid page scrolling.
+    if (event.target !== event.currentTarget) {
+      return;
+    }
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      this.setState({ selected: true });
+    }
+  }
+
   getAvailabilityInfo() {
     let status;
     if (this.props.availableServers && this.props.availableServers.length > CLUSTER_THRESHOLDS.AVAILABLE) {
@@ -135,7 +148,11 @@ class ExperimentListElement extends React.Component {
     return (
       <div className='list-entry-wrapper flex-container left-right'
         style={{ position: 'relative' }}
+        role='button'
+        tabIndex={0}
+        aria-expanded={!!this.state.selected}
         onClick={() => this.setState({ selected: true })}
+        onKeyDown={this.handleRowKeyDown}
         ref={this.wrapperRef}>
 
         {/* This is the remove dialog */}
@@ -173,29 +190,32 @@ class ExperimentListElement extends React.Component {
               null
             }
             { this.state.nameEditingVisible && !this.state.templateTab ?
-              <button className='list-entry-edit-buttons' onClick={() => {
-                this.setState({ nameEditingVisible: false });
-                this.setState({ visibleName: this.state.edibleName});
-                ExperimentStorageService.instance.renameExperiment(exp.id, this.state.edibleName);
-              }}>
+              <button type='button' aria-label='Save experiment name'
+                className='list-entry-edit-buttons' onClick={() => {
+                  this.setState({ nameEditingVisible: false });
+                  this.setState({ visibleName: this.state.edibleName});
+                  ExperimentStorageService.instance.renameExperiment(exp.id, this.state.edibleName);
+                }}>
                 <VscCheck/>
               </button>
               :
               null
             }
             { this.state.nameEditingVisible && !this.state.templateTab ?
-              <button className='list-entry-edit-buttons' onClick={() => {
-                this.setState({ nameEditingVisible: false });
-                this.setState({ edibleName: this.state.visibleName});
-              }}>
+              <button type='button' aria-label='Discard name changes'
+                className='list-entry-edit-buttons' onClick={() => {
+                  this.setState({ nameEditingVisible: false });
+                  this.setState({ edibleName: this.state.visibleName});
+                }}>
                 <VscDiscard/>
               </button>
               :
               null
             }
             { !this.state.nameEditingVisible && !this.state.templateTab ?
-              <button className='list-entry-edit-buttons' onClick={() => this.setState(
-                { nameEditingVisible: true })}>
+              <button type='button' aria-label='Rename experiment'
+                className='list-entry-edit-buttons' onClick={() => this.setState(
+                  { nameEditingVisible: true })}>
                 <VscEdit/>
               </button>
               :
@@ -370,7 +390,7 @@ class ExperimentListElement extends React.Component {
             <SimulationDetails simulations={exp.joinableServers} />
             : null
           }
-          {exp.rights.launch ?
+          {exp.rights.launch && config.cloneDate ?
             <div className='experiment-clone-date'>
               Cloning date: {config.cloneDate}
             </div>
