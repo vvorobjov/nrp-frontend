@@ -46,7 +46,7 @@ export class HttpService extends EventEmitter {
   async performRequest(url, options, data){
     // Add authorization headerasync (url)
     await AuthenticationService.instance.promiseInitialized;
-    let token = AuthenticationService.instance.getToken();
+    let token = await AuthenticationService.instance.getToken();
     options.headers.Authorization = 'Bearer ' + token;
     if (data) {
       options.body = data;

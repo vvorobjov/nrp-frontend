@@ -61,18 +61,20 @@ class AuthenticationService {
     return this.promiseInitialized;
   }
 
-  getToken() {
+  async getToken() {
     if (this.oidcEnabled) {
       if (this.keycloakClient && this.keycloakClient.token) {
-        this.keycloakClient
-          .updateToken(30).then(refreshed => {
-            if (refreshed) {
-              console.info('token refreshed');
-            }
-          })
-          .catch(() => {
-            console.error('Failed to refresh token');
-          });
+        // Await the refresh so callers get an up-to-date token. The previous
+        // fire-and-forget refresh returned the possibly-stale current token.
+        try {
+          const refreshed = await this.keycloakClient.updateToken(30);
+          if (refreshed) {
+            console.info('token refreshed');
+          }
+        }
+        catch (error) {
+          console.error('Failed to refresh token');
+        }
         return this.keycloakClient.token;
       }
       else {

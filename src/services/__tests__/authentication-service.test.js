@@ -98,6 +98,25 @@ describe('AuthenticationService', () => {
     await expect(AuthenticationService.instance.authenticate({force: true})).rejects.toBe(undefined);
   });
 
+  test('getToken() (Collab mode) awaits the refresh and returns the fresh token', async () => {
+    AuthenticationService.instance.oidcEnabled = true;
+    // The refreshed token only becomes available once updateToken() resolves.
+    // A fire-and-forget refresh would return the stale token instead.
+    const keycloakClient = {
+      token: 'stale-token',
+      updateToken: jest.fn(() =>
+        Promise.resolve(true).then(() => {
+          keycloakClient.token = 'fresh-token';
+          return true;
+        }))
+    };
+    AuthenticationService.instance.keycloakClient = keycloakClient;
+
+    const token = await AuthenticationService.instance.getToken();
+    expect(keycloakClient.updateToken).toHaveBeenCalledWith(30);
+    expect(token).toBe('fresh-token');
+  });
+
   test('logout() (Collab mode) calls keycloak.logout and clears the local token', () => {
     AuthenticationService.instance.oidcEnabled = true;
     const logoutFn = jest.fn();

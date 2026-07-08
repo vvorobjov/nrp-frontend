@@ -58,7 +58,7 @@ export class HttpProxyService extends HttpService {
     const requestURL = new URL(path, this.proxyURL);
     try {
       await AuthenticationService.instance.promiseInitialized;
-      let token = AuthenticationService.instance.getToken();
+      let token = await AuthenticationService.instance.getToken();
       options.headers.Authorization = 'Bearer ' + token;
     }
     catch (error) {
