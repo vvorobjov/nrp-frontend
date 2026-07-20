@@ -63,7 +63,7 @@ describe('RoslibService (EBR2-108)', () => {
   });
 });
 
-describe.skip('RoslibService', () => {
+describe('RoslibService', () => {
   test('makes sure that invoking the constructor fails with the right message', () => {
     expect(() => {
       new RoslibService();
@@ -79,17 +79,12 @@ describe.skip('RoslibService', () => {
     expect(instance1).toBe(instance2);
   });
 
-  test('can provide ROS connections', () => {
-    jest.spyOn(ROSLIB, 'Ros').mockReturnValue({});
-    let connection1 = RoslibService.instance.getConnection('test-ros-ws-url');
-    let connection2 = RoslibService.instance.getConnection('test-ros-ws-url');
-    expect(connection1).toBe(connection2);
-    expect(ROSLIB.Ros).toHaveBeenCalledTimes(1);
-  });
+  // Connection caching is covered by the EBR2-108 suite above; the legacy test
+  // here treated getConnection as synchronous (it is now async), so it is dropped.
 
   test('can create ROS topics with additional options', () => {
     let mockTopic = {};
-    jest.spyOn(ROSLIB, 'Topic').mockReturnValue(mockTopic);
+    ROSLIB.Topic.mockImplementation(() => mockTopic);
     let rosConnection = {};
     let topicName = 'test-topic-name';
     let messageType = 'test-message-type';
@@ -111,7 +106,6 @@ describe.skip('RoslibService', () => {
   });
 
   test('has a shortcut for creating string topics', () => {
-    jest.spyOn(ROSLIB, 'Topic').mockImplementation();
     let rosConnection = {};
     let topicName = 'test-topic-name';
 
@@ -124,25 +118,7 @@ describe.skip('RoslibService', () => {
     expect(ROSLIB.Topic).toHaveBeenCalledWith(expectedTopicOptions);
   });
 
-  test('can create ROS services with additional options', () => {
-    let mockService = {};
-    jest.spyOn(ROSLIB, 'Service').mockReturnValue(mockService);
-    let rosConnection = {};
-    let serviceName = 'test-topic-name';
-    let additionalOptions = {
-      something: {},
-      else: true
-    };
-
-    let service = RoslibService.instance.createService(rosConnection, serviceName, additionalOptions);
-    expect(service).toBe(mockService);
-    let expectedTopicOptions = {
-      ros: rosConnection,
-      name: serviceName,
-      serviceType: serviceName,
-      something: additionalOptions.something,
-      else: additionalOptions.else
-    };
-    expect(ROSLIB.Service).toHaveBeenCalledWith(expectedTopicOptions);
-  });
+  // createService is covered by the EBR2-108 suite above; the legacy test here
+  // asserted the old buggy signature (serviceType defaulted to the name), which
+  // no longer holds after the EBR2-108 fix, so it is dropped.
 });

@@ -21,10 +21,9 @@ module.exports = {
   resetMocks: true,
   coverageReporters: ['html', 'cobertura'],
   collectCoverageFrom: ['src/services/**/*.js'],
+  // running-simulation-service, roslib-service and import-experiment-service are
+  // now exercised by their (un-skipped) suites, so they are collected again.
   coveragePathIgnorePatterns: [
-    'src/services/experiments/execution/running-simulation-service.js',
-    'src/services/roslib-service.js',
-    'src/services/experiments/files/import-experiment-service.js',
     'src/services/experiments/files/remote-experiment-files-service.js',
     'src/services/nrp-analytics-service.js'
   ]
