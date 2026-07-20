@@ -1,6 +1,16 @@
+/* Shared button styling. The former Bootstrap-3 companion class was removed (it
+   is undefined in Bootstrap 5); react-bootstrap <Button>s keep their colours
+   from the `variant` prop, while the plain <button>s rely on these rules alone.
+   Only layout/affordance is set here so it never overrides a variant's colour. */
 .nrp-btn {
     padding: 5px 10px 5px 10px;
     border: 1px solid lightgray;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.nrp-btn:disabled {
+    cursor: not-allowed;
 }
 
 .nrp-btn-small {

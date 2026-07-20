@@ -9,8 +9,7 @@ import ImportExperimentService from '../import-experiment-service';
 import MockScanStorageResponse from '../../../../mocks/mock_scan_storage_response.json';
 import MockZipResponses from '../../../../mocks/mock_zip_responses.json';
 
-// TODO: [NRRPLT-8721] restore experiment import funtionality
-describe.skip('ImportExperimentService', () => {
+describe('ImportExperimentService', () => {
 
   test('makes sure that invoking the constructor fails with the right message', () => {
     expect(() => {
@@ -22,7 +21,15 @@ describe.skip('ImportExperimentService', () => {
   });
 
   test('makes sure zip responses are encapsulated in an object', async () => {
-    let importZipResponses = {zipBaseFolderName:['0', '0'], destFolderName:['1', '2'], numberOfZips: 2};
+    // EBR2-108: getImportZipResponses now also collects newExpName (from each
+    // response's newName). The mock responses omit newName, so those entries are
+    // undefined, but the key is present in the returned object.
+    let importZipResponses = {
+      zipBaseFolderName: ['0', '0'],
+      destFolderName: ['1', '2'],
+      newExpName: [undefined, undefined],
+      numberOfZips: 2
+    };
     expect(await ImportExperimentService.instance.getImportZipResponses(
       MockZipResponses.map((response) => new Response(JSON.stringify(response))))).toStrictEqual(importZipResponses);
   });

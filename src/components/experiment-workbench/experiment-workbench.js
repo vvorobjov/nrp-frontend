@@ -20,14 +20,11 @@ import '../../../node_modules/flexlayout-react/style/light.css';
 import './experiment-workbench.css';
 
 
-import withStyles from '@mui/styles/withStyles';
-import { ThemeProvider } from '@mui/styles';
-import { createTheme } from '@mui/material/styles';
+import { styled } from '@mui/material/styles';
 import clsx from 'clsx';
 import Drawer from '@mui/material/Drawer';
 import IconButton from '@mui/material/IconButton';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
-import PropTypes from 'prop-types';
 import AppBar from '@mui/material/AppBar';
 import Toolbar from '@mui/material/Toolbar';
 import MenuIcon from '@mui/icons-material/Menu';
@@ -86,21 +83,43 @@ const jsonBaseLayout = {
 
 // TODO: Unify styles with css or mui styles
 const drawerWidth = 240;
-const useStyles = theme => ({
-  root: {
-    display: 'flex'
-  },
-  toolbar: {
+
+// Stable class names applied to the workbench elements. The rules for each are
+// declared on the `Root` styled component below (MUI v5 `styled`, replacing the
+// removed deprecated JSS bridge). `styled` from @mui/material/styles resolves
+// against MUI's full default theme, so no explicit ThemeProvider is needed for
+// theme.mixins/zIndex/transitions/spacing/breakpoints.
+const classes = {
+  toolbar: 'ExpWb-toolbar',
+  toolbarIcon: 'ExpWb-toolbarIcon',
+  appBar: 'ExpWb-appBar',
+  appBarShift: 'ExpWb-appBarShift',
+  menuButton: 'ExpWb-menuButton',
+  menuButtonHidden: 'ExpWb-menuButtonHidden',
+  controlButton: 'ExpWb-controlButton',
+  title: 'ExpWb-title',
+  drawerPaper: 'ExpWb-drawerPaper',
+  drawerPaperClose: 'ExpWb-drawerPaperClose',
+  appBarSpacer: 'ExpWb-appBarSpacer',
+  content: 'ExpWb-content',
+  container: 'ExpWb-container',
+  controlContainer: 'ExpWb-controlContainer',
+  contentContainer: 'ExpWb-contentContainer'
+};
+
+const Root = styled('div')(({ theme }) => ({
+  display: 'flex',
+  [`& .${classes.toolbar}`]: {
     paddingRight: 24 // keep right padding when drawer closed
   },
-  toolbarIcon: {
+  [`& .${classes.toolbarIcon}`]: {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'flex-end',
     padding: '0 8px',
     ...theme.mixins.toolbar
   },
-  appBar: {
+  [`& .${classes.appBar}`]: {
     position: 'absolute',
     zIndex: theme.zIndex.drawer + 1,
     transition: theme.transitions.create(['width', 'margin'], {
@@ -108,7 +127,7 @@ const useStyles = theme => ({
       duration: theme.transitions.duration.leavingScreen
     })
   },
-  appBarShift: {
+  [`& .${classes.appBarShift}`]: {
     marginLeft: drawerWidth,
     width: `calc(100% - ${drawerWidth}px)`,
     transition: theme.transitions.create(['width', 'margin'], {
@@ -116,22 +135,19 @@ const useStyles = theme => ({
       duration: theme.transitions.duration.enteringScreen
     })
   },
-  menuButton: {
+  [`& .${classes.menuButton}`]: {
     marginRight: 36
   },
-  menuButtonHidden: {
+  [`& .${classes.menuButtonHidden}`]: {
     display: 'none'
   },
-  controlButton: {
-    borderWidth: '0',
-    shape: {
-      borderRadius: 0
-    }
+  [`& .${classes.controlButton}`]: {
+    borderWidth: '0'
   },
-  title: {
+  [`& .${classes.title}`]: {
     flexGrow: 1
   },
-  drawerPaper: {
+  [`& .${classes.drawerPaper}`]: {
     position: 'relative',
     whiteSpace: 'nowrap',
     width: drawerWidth,
@@ -140,7 +156,7 @@ const useStyles = theme => ({
       duration: theme.transitions.duration.enteringScreen
     })
   },
-  drawerPaperClose: {
+  [`& .${classes.drawerPaperClose}`]: {
     overflowX: 'hidden',
     transition: theme.transitions.create('width', {
       easing: theme.transitions.easing.sharp,
@@ -151,21 +167,21 @@ const useStyles = theme => ({
       width: theme.spacing(9)
     }
   },
-  appBarSpacer: theme.mixins.toolbar,
-  content: {
+  [`& .${classes.appBarSpacer}`]: theme.mixins.toolbar,
+  [`& .${classes.content}`]: {
     position: 'relative',
     flexGrow: 1,
     height: '100vh',
     overflow: 'hidden'
   },
-  container: {
+  [`& .${classes.container}`]: {
     position: 'relative',
     paddingTop: theme.spacing(1),
     paddingBottom: theme.spacing(0),
     direction: 'column',
     display: 'flex'
   },
-  controlContainer: {
+  [`& .${classes.controlContainer}`]: {
     height: 50,
     marginLeft: theme.spacing(1),
     marginRight: theme.spacing(1),
@@ -178,14 +194,14 @@ const useStyles = theme => ({
     alignItems: 'center'
   },
   // TODO: Fix vertical filling
-  contentContainer: {
+  [`& .${classes.contentContainer}`]: {
     height: '80vh',
     padding: theme.spacing(1),
     display: 'flex',
     overflow: 'auto',
     flexDirection: 'column'
   }
-});
+}));
 
 
 class ExperimentWorkbench extends React.Component {
@@ -544,9 +560,8 @@ class ExperimentWorkbench extends React.Component {
   }
 
   render() {
-    const { classes } = this.props;
     return (
-      <div className={classes.root}>
+      <Root>
         <CssBaseline />
         <AppBar position='absolute' className={clsx(classes.appBar, this.state.drawerOpen && classes.appBarShift)}>
           <Toolbar className={classes.toolbar}>
@@ -727,28 +742,13 @@ class ExperimentWorkbench extends React.Component {
             </Grid>
           </Grid>
         </main>
-      </div>
+      </Root>
     );
   }
 
 }
 
-ExperimentWorkbench.propTypes = {
-  classes: PropTypes.object.isRequired
-};
-
-// MUI v5's @mui/styles bridge ships an empty default theme, so the JSS
-// styles above (theme.mixins/zIndex/transitions/spacing/breakpoints) need a
-// full theme supplied via the @mui/styles ThemeProvider.
-const muiTheme = createTheme();
-const StyledExperimentWorkbench = withStyles(useStyles)(ExperimentWorkbench);
-const ThemedExperimentWorkbench = props => (
-  <ThemeProvider theme={muiTheme}>
-    <StyledExperimentWorkbench {...props} />
-  </ThemeProvider>
-);
-
-export default withRouter(withCookies(ThemedExperimentWorkbench));
+export default withRouter(withCookies(ExperimentWorkbench));
 
 ExperimentWorkbench.CONSTANTS = Object.freeze({
   INTERVAL_INTERNAL_UPDATE_MS: 1000

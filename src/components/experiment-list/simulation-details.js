@@ -86,7 +86,7 @@ class SimulationDetails extends React.Component {
                 <button /*analytics-on analytics-event="Join" analytics-category="Experiment"
                   ng-click="(simulation.runningSimulation.state === STATE.CREATED) ||
                     simulation.stopping || joinExperiment(simulation, exp);"*/
-                  type="button" className='nrp-btn btn-default'
+                  type="button" className='nrp-btn'
                   disabled={this.isJoinDisabled(simulation)}
                   onClick={() => {
                     this.joinSimulation(simulation);
@@ -106,7 +106,7 @@ class SimulationDetails extends React.Component {
                       console.error(err.toString());
                     };
                   }}
-                  type="button" className='nrp-btn btn-default'
+                  type="button" className='nrp-btn'
                   disabled={this.state.shutdownDisabled}
                   title={this.state.titleButtonShutdown}>
                   <FaStop className='icon' />Shutdown
@@ -120,7 +120,7 @@ class SimulationDetails extends React.Component {
         {/* TODO: [NRRPLT-8773] Add Stop All button */}
         {/* <div className='table-row'>
           <div className='table-column-last'>
-            <button className='nrp-btn btn-default'>
+            <button className='nrp-btn'>
               <FaStopCircle className='icon' />Stop All
             </button>
           </div>

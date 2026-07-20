@@ -13,19 +13,13 @@ import ImportExperimentButtons from '../experiment-list/import-experiment-button
 import ExperimentList from '../experiment-list/experiment-list.js';
 import NrpHeader from '../nrp-header/nrp-header.js';
 import ExperimentFilesViewer from '../experiment-files-viewer/experiment-files-viewer.js';
+import { TAB_INDEX } from './experiments-overview-constants.js';
 
 import './experiments-overview.css';
 
 export default class ExperimentsOverview extends React.Component {
   static CONSTANTS = {
-    TAB_INDEX: {
-      MY_EXPERIMENTS: 0,
-      NEW_EXPERIMENT: 1,
-      MODEL_LIBRARIES: 2,
-      EXPERIMENT_FILES: 3,
-      TEMPLATES: 4,
-      RUNNING_SIMULATIONS: 5
-    }
+    TAB_INDEX
   };
 
   constructor(props) {
