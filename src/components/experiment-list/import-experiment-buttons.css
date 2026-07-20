@@ -16,3 +16,14 @@
     cursor: pointer;
     height: 50%;
 }
+
+.import-progress {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-left: 12px;
+}
+
+.import-progress-text {
+    font-style: italic;
+}

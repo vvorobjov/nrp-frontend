@@ -8,6 +8,7 @@ import { Modal, Button } from 'react-bootstrap';
 
 import ExperimentStorageService from '../../services/experiments/files/experiment-storage-service';
 import ExperimentWorkbenchService from '../experiment-workbench/experiment-workbench-service';
+import DialogService from '../../services/dialog-service';
 
 import './tf-editor.css';
 
@@ -27,20 +28,38 @@ export default class TransceiverFunctionEditor extends React.Component {
       code: '',
       textChanges: '',
       showDialogUnsavedChanges: false,
-      codeMirrorMarkup: []
+      codeMirrorMarkup: [],
+      isLoading: false,
+      isLoadingContent: false,
+      isSaving: false
     };
   }
 
   async componentDidMount() {
-
-    const workbench = await ExperimentWorkbenchService.instance;
+    const workbench = ExperimentWorkbenchService.instance;
     this.experimentID = workbench.experimentID;
 
-    this.setState({ experimentName: this.experimentID });
-    await this.loadExperimentFiles();
-    const defaultFile = this.files.find(f => f.name === 'simulation_config.json');
-    this.setState({ selectedFile: defaultFile ? defaultFile : this.files.at(0) });
-    await this.loadFileContent(this.state.selectedFile);
+    this.setState({ experimentName: this.experimentID, isLoading: true });
+    try {
+      await this.loadExperimentFiles();
+      // Use a local so the content load does not rely on the (async) setState
+      // above having flushed, and guard against an experiment with no files.
+      const defaultFile = this.files.find(f => f.name === 'simulation_config.json') || this.files.at(0);
+      if (defaultFile) {
+        this.setState({ selectedFile: defaultFile });
+        await this.loadFileContent(defaultFile);
+      }
+    }
+    catch (error) {
+      // Never swallow the failure: surface it instead of showing an empty editor.
+      DialogService.instance.dataError({
+        message: 'Could not load the experiment files.',
+        data: error && error.toString()
+      });
+    }
+    finally {
+      this.setState({ isLoading: false });
+    }
   }
 
   onChangeSelectedFile(event) {
@@ -90,15 +109,32 @@ export default class TransceiverFunctionEditor extends React.Component {
    * @param {string} file.extension is a file extension
    */
   async loadFileContent(file) {
-    let fileContent = await ExperimentStorageService.instance.getFileText(this.state.experimentName, file.name);
-    const codeMirrorMarkup = await this.defineCodeMirrorMarkup(file.extension);
-    this.fileLoading = true;
-    this.setState({
-      selectedFile: file,
-      code: fileContent,
-      showDialogUnsavedChanges: false,
-      codeMirrorMarkup: codeMirrorMarkup
-    });
+    if (!file) {
+      return;
+    }
+    this.setState({ isLoadingContent: true });
+    try {
+      let fileContent = await ExperimentStorageService.instance.getFileText(this.state.experimentName, file.name);
+      const codeMirrorMarkup = await this.defineCodeMirrorMarkup(file.extension);
+      this.fileLoading = true;
+      this.setState({
+        selectedFile: file,
+        code: fileContent,
+        showDialogUnsavedChanges: false,
+        codeMirrorMarkup: codeMirrorMarkup
+      });
+    }
+    catch (error) {
+      // Previously the load error was swallowed and the editor silently kept
+      // the old content; tell the user instead.
+      DialogService.instance.dataError({
+        message: 'Could not load the file "' + file.name + '".',
+        data: error && error.toString()
+      });
+    }
+    finally {
+      this.setState({ isLoadingContent: false });
+    }
   }
 
   async defineCodeMirrorMarkup(ext) {
@@ -126,20 +162,44 @@ export default class TransceiverFunctionEditor extends React.Component {
   }
 
   async saveTF() {
-    let response = await ExperimentStorageService.instance.setFile(
-      this.state.experimentName, this.state.selectedFile.name, this.state.code);
-    if (response.ok) {
-      this.hasUnsavedChanges = false;
-      this.setState({ textChanges: 'saved' });
-      setTimeout(() => {
-        this.setState({ textChanges: '' });
-      }, 3000);
-      return true;
-    }
-    else {
-      console.error('Error trying to save TF!');
-      console.error(response);
+    // Guard against double-clicks while a save is already in flight.
+    if (this.state.isSaving) {
       return false;
+    }
+    this.setState({ isSaving: true, textChanges: 'saving…' });
+    try {
+      let response = await ExperimentStorageService.instance.setFile(
+        this.state.experimentName, this.state.selectedFile.name, this.state.code);
+      if (response.ok) {
+        this.hasUnsavedChanges = false;
+        this.setState({ textChanges: 'saved' });
+        setTimeout(() => {
+          this.setState({ textChanges: '' });
+        }, 3000);
+        return true;
+      }
+      else {
+        console.error('Error trying to save TF!');
+        console.error(response);
+        // Surface the failure instead of only logging it to the console.
+        DialogService.instance.dataError({
+          message: 'Could not save the file "' + this.state.selectedFile.name + '".',
+          code: response.status
+        });
+        this.setState({ textChanges: 'save failed' });
+        return false;
+      }
+    }
+    catch (error) {
+      DialogService.instance.dataError({
+        message: 'Could not save the file "' + this.state.selectedFile.name + '".',
+        data: error && error.toString()
+      });
+      this.setState({ textChanges: 'save failed' });
+      return false;
+    }
+    finally {
+      this.setState({ isSaving: false });
     }
   }
 
@@ -160,8 +220,9 @@ export default class TransceiverFunctionEditor extends React.Component {
             </select>
             <button
               className='tf-editor-file-ui-item'
+              disabled={this.state.isSaving || this.state.isLoading || this.state.isLoadingContent}
               onClick={() => this.saveTF()}>
-              Save
+              {this.state.isSaving ? 'Saving…' : 'Save'}
             </button>
             <div className={this.hasUnsavedChanges ?
               'tf-editor-text-unsaved' : 'tf-editor-text-saved'}>
@@ -171,6 +232,9 @@ export default class TransceiverFunctionEditor extends React.Component {
         </div>
 
         <div className='tf-editor-codemirror-container'>
+          {(this.state.isLoading || this.state.isLoadingContent) &&
+            <div className='tf-editor-loading'>Loading file…</div>
+          }
           <CodeMirror
             value={this.state.code}
             onChange={(change, viewUpdate) => this.onChangeCodemirror(change, viewUpdate)}

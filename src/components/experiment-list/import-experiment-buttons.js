@@ -11,11 +11,13 @@ import frontendConfig from '../../config.json';
 
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Tooltip from 'react-bootstrap/Tooltip';
+import Spinner from 'react-bootstrap/Spinner';
 export default class ImportExperimentButtons extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      importKey: 0
+      importKey: 0,
+      isImporting: false
     };
     // By default, we enable the scan storage button, even if it's not in the config.
     // For the online version, we explicitly disable it.
@@ -160,11 +162,11 @@ export default class ImportExperimentButtons extends React.Component {
 
         {/* Import buttons */}
         <div className='list-entry-buttons flex-container center'>
-          <input disabled={false} id='folder' type='file' style={{ display: 'none' }}
+          <input disabled={this.state.isImporting} id='folder' type='file' style={{ display: 'none' }}
             multiple directory='' webkitdirectory=''
             onChange={(event) => this.importExperimentFolderChange(event)}
             key={this.state.importKey + 1} />
-          <input disabled={false} id='zip' type='file' style={{ display: 'none' }}
+          <input disabled={this.state.isImporting} id='zip' type='file' style={{ display: 'none' }}
             multiple accept='.zip'
             onChange={(event) => this.importZippedExperimentChange(event)}
             key={this.state.importKey} />
@@ -177,7 +179,7 @@ export default class ImportExperimentButtons extends React.Component {
                 </Tooltip>
               }
             >
-              <button type='button' className='btn btn-outline-dark'>
+              <button type='button' className='btn btn-outline-dark' disabled={this.state.isImporting}>
                 <label htmlFor='folder' className='import-button'>
                   <FaFolder /> Import folder
                 </label>
@@ -191,7 +193,7 @@ export default class ImportExperimentButtons extends React.Component {
                 </Tooltip>
               }
             >
-              <button type='button' className='btn btn-outline-dark'
+              <button type='button' className='btn btn-outline-dark' disabled={this.state.isImporting}
                 data-bs-toggle='tooltip' data-bs-placement='bottom'
               >
                 <label htmlFor='zip' className='import-button'><FaFileArchive /> Import zip</label>
@@ -200,12 +202,19 @@ export default class ImportExperimentButtons extends React.Component {
 
             {
               this.scanStorage ?
-                <button type='button' className='btn btn-outline-dark' onClick={() => this.scanStorageClick()}>
+                <button type='button' className='btn btn-outline-dark' disabled={this.state.isImporting}
+                  onClick={() => this.scanStorageClick()}>
                   <FaAudible /> Scan Storage
                 </button> :
                 null
             }
           </div>
+          {this.state.isImporting &&
+            <span className='import-progress'>
+              <Spinner animation='border' size='sm' role='status' />
+              <span className='import-progress-text'>Importing…</span>
+            </span>
+          }
         </div>
       </div>
     );

@@ -11,6 +11,7 @@ import ExperimentTimeBox from './experiment-time-box';
 import SimulationService from '../../services/experiments/execution/running-simulation-service';
 import ExperimentExecutionService from '../../services/experiments/execution/experiment-execution-service';
 import ServerResourcesService from '../../services/experiments/execution/server-resources-service.js';
+import MqttClientService from '../../services/mqtt-client-service';
 import DialogService from '../../services/dialog-service';
 import { EXPERIMENT_STATE, EXPERIMENT_FINAL_STATE } from '../../services/experiments/experiment-constants';
 import LeaveWorkbenchDialog from './leave-workbench-dialog';
@@ -46,6 +47,18 @@ import CircularProgress from '@mui/material/CircularProgress';
 
 import packageInfo from '../../../package.json';
 const { version } = packageInfo;
+
+// Human-readable labels for each simulation lifecycle state, so the toolbar
+// shows a clear status instead of the raw backend token.
+const SIMULATION_STATE_LABELS = {
+  [EXPERIMENT_STATE.CREATED]: 'Created',
+  [EXPERIMENT_STATE.STARTED]: 'Running',
+  [EXPERIMENT_STATE.PAUSED]: 'Paused',
+  [EXPERIMENT_STATE.COMPLETED]: 'Completed',
+  [EXPERIMENT_STATE.FAILED]: 'Failed',
+  [EXPERIMENT_STATE.STOPPED]: 'Stopped',
+  [EXPERIMENT_STATE.UNDEFINED]: 'Not started'
+};
 
 const jsonBaseLayout = {
   global: {},
@@ -195,7 +208,8 @@ class ExperimentWorkbench extends React.Component {
       runningSimulationID: undefined,
       simulationState: EXPERIMENT_STATE.UNDEFINED,
       simStateLoading: false,
-      availableServers: []
+      availableServers: [],
+      mqttConnectionState: MqttClientService.instance.getConnectionState()
     };
 
     this.flexlayoutReference = React.createRef();
@@ -237,6 +251,14 @@ class ExperimentWorkbench extends React.Component {
     ServerResourcesService.instance.addListener(
       ServerResourcesService.EVENTS.UPDATE_SERVER_AVAILABILITY,
       this.onUpdateServerAvailability
+    );
+
+    // Track the MQTT connection so the dashboard visibly stops looking "live"
+    // when the broker drops (EBR2-108 connection-state API).
+    this.setState({ mqttConnectionState: MqttClientService.instance.getConnectionState() });
+    MqttClientService.instance.addListener(
+      MqttClientService.EVENTS.CONNECTION_STATE_CHANGED,
+      this.onMqttConnectionStateChanged
     );
   }
 
@@ -281,6 +303,10 @@ class ExperimentWorkbench extends React.Component {
       ServerResourcesService.EVENTS.UPDATE_SERVER_AVAILABILITY,
       this.onUpdateServerAvailability
     );
+    MqttClientService.instance.removeListener(
+      MqttClientService.EVENTS.CONNECTION_STATE_CHANGED,
+      this.onMqttConnectionStateChanged
+    );
     // Remove the simulation when we leave the workbench
     ExperimentWorkbenchService.instance.simulationInfo = undefined;
   }
@@ -293,6 +319,35 @@ class ExperimentWorkbench extends React.Component {
   onUpdateServerAvailability = (availableServers) => {
     this.setState({ availableServers: availableServers });
   };
+
+  /**
+   * Reflects the current MQTT broker connection state in the UI.
+   * @listens MqttClientService.EVENTS.CONNECTION_STATE_CHANGED
+   * @param {string} state one of MqttClientService.CONNECTION_STATES
+   */
+  onMqttConnectionStateChanged = (state) => {
+    this.setState({ mqttConnectionState: state });
+  };
+
+  /**
+   * @returns {string|undefined} a user-facing message when the broker is not
+   * connected (and the dashboard is therefore not live), undefined otherwise.
+   */
+  getMqttConnectionBanner() {
+    const STATES = MqttClientService.CONNECTION_STATES;
+    switch (this.state.mqttConnectionState) {
+    case STATES.CONNECTED:
+      return undefined;
+    case STATES.RECONNECTING:
+      return 'Connection to the simulation broker lost — reconnecting…';
+    case STATES.OFFLINE:
+      return 'The simulation broker is offline — the dashboard is not live.';
+    case STATES.ERROR:
+      return 'Connection error with the simulation broker — the dashboard is not live.';
+    default:
+      return 'Disconnected from the simulation broker — the dashboard is not live.';
+    }
+  }
 
   /**
    * Sets the new simulation status to the component state
@@ -340,11 +395,17 @@ class ExperimentWorkbench extends React.Component {
     }
     // if there is no simulation bound
     if (this.state.runningSimulationID === undefined) {
-      this.setState({ simulationState: undefined });
+      // Give immediate feedback for the (potentially long) launch: keep the
+      // toolbar disabled and show the launching spinner until the simulation
+      // reports its first status over MQTT.
+      this.setState({ simulationState: undefined, simStateLoading: true });
       await ExperimentExecutionService.instance.startNewExperiment(
         ExperimentWorkbenchService.instance.experimentInfo
       ).then(async (simResponse) => {
         if (typeof simResponse === 'undefined') {
+          // Nothing was launched: stop the spinner and reflect the failure
+          // instead of leaving the toolbar spinning forever.
+          this.setState({ simStateLoading: false, simulationState: EXPERIMENT_STATE.FAILED });
           console.error('startNewExperiment() returned with simResponse === undefined');
           return;
         }
@@ -357,8 +418,7 @@ class ExperimentWorkbench extends React.Component {
             MQTTPrefix: simInfo.MQTTPrefix
           };
           this.setState({ runningSimulationID: simInfo.simulationID });
-          // get the simulationState from MQTT only
-          this.setState({ simStateLoading: true });
+          // Keep simStateLoading true: the real state now comes from MQTT.
         }
         else {
           throw new Error('Could not parse the response from the backend after initializing the simulation');
@@ -366,6 +426,8 @@ class ExperimentWorkbench extends React.Component {
         ExperimentWorkbenchService.instance.serverURL = simResponse['serverURL'];
         this.serverURL = simResponse['serverURL'];
       }).catch((failure) => {
+        // A failed launch must clear the spinner and surface the error.
+        this.setState({ simStateLoading: false, simulationState: EXPERIMENT_STATE.FAILED });
         DialogService.instance.simulationError({ message: failure });
       });
     }
@@ -454,11 +516,31 @@ class ExperimentWorkbench extends React.Component {
       return 'simulation-status-started';
     case EXPERIMENT_STATE.PAUSED:
       return 'simulation-status-paused';
+    case EXPERIMENT_STATE.COMPLETED:
+      return 'simulation-status-completed';
     case EXPERIMENT_STATE.FAILED:
       return 'simulation-status-error';
+    case EXPERIMENT_STATE.CREATED:
+    case EXPERIMENT_STATE.STOPPED:
+      return 'simulation-status-stopped';
     default:
       return 'simulation-status-default';
     }
+  }
+
+  /**
+   * Human-readable label for the current simulation lifecycle state.
+   * @returns {string} the label to display next to "Simulation State".
+   */
+  getStatusLabel() {
+    const state = this.state.simulationState;
+    if (this.state.simStateLoading && (state === undefined || state === EXPERIMENT_STATE.UNDEFINED)) {
+      return 'Launching…';
+    }
+    if (state === undefined) {
+      return 'Not started';
+    }
+    return SIMULATION_STATE_LABELS[state] || state;
   }
 
   render() {
@@ -608,6 +690,18 @@ class ExperimentWorkbench extends React.Component {
         {/* This is the content of the main window */}
         <main className={classes.content}>
           <div className={classes.appBarSpacer} />
+          {this.getMqttConnectionBanner() &&
+            <div className={clsx('mqtt-connection-banner',
+              this.state.mqttConnectionState === MqttClientService.CONNECTION_STATES.RECONNECTING
+                ? 'mqtt-connection-banner-reconnecting'
+                : 'mqtt-connection-banner-offline')}
+            role='alert'>
+              {this.state.mqttConnectionState === MqttClientService.CONNECTION_STATES.RECONNECTING &&
+                <CircularProgress size='1rem' color='inherit' style={{ marginRight: 8, verticalAlign: 'middle' }} />
+              }
+              {this.getMqttConnectionBanner()}
+            </div>
+          }
           <Grid container spacing={1} className={classes.container}>
             {/* Chart */}
             <Grid item xs={12}>
@@ -616,10 +710,9 @@ class ExperimentWorkbench extends React.Component {
                 <ExperimentTimeBox value='experiment'/>
                 <ExperimentTimeBox value='remaining'/>
                 <Typography align='left' variant='subtitle1' color='inherit' noWrap className={classes.title}>
-                  Simulation State: {
-                    this.state.simStateLoading ?
-                      <CircularProgress size='1rem'/> :
-                      this.state.simulationState
+                  Simulation State: {this.getStatusLabel()}
+                  {this.state.simStateLoading &&
+                    <CircularProgress size='1rem' style={{ marginLeft: 8, verticalAlign: 'middle' }} />
                   }
                 </Typography>
               </Paper>

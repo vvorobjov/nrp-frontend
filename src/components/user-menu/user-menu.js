@@ -15,7 +15,9 @@ export default class UserMenu extends React.Component {
     super();
 
     this.state = {
-      user: null
+      user: null,
+      loading: true,
+      loadError: false
     };
   }
 
@@ -54,20 +56,42 @@ export default class UserMenu extends React.Component {
    * Cleans the user information when the Proxy connection problem trigger is emitted
    */
   onProxyDisconnected = () => {
-    this.setState({ user: null });
+    this.setState({ user: null, loading: false, loadError: true });
   }
 
   /**
-   * Gets the user information through the NrpUserService
+   * Gets the user information through the NrpUserService.
+   * Resolves to a real user, or falls back to an error/retry state after a
+   * timeout, so the menu never hangs on "pending …" forever.
+   *
+   * @param {boolean} force - force a refresh of the cached user
    */
-  async getCurrentUser() {
-    NrpUserService.instance.getCurrentUser().then((currentUser) => {
-      if (!this.cancelGetCurrentUser) {
-        this.setState({
-          user: currentUser
-        });
+  async getCurrentUser(force = false) {
+    this.setState({ loading: true, loadError: false });
+    try {
+      const currentUser = await Promise.race([
+        NrpUserService.instance.getCurrentUser(force),
+        new Promise((resolve, reject) =>
+          setTimeout(() => reject(new Error('timeout')), UserMenu.CONSTANTS.USER_FETCH_TIMEOUT_MS))
+      ]);
+      if (this.cancelGetCurrentUser) {
+        return;
       }
-    });
+      if (currentUser) {
+        this.setState({ user: currentUser, loading: false, loadError: false });
+      }
+      else {
+        // Resolved without a user (request failed inside the service).
+        this.setState({ user: null, loading: false, loadError: true });
+      }
+    }
+    catch (error) {
+      // Timed out or threw: surface an actionable retry instead of hanging.
+      if (this.cancelGetCurrentUser) {
+        return;
+      }
+      this.setState({ user: null, loading: false, loadError: true });
+    }
   }
 
   /**
@@ -89,7 +113,19 @@ export default class UserMenu extends React.Component {
           >
             <div id='user-menu-name' className='user-name'>
               <AccountCircleIcon className='user-icon' />
-              {this.state.user ? this.state.user.displayName : 'pending ...'}
+              {this.state.user
+                ? this.state.user.displayName
+                : this.state.loading
+                  ? 'Loading…'
+                  : <button type='button' className='user-retry'
+                    onClick={(event) => {
+                      // Don't let the retry click toggle the dropdown open.
+                      event.stopPropagation();
+                      this.getCurrentUser(true);
+                    }}>
+                    Unavailable — retry
+                  </button>
+              }
             </div>
           </Dropdown.Toggle>
 
@@ -107,3 +143,8 @@ export default class UserMenu extends React.Component {
     );
   }
 }
+
+UserMenu.CONSTANTS = Object.freeze({
+  // Give up waiting for the identity request after this long and offer a retry.
+  USER_FETCH_TIMEOUT_MS: 10000
+});

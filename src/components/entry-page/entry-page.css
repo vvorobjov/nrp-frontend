@@ -1,11 +1,25 @@
 .entry-page-wrapper {
-  height: 100vh;
+  /* Grow with content instead of clipping it to exactly one viewport. */
+  min-height: 100vh;
   display: grid;
   grid-template-rows: 200px auto;
   grid-template-columns: 25% auto 25%;
   grid-template-areas:
     "nrp-header nrp-header nrp-header"
     "dashboard experiments news";
+}
+
+/* Collapse the 3-column landing to a single column on narrow screens. */
+@media (max-width: 900px) {
+  .entry-page-wrapper {
+    grid-template-rows: auto;
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "nrp-header"
+      "dashboard"
+      "experiments"
+      "news";
+  }
 }
 
 .entry-page-header {
@@ -39,7 +53,51 @@
   text-align: left;
   padding: 20px;
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
+}
+
+.news-frame-container {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 300px;
+}
+
+.news-frame {
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
+.news-loading {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #555;
+  font-style: italic;
+}
+
+.news-fallback {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+  color: #555;
+}
+
+.news-fallback-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.news-retry {
+  padding: 4px 12px;
+  cursor: pointer;
 }
 
 .sidebar-left {
