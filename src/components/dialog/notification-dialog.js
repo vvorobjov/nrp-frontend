@@ -1,5 +1,6 @@
 import React from 'react';
 import { Toast } from 'react-bootstrap';
+import { v4 as uuidv4 } from 'uuid';
 
 import DialogService from '../../services/dialog-service.js';
 
@@ -13,10 +14,10 @@ class NotificationDialog extends React.Component{
     };
     this.infoDelayMS = 6000;
     this.warnDelayMS = 15000;
+    this.onNotification = this.onNotification.bind(this);
   }
 
-  async componentDidMount() {
-    this.onNotification = this.onNotification.bind(this);
+  componentDidMount() {
     DialogService.instance.addListener(
       DialogService.EVENTS.NOTIFICATION, this.onNotification
     );
@@ -29,50 +30,44 @@ class NotificationDialog extends React.Component{
   }
 
   onNotification(notification) {
-    // avoid duplicates
-    var isType = false;
-    var isMsg = false;
-    var index = 0;
-    this.state.notifications.forEach((notif) =>{
-      if (notification.type===notif.type) {
-        if (notification.message===notif.message){
-          isMsg = true;
-        }
-        else {
-          index = this.state.notifications.indexOf(notif);
-          isType = true;
-        }
+    this.setState((prevState) => {
+      // Ignore an identical notification (same type and message) that is
+      // already visible.
+      const isDuplicate = prevState.notifications.some(
+        (notif) => notif.type === notification.type && notif.message === notification.message
+      );
+      if (isDuplicate) {
+        return null;
       }
-    });
-    if (isType){
-      this.handleClose(index);
-    }
-    if (!isMsg){
-      this.setState({
-        notifications: [...this.state.notifications, notification]
-      });
-    }
-  }
-
-  handleClose(index) {
-    var copy = [...this.state.notifications];
-    copy.splice(index, 1);
-    this.setState({
-      notifications: copy
+      // Replace any earlier notification of the same type, then append the new
+      // one carrying a stable id so it can later be dismissed unambiguously.
+      const remaining = prevState.notifications.filter(
+        (notif) => notif.type !== notification.type
+      );
+      return {
+        notifications: [...remaining, { ...notification, id: uuidv4() }]
+      };
     });
   }
 
-  // TODO: [NRRPLT-8774] the Toast doesn't disappear if there are more than one notification
+  handleClose(id) {
+    // Dismiss by stable id rather than array index so the correct toast is
+    // removed even when several are visible or one auto-hides.
+    this.setState((prevState) => ({
+      notifications: prevState.notifications.filter((notif) => notif.id !== id)
+    }));
+  }
+
   render(){
     let notifications = this.state.notifications;
     return(
       <div className='toast-notification-wrapper'>
         {notifications.length!==0?
           <ol>
-            {notifications.map((notification, index) => {
+            {notifications.map((notification) => {
               return (
-                <li key={index} className='no-style'>
-                  <Toast className='toast-width' onClose={(index) => this.handleClose(index)}
+                <li key={notification.id} className='no-style'>
+                  <Toast className='toast-width' onClose={() => this.handleClose(notification.id)}
                     delay={notification.type === 'Warning' ? this.warnDelayMS : this.infoDelayMS}
                     animation={true} autohide={true}>
                     <Toast.Header className={notification.type === 'Warning' ? 'warning' : 'info'} >

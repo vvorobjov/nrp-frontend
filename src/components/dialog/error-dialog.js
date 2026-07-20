@@ -1,5 +1,6 @@
 import React from 'react';
-import { Modal, Button } from 'react-bootstrap';
+import { Modal, Button, Collapse } from 'react-bootstrap';
+import { VscClose, VscChevronDown, VscChevronUp } from 'react-icons/vsc';
 
 import DialogService from '../../services/dialog-service.js';
 
@@ -9,13 +10,15 @@ class ErrorDialog extends React.Component{
   constructor(props) {
     super(props);
     this.state = {
-      error: undefined,
+      // Queue of incoming errors; the head is displayed and the rest wait
+      // their turn so no error is silently dropped.
+      errors: [],
       isErrorSourceDisplayed: false
     };
+    this.onError = this.onError.bind(this);
   }
 
-  async componentDidMount() {
-    this.onError = this.onError.bind(this);
+  componentDidMount() {
     DialogService.instance.addListener(
       DialogService.EVENTS.ERROR, this.onError
     );
@@ -28,71 +31,106 @@ class ErrorDialog extends React.Component{
   }
 
   onError(error) {
-    // Do not overwrite with the new incoming errors
-    if (!this.state.error) {
-      this.setState({
-        error: error
-      });
-    }
+    // Append every error so subsequent ones are shown in turn instead of
+    // being discarded while one is already on screen.
+    this.setState((prevState) => ({
+      errors: [...prevState.errors, error]
+    }));
   }
 
   handleClose() {
-    this.setState({
-      error: undefined,
+    // Drop the current error and reveal the next queued one (if any).
+    this.setState((prevState) => ({
+      errors: prevState.errors.slice(1),
       isErrorSourceDisplayed: false
-    });
+    }));
   }
 
-  sourceDisplay() {
-    this.setState({
-      isErrorSourceDisplayed: !this.state.isErrorSourceDisplayed
-    });
+  toggleSourceDisplay() {
+    this.setState((prevState) => ({
+      isErrorSourceDisplayed: !prevState.isErrorSourceDisplayed
+    }));
+  }
+
+  hasTechnicalDetails(error) {
+    return Boolean(error.code || error.data || error.stack);
+  }
+
+  formatDetail(value) {
+    if (typeof value === 'string') {
+      return value;
+    }
+    try {
+      return JSON.stringify(value, null, 2);
+    }
+    catch (e) {
+      return String(value);
+    }
   }
 
   render(){
-    let error = this.state.error;
+    const error = this.state.errors[0];
+    if (!error) {
+      return null;
+    }
+
+    const showDetails = this.state.isErrorSourceDisplayed;
+    const queuedCount = this.state.errors.length - 1;
+
     return (
-      <div>
-        {error?
-          <div className="error-dialog-wrapper">
-            <Modal.Dialog>
-              <Modal.Header>
-                <h4>{error.type}</h4>
-              </Modal.Header>
-              <Modal.Body>
-                <pre>{error.message}</pre>
-                {this.state.isErrorSourceDisplayed
-                  ? <div>
-                    {!error.code && !error.data && !error.stack
-                      ? <h6>No scary details</h6>
-                      : null}
-                    {error.code
-                      ? <div><h6>Code</h6><pre>{error.code}</pre></div>
-                      : null}
-                    {error.data
-                      ? <div><h6>Data</h6><pre>{error.data}</pre></div>
-                      : null}
-                    {error.stack
-                      ? <div><h6>Stack Trace</h6><pre>{error.stack}</pre></div>
-                      : null}
-                  </div>
-                  : null
-                }
-              </Modal.Body>
-              <Modal.Footer>
-                <div>
-                  <Button variant="warning" onClick={() => this.handleClose()}>
-                    <span className="glyphicon glyphicon-remove"></span> Close
-                  </Button>
-                  <Button variant="light" onClick={() => this.sourceDisplay()}>
-                    {this.state.isErrorSourceDisplayed ? 'Hide' : 'Show'} scary details <span></span>
-                  </Button>
+      <Modal
+        show
+        onHide={() => this.handleClose()}
+        keyboard
+        backdrop
+        centered
+        aria-labelledby="error-dialog-title"
+        className="error-dialog"
+      >
+        <Modal.Header closeButton>
+          <Modal.Title id="error-dialog-title" as="h4">{error.type}</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <p className="error-dialog-message">{error.message}</p>
+          {this.hasTechnicalDetails(error)
+            ? <div>
+              <Button
+                variant="link"
+                className="error-dialog-details-toggle"
+                onClick={() => this.toggleSourceDisplay()}
+                aria-expanded={showDetails}
+                aria-controls="error-dialog-technical-details"
+              >
+                {showDetails ? <VscChevronUp /> : <VscChevronDown />}
+                {showDetails ? ' Hide technical details' : ' Show technical details'}
+              </Button>
+              <Collapse in={showDetails}>
+                <div id="error-dialog-technical-details">
+                  {error.code
+                    ? <div><h6>Code</h6><pre>{this.formatDetail(error.code)}</pre></div>
+                    : null}
+                  {error.data
+                    ? <div><h6>Data</h6><pre>{this.formatDetail(error.data)}</pre></div>
+                    : null}
+                  {error.stack
+                    ? <div><h6>Stack trace</h6><pre>{this.formatDetail(error.stack)}</pre></div>
+                    : null}
                 </div>
-              </Modal.Footer>
-            </Modal.Dialog>
-          </div>
-          : null}
-      </div>
+              </Collapse>
+            </div>
+            : null}
+        </Modal.Body>
+        <Modal.Footer>
+          {queuedCount > 0
+            ? <span className="error-dialog-queue-count">
+              {queuedCount} more {queuedCount > 1 ? 'errors' : 'error'} queued
+            </span>
+            : null}
+          <Button variant="warning" onClick={() => this.handleClose()}>
+            <VscClose /> Close
+          </Button>
+        </Modal.Footer>
+      </Modal>
     );
   }
 }

@@ -70,10 +70,17 @@ export default class NrpHeader extends React.Component {
             <Link to='/' className='header-link'>HOME</Link>
           </div>
           <div>
-            <Link to='/experiments-overview'
-              className={this.state.proxyConnected ? 'header-link' : 'header-link-disabled'}>
-              EXPERIMENTS
-            </Link>
+            {this.state.proxyConnected ?
+              <Link to='/experiments-overview' className='header-link'>
+                EXPERIMENTS
+              </Link>
+              :
+              // Disabled while the proxy is offline: render an inert span (no
+              // route, out of tab order, not activatable) that keeps the look.
+              <span className='header-link-disabled' aria-disabled='true' tabIndex={-1}>
+                EXPERIMENTS
+              </span>
+            }
           </div>
           <a
             href='https://neurorobotics.net/'
