@@ -15,7 +15,6 @@
     "@mui/icons-material": "^5.16.7",
     "@mui/lab": "^5.0.0-alpha.173",
     "@mui/material": "^5.16.7",
-    "@mui/styles": "^5.16.7",
     "@mui/x-tree-view": "^6.17.0",
     "@uiw/react-codemirror": "4.12.4",
     "bootstrap": "^5",
