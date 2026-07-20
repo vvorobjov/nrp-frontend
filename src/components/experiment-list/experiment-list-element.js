@@ -258,7 +258,7 @@ class ExperimentListElement extends React.Component {
             <div className='list-entry-buttons flex-container' >
               <div className='btn-group' role='group' >
                 {exp.rights.launch ?
-                  <Button className="nrp-btn btn-default"
+                  <Button className="nrp-btn"
                     onClick={() => {
                       this.openExperimentWorkbench(exp.id);
                     }}
@@ -271,26 +271,26 @@ class ExperimentListElement extends React.Component {
                 TODO: [NRRPLT-8682]
                 Change Files icon and make the file aditor to be the opened tab in the experiment-workbench
                 {<Link to={'/experiment/' + exp.id}
-                  className="nrp-btn btn-default" disabled={this.isLaunchDisabled()}>
+                  className="nrp-btn" disabled={this.isLaunchDisabled()}>
                   <AiFillExperiment className='icon' />Files
                 </Link>
                 } */}
 
                 {/*exp.rights.launch && config.brainProcesses > 1 ?
-                  <button className='nrp-btn btn-default'>
+                  <button className='nrp-btn'>
                     <RiPlayLine className='icon' />Launch in Single Process Mode
                   </button>
                   : null*/}
 
                 {/*exp.rights.launch && this.props.availableServers.length > 1 ?
-                  <button className='nrp-btn btn-default' >
+                  <button className='nrp-btn' >
                     <RiPlayList2Fill className='icon' />Launch Multiple
                   </button>
                 : null*/}
 
                 {/* isPrivateExperiment */}
                 {exp.rights.delete ?
-                  <Button className='nrp-btn btn-default'
+                  <Button className='nrp-btn'
                     variant='warning'
                     onClick={() => {
                       this.showRemoveDialog(true);
@@ -302,7 +302,7 @@ class ExperimentListElement extends React.Component {
 
                 {/* Records button */}
                 {/* {exp.rights.launch ?
-                  <Button className='nrp-btn btn-default'
+                  <Button className='nrp-btn'
                     variant='secondary'
                     disabled={true}>
                     {this.state.showRecordings ?
@@ -315,7 +315,7 @@ class ExperimentListElement extends React.Component {
 
                 {/* Export button */}
                 {exp.rights.launch ? (
-                  <Button className='nrp-btn btn-default'
+                  <Button className='nrp-btn'
                     variant='secondary'
                     onClick={async () => {
                       this.setState({ exportInProgress: true });
@@ -334,7 +334,7 @@ class ExperimentListElement extends React.Component {
 
                 {/* Simulations button */}
                 {exp.rights.launch && exp.joinableServers.length > 0 ?
-                  <Button className='nrp-btn btn-default'
+                  <Button className='nrp-btn'
                     variant='primary'
                     onClick={() => {
                       this.setState({ showSimDetails: !this.state.showSimDetails });
@@ -348,7 +348,7 @@ class ExperimentListElement extends React.Component {
                   : null}
 
                 {/* Clone button */}
-                <Button className='nrp-btn btn-default' disabled={!exp.rights.clone}
+                <Button className='nrp-btn' disabled={!exp.rights.clone}
                   variant='secondary'
                   onClick={async () => {
                     this.setState({ cloneInProgress: true });
@@ -376,7 +376,7 @@ class ExperimentListElement extends React.Component {
 
                 {/* Shared button */}
                 {exp.rights.launch ?
-                  <Button className='nrp-btn btn-default'
+                  <Button className='nrp-btn'
                     variant='secondary'
                     disabled={true}>
                     <FaShareAlt className='icon' />Share
