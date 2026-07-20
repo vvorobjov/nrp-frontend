@@ -15,14 +15,6 @@
   background: linear-gradient( to right, rgba(255, 255, 255, 0.8) 0%, rgba(245, 245, 245, 0.8) 100%);
 }
 
-.flex-container.hover-wizard {
-  background: linear-gradient( to right, rgba(255, 255, 255, 0.8) 0%, rgba(230, 239, 255, 0.8) 100%);
-}
-
-.flex-container.selected-wizard {
-  background: linear-gradient( to right, rgba(255, 255, 255, 0.8) 0%, rgba(230, 239, 255, 0.8) 100%);
-}
-
 .flex-container.left-right {
   flex-direction: row;
 }
@@ -66,13 +58,6 @@
 
 .list-entry-middle {
   flex: 1;
-}
-
-.list-entry-running {
-  font-size: 12px;
-  font-style: italic;
-  color: #555555;
-  padding-left: 10px;
 }
 
 .list-entry-buttons {
