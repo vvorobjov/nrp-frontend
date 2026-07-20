@@ -15,7 +15,7 @@ import ExperimentStorageService from '../../services/experiments/files/experimen
 import RemoveExperimentDialog from './remove-experiment-dialog';
 
 import SimulationDetails from './simulation-details';
-import ExperimentOverview from '../experiments-overview/experiments-overview.js';
+import { TAB_INDEX } from '../experiments-overview/experiments-overview-constants.js';
 import timeDDHHMMSS from '../../utility/time-filter';
 
 import './experiment-list-element.css';
@@ -365,7 +365,7 @@ class ExperimentListElement extends React.Component {
                     await ExperimentStorageService.instance.getExperiments(true).then(() => {
                       this.setState({cloneInProgress: false});
                     });
-                    this.props.selectExperimentOverviewTab(ExperimentOverview.CONSTANTS.TAB_INDEX.MY_EXPERIMENTS);
+                    this.props.selectExperimentOverviewTab(TAB_INDEX.MY_EXPERIMENTS);
                   }}
                 >
                   {this.state.cloneInProgress
