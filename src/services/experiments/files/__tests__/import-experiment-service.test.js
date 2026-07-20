@@ -33,3 +33,23 @@ describe.skip('ImportExperimentService', () => {
       new Response(JSON.stringify(MockScanStorageResponse)))).toStrictEqual(scanStorageResponse);
   });
 });
+
+// EBR2-108: getImportZipResponses used `await responses.forEach(async ...)`,
+// which awaits forEach's undefined return, so the arrays were still empty when
+// returned and the confirmation dialog showed blank names.
+describe('ImportExperimentService.getImportZipResponses (EBR2-108)', () => {
+  test('surfaces the real file names in order without blanks', async () => {
+    const raw = [
+      { zipBaseFolderName: 'exp_a', destFolderName: 'dest_a', newName: 'Imported A' },
+      { zipBaseFolderName: 'exp_b', destFolderName: 'dest_b', newName: 'Imported B' }
+    ];
+    const responses = raw.map((r) => new Response(JSON.stringify(r)));
+
+    const result = await ImportExperimentService.instance.getImportZipResponses(responses);
+
+    expect(result.numberOfZips).toBe(2);
+    expect(result.zipBaseFolderName).toEqual(['exp_a', 'exp_b']);
+    expect(result.destFolderName).toEqual(['dest_a', 'dest_b']);
+    expect(result.newExpName).toEqual(['Imported A', 'Imported B']);
+  });
+});

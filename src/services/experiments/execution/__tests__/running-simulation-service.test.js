@@ -132,3 +132,49 @@ describe.skip('RunningSimulationService', () => {
     expect(DialogService.instance.simulationError).toHaveBeenCalled();
   });
 });
+
+// EBR2-108: simulationReady used to poll forever after a creationUniqueID
+// mismatch (it rejected but kept re-scheduling) and had no upper bound. This
+// suite covers the bounded/bailout behavior. A tiny interval and small
+// maxAttempts keep the tests fast and deterministic.
+describe('RunningSimulationService.simulationReady bailouts (EBR2-108)', () => {
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
+  test('rejects and stops polling on a creationUniqueID mismatch', async () => {
+    const getSpy = jest.spyOn(RunningSimulationService.instance, 'httpRequestGET')
+      .mockImplementation(() => Promise.resolve({
+        json: () => Promise.resolve([
+          { state: EXPERIMENT_STATE.PAUSED, creationUniqueID: 'real-id' }
+        ])
+      }));
+
+    await expect(
+      RunningSimulationService.instance.simulationReady(
+        'mock-server-url', 'wrong-id', { interval: 1, maxAttempts: 10 })
+    ).rejects.toThrow('creationUniqueID mismatch');
+
+    // A mismatch is terminal: the poll must not be re-scheduled.
+    const callsAfterReject = getSpy.mock.calls.length;
+    await new Promise((resolve) => setTimeout(resolve, 20));
+    expect(getSpy.mock.calls.length).toBe(callsAfterReject);
+    expect(callsAfterReject).toBe(1);
+  });
+
+  test('rejects with a timeout after maxAttempts while stuck pending', async () => {
+    const getSpy = jest.spyOn(RunningSimulationService.instance, 'httpRequestGET')
+      .mockImplementation(() => Promise.resolve({
+        json: () => Promise.resolve([
+          { state: EXPERIMENT_STATE.CREATED, creationUniqueID: 'real-id' }
+        ])
+      }));
+
+    await expect(
+      RunningSimulationService.instance.simulationReady(
+        'mock-server-url', 'real-id', { interval: 1, maxAttempts: 3 })
+    ).rejects.toThrow('Timed out');
+
+    expect(getSpy.mock.calls.length).toBe(3);
+  });
+});

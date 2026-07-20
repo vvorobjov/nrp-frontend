@@ -72,7 +72,10 @@ describe('ModelsStorageService', () => {
     });
 
     jest.spyOn(DialogService.instance, 'networkError');
-    serverConfig = await ServerResourcesService.instance.getServerConfig('test-server-id');
+    // getServerConfig must reject on failure (not resolve with the error) so the
+    // launch flow does not proceed on garbage.
+    await expect(ServerResourcesService.instance.getServerConfig('test-server-id'))
+      .rejects.toMatchObject({ message: 'getServerConfig request rejected' });
     expect(DialogService.instance.networkError).toHaveBeenCalled();
   });
 

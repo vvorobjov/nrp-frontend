@@ -29,14 +29,25 @@ class RoslibService {
   /**
    * Create a new connection or return an existing one to a ROS websocket.
    * @param {string} url - URL of the ROS websocket to connect to
+   * @returns {Promise<object>} the ROSLIB.Ros connection
    */
-  getConnection(url) {
-    if (!this.connections.has(url)) {
-      let urlWithAuth = url + '?token=' + AuthenticationService.instance.getToken();
-      this.connections.set(url, new ROSLIB.Ros({ url: urlWithAuth }));
+  async getConnection(url) {
+    const token = await AuthenticationService.instance.getToken();
+    const cached = this.connections.get(url);
+    // The cache is keyed by the clean URL, never by the token-bearing URL, so a
+    // refreshed token does not leak a second cached connection. When the token
+    // changes we recreate the connection so the new token reaches the ROS
+    // websocket (which bakes the token into its connection URL and would
+    // otherwise keep reconnecting with a stale/expired token).
+    if (!cached || cached.token !== token) {
+      if (cached && cached.ros && typeof cached.ros.close === 'function') {
+        cached.ros.close();
+      }
+      let urlWithAuth = url + '?token=' + token;
+      this.connections.set(url, { ros: new ROSLIB.Ros({ url: urlWithAuth }), token });
     }
 
-    return this.connections.get(url);
+    return this.connections.get(url).ros;
   };
 
   /**
@@ -63,13 +74,22 @@ class RoslibService {
     return this.createTopic(connection, topicName, 'std_msgs/String');
   };
 
-  createService(connection, serviceName, additionalOptions) {
+  /**
+   * Create a new ROSLIB.Service.
+   * @param {object} connection - the ROSLIB.Ros connection
+   * @param {string} serviceName - name of the service (the ROS service path)
+   * @param {string} serviceType - the ROS service type (e.g. 'std_srvs/Empty')
+   * @param {object} additionalOptions - additional options to extend the service with
+   */
+  createService(connection, serviceName, serviceType, additionalOptions) {
     return new ROSLIB.Service(
       _.extend(
         {
           ros: connection,
           name: serviceName,
-          serviceType: serviceName
+          // Use the real ROS service type. Previously this was set to the
+          // service name, which is not a valid service type and broke calls.
+          serviceType: serviceType
         },
         additionalOptions
       )

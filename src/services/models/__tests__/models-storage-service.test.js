@@ -52,6 +52,30 @@ describe('ModelsStorageService', () => {
     expect(response.type).toBe('robots');
   });
 
+  test('getTemplateModels caches per model type and bails on an invalid type', async () => {
+    let modelsService = ModelsStorageService.instance;
+    modelsService.modelsCache = new Map(); // clean cache (singleton)
+
+    // Invalid model type: bail out, show a data error, do NOT fetch.
+    jest.spyOn(DialogService.instance, 'dataError').mockImplementation();
+    const getSpy = jest.spyOn(modelsService, 'httpRequestGET');
+    let invalid = await modelsService.getTemplateModels(false, 'notAModel', false);
+    expect(invalid).toBeUndefined();
+    expect(DialogService.instance.dataError).toHaveBeenCalled();
+    expect(getSpy).not.toHaveBeenCalled();
+
+    // Fetch two distinct types; each is cached under its own key.
+    await modelsService.getTemplateModels(false, 'robots', false);
+    await modelsService.getTemplateModels(false, 'brains', false);
+    expect(getSpy).toHaveBeenCalledTimes(2);
+
+    // A repeated request for a cached type is served from cache (no new fetch).
+    await modelsService.getTemplateModels(false, 'robots', false);
+    expect(getSpy).toHaveBeenCalledTimes(2);
+    expect(modelsService.modelsCache.has('template:robots')).toBe(true);
+    expect(modelsService.modelsCache.has('template:brains')).toBe(true);
+  });
+
   test('getCustomModelsByUser function', async () => {
 
     let modelsService = ModelsStorageService.instance;

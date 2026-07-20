@@ -59,8 +59,12 @@ export default class ImportExperimentService extends HttpProxyService {
       newExpName: []
     };
     importZipResponses.numberOfZips = responses.length;
-    await responses.forEach(async response =>{
-      response = await response.json();
+    // Await every parsed body before returning. The previous `await
+    // responses.forEach(async ...)` awaited forEach's undefined return, so the
+    // arrays were still empty when returned and the confirmation showed blank
+    // names. Parse in order so names line up across the arrays.
+    const parsedResponses = await Promise.all(responses.map((response) => response.json()));
+    parsedResponses.forEach((response) => {
       importZipResponses['zipBaseFolderName'].push(response['zipBaseFolderName']);
       importZipResponses['destFolderName'].push(response['destFolderName']);
       importZipResponses['newExpName'].push(response['newName']);

@@ -101,6 +101,26 @@ describe('NrpUserService', () => {
     expect(groups).toBeDefined();
   });
 
+  test('does not cache a failed user groups request and retries', async () => {
+    // start from a clean cache
+    NrpUserService.instance.currentUserGroups = undefined;
+
+    // first call fails: must not cache the failure, degrade to an empty list
+    jest.spyOn(NrpUserService.instance, 'httpRequestGET')
+      .mockImplementationOnce(async () => {
+        throw new Error('Test error');
+      });
+    let groups = await NrpUserService.instance.getCurrentUserGroups();
+    expect(groups).toEqual([]);
+    expect(NrpUserService.instance.currentUserGroups).toBeFalsy();
+
+    // second call (network restored via MSW) fetches again and succeeds
+    groups = await NrpUserService.instance.getCurrentUserGroups();
+    expect(Array.isArray(groups)).toBe(true);
+    expect(groups.length).toBeGreaterThan(0);
+    expect(NrpUserService.instance.currentUserGroups).toBeTruthy();
+  });
+
   test('can determine group membership', async () => {
     expect(await NrpUserService.instance.isGroupMember(MockUserGroups[0].name)).toBe(true);
     expect(await NrpUserService.instance.isGroupMember('not-a-group')).toBe(false);
