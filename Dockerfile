@@ -44,6 +44,13 @@ RUN { \
         echo '  server_name _;'; \
         echo '  root /usr/share/nginx/html;'; \
         echo '  index index.html;'; \
+        echo '  # Content-hashed build assets never change -> cache immutably.'; \
+        echo '  location /assets/ { add_header Cache-Control "public, max-age=31536000, immutable"; }'; \
+        echo '  # The SPA shell and runtime config MUST NOT be cached, or a new'; \
+        echo '  # deploy keeps serving a stale index.html that points at the old'; \
+        echo '  # (now-absent/outdated) bundle until a hard refresh (EBR2-122).'; \
+        echo '  location = /index.html { add_header Cache-Control "no-cache"; }'; \
+        echo '  location = /config.json { add_header Cache-Control "no-cache"; }'; \
         echo '  location / { try_files $uri $uri/ /index.html; }'; \
         echo '  gzip on;'; \
         echo '  gzip_types text/css application/javascript application/json image/svg+xml;'; \
