@@ -92,7 +92,10 @@ export default class TransceiverFunctionEditor extends React.Component {
   }
 
   async loadExperimentFiles() {
-    const filelist = await ExperimentStorageService.instance.getExperimentFiles(this.state.experimentName);
+    // Read the id from the instance, not from this.state.experimentName: the
+    // setState in componentDidMount is still batched when this synchronous
+    // prefix runs, so the state field is undefined here (EBR2-122).
+    const filelist = await ExperimentStorageService.instance.getExperimentFiles(this.experimentID);
     for (const obj of filelist) { // Not checking for nested files yet
       if (obj.type === 'file') {
         const ext = obj.name.substr(obj.name.lastIndexOf('.') + 1);
@@ -114,7 +117,7 @@ export default class TransceiverFunctionEditor extends React.Component {
     }
     this.setState({ isLoadingContent: true });
     try {
-      let fileContent = await ExperimentStorageService.instance.getFileText(this.state.experimentName, file.name);
+      let fileContent = await ExperimentStorageService.instance.getFileText(this.experimentID, file.name);
       const codeMirrorMarkup = await this.defineCodeMirrorMarkup(file.extension);
       this.fileLoading = true;
       this.setState({
@@ -169,7 +172,7 @@ export default class TransceiverFunctionEditor extends React.Component {
     this.setState({ isSaving: true, textChanges: 'saving…' });
     try {
       let response = await ExperimentStorageService.instance.setFile(
-        this.state.experimentName, this.state.selectedFile.name, this.state.code);
+        this.experimentID, this.state.selectedFile.name, this.state.code);
       if (response.ok) {
         this.hasUnsavedChanges = false;
         this.setState({ textChanges: 'saved' });
