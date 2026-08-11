@@ -240,15 +240,21 @@ class ExperimentWorkbench extends React.Component {
     if (ExperimentWorkbenchService.instance.experimentInfo) {
       this.setState({experimentConfiguration: ExperimentWorkbenchService.instance.experimentInfo.configuration});
     }
+    // Use a local: under React 18 automatic batching this setState is still
+    // pending when the guard below runs, so reading this.state.runningSimulationID
+    // there would see the stale undefined and skip the initial state fetch for an
+    // already-running simulation (same stale-state anti-pattern as EBR2-122).
+    let runningSimulationID;
     if (ExperimentWorkbenchService.instance.simulationInfo !== undefined) {
-      this.setState({ runningSimulationID: ExperimentWorkbenchService.instance.simulationInfo.ID });
+      runningSimulationID = ExperimentWorkbenchService.instance.simulationInfo.ID;
+      this.setState({ runningSimulationID });
     }
 
     // Update simulation state, if it is defined
-    if (this.state.runningSimulationID !== undefined) {
+    if (runningSimulationID !== undefined) {
       await SimulationService.instance.getInfo(
         ExperimentWorkbenchService.instance.serverURL,
-        this.state.runningSimulationID
+        runningSimulationID
       ).then((simInfo) => {
         simInfo && this.setState({ simulationState: simInfo.state});
       });
