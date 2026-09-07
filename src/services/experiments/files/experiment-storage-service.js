@@ -9,6 +9,23 @@ const storageURL = `${endpoints.proxy.storage.url}`;
 const storageExperimentsURL = `${endpoints.proxy.storage.experiments.url}`;
 const cloneURL = `${endpoints.proxy.storage.clone.url}`;
 
+/**
+ * Percent-encodes '/' in a storage path segment (experiment or file name) so it
+ * survives the proxy URL. Throws a clear error instead of the cryptic
+ * `undefined.replace(...)` when the caller passes an empty/undefined argument,
+ * so a future stale-state regression fails loudly at the source (EBR2-122).
+ * @param {string} value the path segment
+ * @param {string} label names the offending argument in the error message
+ * @returns {string} the encoded segment
+ */
+function encodeStorageSegment(value, label) {
+  if (typeof value !== 'string' || value.length === 0) {
+    throw new Error(`${label} is required`);
+  }
+  // eslint-disable-next-line no-useless-escape
+  return value.replace(/[\/]/g, '%2F');
+}
+
 
 let _instance = null;
 const SINGLETON_ENFORCER = Symbol();
@@ -212,10 +229,8 @@ class ExperimentStorageService extends HttpProxyService {
    * @returns the file contents (as a request object)
    */
   async getFile(experimentDirectoryPath, filename, byName = false) {
-    // eslint-disable-next-line no-useless-escape
-    let directory = experimentDirectoryPath.replace(/[\/]/g, '%2F');
-    // eslint-disable-next-line no-useless-escape
-    let file = filename.replace(/[\/]/g, '%2F');
+    let directory = encodeStorageSegment(experimentDirectoryPath, 'getFile: experimentDirectoryPath');
+    let file = encodeStorageSegment(filename, 'getFile: filename');
     const url = `${endpoints.proxy.storage.url}/${directory}/${file}?byname=${byName}`;
     return this.httpRequestGET(url);
   }
@@ -227,8 +242,7 @@ class ExperimentStorageService extends HttpProxyService {
    * @returns {Array} the list of experiment files
    */
   async getExperimentFiles(experimentName) {
-    // eslint-disable-next-line no-useless-escape
-    let experiment = experimentName.replace(/[\/]/g, '%2F');
+    let experiment = encodeStorageSegment(experimentName, 'getExperimentFiles: experimentName');
     let url = `${endpoints.proxy.storage.url}/${experiment}`;
     const files = await (await this.httpRequestGET(url)).json();
     return files;
@@ -328,8 +342,7 @@ class ExperimentStorageService extends HttpProxyService {
    * @returns the request object containing the status code
    */
   async setFile(experimentName, filename, data, byname = true, contentType = 'text/plain') {
-    // eslint-disable-next-line no-useless-escape
-    let directory = experimentName.replace(/[\/]/g, '%2F');
+    let directory = encodeStorageSegment(experimentName, 'setFile: experimentName');
     const url = this.createRequestURL(
       `${endpoints.proxy.storage.url}/${directory}/${filename}`,
       {
