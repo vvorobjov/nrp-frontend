@@ -1,7 +1,6 @@
 /**
  * @jest-environment jsdom
  */
-import '@testing-library/jest-dom';
 
 import DialogService from '../../../services/dialog-service';
 import ExperimentWorkbenchService from '../experiment-workbench-service';
