@@ -382,13 +382,16 @@ class ExperimentWorkbench extends React.Component {
       if (status.state !== EXPERIMENT_STATE.STOPPED) {
         // update only new states
         if (status.state !== this.state.simulationState) {
-          this.setState({ simStateLoading: false });
-          this.setState({ simulationState: status.state });
+          // Work from the incoming state: setState is not applied yet when the
+          // lines below run, so this.state still holds the previous state and
+          // the popup announced it instead of the new one (EBR2-130).
+          const newState = status.state;
+          this.setState({ simStateLoading: false, simulationState: newState });
           DialogService.instance.progressNotification({
-            message: 'The experiment is ' + this.state.simulationState
+            message: 'The experiment is ' + (SIMULATION_STATE_LABELS[newState] || newState).toLowerCase()
           });
           // clear simulationInfo for the finilized experiments
-          if (EXPERIMENT_FINAL_STATE.includes(this.state.simulationState)) {
+          if (EXPERIMENT_FINAL_STATE.includes(newState)) {
             ExperimentWorkbenchService.instance.simulationInfo = undefined;
             this.setState({ runningSimulationID: undefined });
           }
@@ -754,6 +757,8 @@ class ExperimentWorkbench extends React.Component {
 
 }
 
+// Unwrapped class for unit tests of the lifecycle handlers.
+export { ExperimentWorkbench };
 export default withRouter(withCookies(ExperimentWorkbench));
 
 ExperimentWorkbench.CONSTANTS = Object.freeze({
